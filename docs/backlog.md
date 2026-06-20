@@ -18,14 +18,6 @@
 
 実装済みコードに足す機能。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す。
 
-### feature-6
-
-**独自ドメインの取得**（優先度：低）
-
-- 背景：配布は完全静的クライアントを任意の静的ホスティングに置くだけ（[development](./dev/development.md) 配布・[architecture](./design/architecture.md) §1）で、現状ドメイン未取得。独自ドメインは SEO の直接効果は薄いが、URL・評価を自分の資産として恒久維持でき、PWA の scope を綺麗に持てる・人に勧めやすい等の利点がある。対象は「作者を主対象・将来は歓迎」（[decisions](./decisions.md) 2026-06-05）。当初は意味を縛らない中立ドメインを志向したが、世界観が**占術院＝学院**に固まった（[characters/world](./characters/world.md) §2・§4）ため、academy（機関）を実体名として採る判断に至った（下記）。
-- 対応：**`mahjo.academy` を取得する**（AWS/Route 53 で ≈ $13/年・空き確認済み）。当初候補 `mahjo.link`（≈ $5/年）も中立で安いが、世界が**占術院（院主・本院・分院＝学院そのもの）**になったため、academy が**メタファでなく世界の実体名**になり整合する。かつて見送った `mahjo.study` の論拠（学習以外へ広げると意味が矛盾）は **academy には当たらない**——study は「学習する行為」だが academy は「学び舎＝機関」で、対戦・拡張も器として呑むため。`mahjo.app` は取得済みで不可。取得後、静的ホスティング配信先へ DNS を設定。`.academy` は HTTPS 強制（HSTS preload）でない点のみ留意（PWA は常時 HTTPS 前提で実害なし）。当面は github.io ドメインで運用し、取得後に独自ドメインへ移行する（base の切り替え・移行手順の正は [development](./dev/development.md)「デプロイ／ブランチ戦略」）。
-- 該当：新規（配布／インフラ）。方式の正は [development](./dev/development.md)「デプロイ／ブランチ戦略」（GitHub Pages・ブランチ・base・移行手順）。技術選定は [architecture](./design/architecture.md) §1。公開サイト（LP・[screens.md](./design/screens.md) §6）と関連。
-
 ### feature-8
 
 **ダブルリーチを出題に含める**（優先度：中）
@@ -56,8 +48,8 @@
 **OGP画像（SNS共有カード用バナー）の作成**（優先度：低）
 
 - 背景：公開サイトの LP・キャラ一覧は `og:image` に `public/img/og.png` を参照しているが未作成。いま URL を SNS（X／LINE／Discord 等）に貼ると画像なしのカードになる（タイトル・説明は出る）。立ち絵・バストアップ（透過・縦長）は共有カード枠（横長）に合わないため、専用の1枚絵が要る。
-- 対応：横長バナー `og.png`（1200×630・png/jpg、webp は一部SNS非対応で避ける）を作成し `public/img/` に配置。まお＆りん＋「Mahjo」＋一言を焼き込む。詳細ページ（まお/りん）の `og:image` は立ち絵 `*-full.webp` を指す現状でよいか（共通 og.png に揃えるか）も判断。absolute URL（`og:url`/`og:image`）は base/ドメイン依存＝[feature-6](#feature-6) 確定時に見直し。
-- 該当：新規（`public/img/og.png`）。参照は `public/index.html`・`public/characters/index.html` の `og:image`。関連：[feature-6](#feature-6)（ドメイン・canonical/base）。
+- 対応：横長バナー `og.png`（1200×630・png/jpg、webp は一部SNS非対応で避ける）を作成し `public/img/` に配置。まお＆りん＋「Mahjo」＋一言を焼き込む。詳細ページ（まお/りん）の `og:image` は立ち絵 `*-full.webp` を指す現状でよいか（共通 og.png に揃えるか）も判断。absolute URL（`og:url`/`og:image`）は mahjo.academy で設定済み（`public/`・2026-06-20）。
+- 該当：新規（`public/img/og.png`）。参照は `public/index.html`・`public/characters/index.html` の `og:image`。
 
 ### feature-12
 
