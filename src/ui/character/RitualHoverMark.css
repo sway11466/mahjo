@@ -1,0 +1,19 @@
+/* 法具モチーフ（まお＝御札）のホバーマーク。親ボタンの :hover で左端に乗る（純装飾）。
+   親は position:relative; overflow:hidden を持つこと。左位置は --ritual-mark-left で調整可。 */
+.ritual-hover-mark {
+  position: absolute;
+  left: var(--ritual-mark-left, 0.7rem);
+  top: 0.35rem;
+  bottom: 0.35rem;
+  line-height: 0;
+  opacity: 0;
+  transform: translateX(-0.6rem) scale(0.9);
+  transform-origin: left center;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+  pointer-events: none;
+}
+
+:hover > .ritual-hover-mark {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}

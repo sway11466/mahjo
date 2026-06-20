@@ -1,0 +1,16 @@
+/* 背景装飾レイヤ：最背面に全面で敷く。操作不可。中身（SVG）の濃さは各モチーフ CSS。 */
+.char-decor {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* 装飾レイヤ（StarField＋固有モチーフ）を全面で重ね焼き。各 SVG は同じ枠を共有する。 */
+.char-decor > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}

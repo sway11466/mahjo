@@ -1,0 +1,8 @@
+/* 共通の星・きらめき（装飾ベースレイヤ）。低アルファで立ち絵・文字の可読性を守る（uxui §4）。 */
+.star-field__stars {
+  opacity: 0.5;
+}
+
+.star-field__sparkles {
+  opacity: 0.7;
+}

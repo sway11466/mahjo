@@ -1,0 +1,27 @@
+/* 御札の見た目（色は CSS／幾何は Ofuda.tsx：architecture.md §5）。
+   古典的な御札＝生成り紙＋朱の帯/封＋墨。少し傾けて「貼った」感。 */
+.ofuda {
+  display: block;
+  height: 100%;
+  width: auto;
+  transform: rotate(-9deg);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+}
+
+.ofuda__paper {
+  fill: #f4ecd6; /* 生成り */
+  stroke: #b9a87a;
+  stroke-width: 1;
+}
+
+.ofuda__band,
+.ofuda__seal {
+  fill: #c0392b; /* 朱 */
+}
+
+.ofuda__ink {
+  fill: none;
+  stroke: #2a2320; /* 墨 */
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}

@@ -1,0 +1,90 @@
+<svg viewBox="0 25 1000 510" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, 'Noto Sans JP', sans-serif">
+  <style>
+    text { text-anchor: middle; dominant-baseline: middle; }
+    .name { fill: #f2f2f2; font-size: 17px; font-weight: 700; }
+    .role { fill: #b3acc4; font-size: 11px; }
+    .lbl { fill: #cdd2dc; font-size: 12px; }
+    .se { fill: #c3bfd1; font-size: 12px; }
+    .ln { stroke: #6f6a82; stroke-width: 1.4; fill: none; }
+    .heart { fill: #d98aa6; font-size: 15px; }
+  </style>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6f6a82"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="540" fill="#15121f"/>
+
+  <!-- 関係線（すべて同じ細い線・向きを矢印で示す） -->
+  <!-- 師弟（ロウシ → 三弟子） -->
+  <path class="ln" marker-end="url(#arrow)" d="M500,105 L200,232"/>
+  <path class="ln" marker-end="url(#arrow)" d="M500,105 L500,232"/>
+  <path class="ln" marker-end="url(#arrow)" d="M500,105 L800,232"/>
+  <!-- 師弟（師匠 → 弟子：縦にそろえる） -->
+  <path class="ln" marker-end="url(#arrow)" d="M200,292 L200,442"/>
+  <path class="ln" marker-end="url(#arrow)" d="M500,292 L500,442"/>
+  <path class="ln" marker-end="url(#arrow)" d="M800,292 L800,442"/>
+  <!-- 師匠どうし（こはく↔さんご・向き別に2本） -->
+  <path class="ln" marker-end="url(#arrow)" d="M410,250 C 370,242 330,242 290,250"/>
+  <path class="ln" marker-end="url(#arrow)" d="M290,274 C 330,282 370,282 410,274"/>
+  <!-- まお↔りん（向き別に2本） -->
+  <path class="ln" marker-end="url(#arrow)" d="M410,460 C 370,452 330,452 290,460"/>
+  <path class="ln" marker-end="url(#arrow)" d="M290,484 C 330,492 370,492 410,484"/>
+  <!-- まお↔しん（向き別に2本） -->
+  <path class="ln" marker-end="url(#arrow)" d="M590,460 C 630,452 670,452 710,460"/>
+  <path class="ln" marker-end="url(#arrow)" d="M710,484 C 670,492 630,492 590,484"/>
+  <!-- こはく↔ひすい（向き別に2本） -->
+  <path class="ln" marker-end="url(#arrow)" d="M590,250 C 630,242 670,242 710,250"/>
+  <path class="ln" marker-end="url(#arrow)" d="M710,274 C 670,282 630,282 590,274"/>
+
+  <!-- 関係ラベル -->
+  <text class="se" x="332" y="158">師弟</text>
+  <text class="se" x="516" y="168" text-anchor="start">師弟</text>
+  <text class="se" x="668" y="158">師弟</text>
+  <text class="se" x="178" y="367" text-anchor="end">師弟</text>
+  <text class="se" x="518" y="367" text-anchor="start">師弟</text>
+  <text class="se" x="818" y="367" text-anchor="start">師弟</text>
+
+  <text class="lbl" x="350" y="224">無関心</text>
+  <text class="lbl" x="350" y="302">表は対立<tspan fill="#d98aa6">&#9825;</tspan></text>
+
+  <text class="lbl" x="650" y="224">妹扱い</text>
+  <text class="lbl" x="650" y="302">ダメ兄</text>
+
+  <text class="lbl" x="350" y="432">素直な尊敬・憧れ</text>
+  <text class="lbl" x="350" y="512">ライバル</text>
+
+  <text class="lbl" x="650" y="432">尊敬する努力家</text>
+  <text class="lbl" x="650" y="512">きになる</text>
+
+  <!-- ノード（識別色＝各キャラのidentityカラー） -->
+  <rect x="412" y="45" width="176" height="60" rx="14" fill="#1f1e28" stroke="#9c8a55" stroke-width="2"/>
+  <text class="name" x="500" y="69">ロウシ</text>
+  <text class="role" x="500" y="89">飄々とした好々爺</text>
+
+  <rect x="112" y="232" width="176" height="60" rx="14" fill="#2c1820" stroke="#c0566e" stroke-width="2"/>
+  <text class="name" x="200" y="256">さんご</text>
+  <text class="role" x="200" y="276">気が強くて商売上手</text>
+
+  <rect x="412" y="232" width="176" height="60" rx="14" fill="#2a2212" stroke="#c1923f" stroke-width="2"/>
+  <text class="name" x="500" y="256">こはく</text>
+  <text class="role" x="500" y="276">自堕落だが芯あり</text>
+
+  <rect x="712" y="232" width="176" height="60" rx="14" fill="#14271e" stroke="#3fa885" stroke-width="2"/>
+  <text class="name" x="800" y="256">ひすい</text>
+  <text class="role" x="800" y="276">聡明な末弟子</text>
+
+  <rect x="112" y="442" width="176" height="60" rx="14" fill="#2a1722" stroke="#a14d77" stroke-width="2"/>
+  <text class="name" x="200" y="466">りん</text>
+  <text class="role" x="200" y="486">強気でからかい上手</text>
+
+  <rect x="412" y="442" width="176" height="60" rx="14" fill="#221a33" stroke="#7a5bc0" stroke-width="2"/>
+  <text class="name" x="500" y="466">まお</text>
+  <text class="role" x="500" y="486">まっすぐで素直</text>
+
+  <rect x="712" y="442" width="176" height="60" rx="14" fill="#1a181e" stroke="#7e5560" stroke-width="2"/>
+  <text class="name" x="800" y="466">しん</text>
+  <text class="role" x="800" y="486">クールな努力家</text>
+</svg>

@@ -1,0 +1,114 @@
+/* 「符の数え方」の中身（装飾は CSS／構造は TSX：architecture.md §5）。
+   役一覧（YakuList.css）と同系の枠・配色で揃える。包みは ReferenceOverlay 側。 */
+.fu-counting {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  min-height: 0;
+  overflow-y: auto; /* 親（オーバーレイ）の中でスクロール */
+  padding-right: 0.75rem; /* カードとスクロールバーの間に余白（点数表と同じ） */
+}
+
+.fu-counting__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.fu-counting__heading {
+  margin: 0;
+  font-size: clamp(1rem, 1.7vw, 1.2rem);
+  font-weight: 700;
+  color: var(--color-highlight);
+}
+
+/* 発生源・特例の行（カード） */
+.fu-counting__rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fu-counting__row {
+  padding: 0.6rem 0.8rem;
+  background: rgba(18, 20, 28, 0.5);
+  border: 1px solid #3b3f4d;
+  border-radius: 0.7rem;
+}
+
+.fu-counting__row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.fu-counting__name {
+  font-size: clamp(0.95rem, 1.6vw, 1.1rem);
+  font-weight: 700;
+}
+
+.fu-counting__fu {
+  flex: none;
+  font-size: clamp(0.85rem, 1.4vw, 1rem);
+  font-weight: 700;
+  color: var(--color-highlight);
+  white-space: nowrap;
+}
+
+.fu-counting__desc {
+  margin: 0.3rem 0 0;
+  font-size: clamp(0.85rem, 1.5vw, 1rem);
+  line-height: 1.5;
+  color: #c8ccd6;
+}
+
+/* 面子の符：行列表（狭い画面では横スクロール） */
+.fu-counting__table-wrap {
+  overflow-x: auto;
+}
+
+.fu-counting__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(0.8rem, 1.4vw, 0.95rem);
+}
+
+.fu-counting__table th,
+.fu-counting__table td {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid #3b3f4d;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.fu-counting__table thead th {
+  background: rgba(18, 20, 28, 0.6);
+  font-weight: 700;
+  color: #8a93a3;
+}
+
+.fu-counting__table tbody th {
+  background: rgba(18, 20, 28, 0.6);
+  font-weight: 700;
+  text-align: left;
+}
+
+.fu-counting__table tbody td {
+  font-weight: 700;
+}
+
+/* 注記（面子の符の表の直下に置く箇条書き） */
+.fu-counting__notes {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: clamp(0.8rem, 1.4vw, 0.95rem);
+  line-height: 1.5;
+  color: #8a93a3;
+}

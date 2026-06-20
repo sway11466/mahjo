@@ -1,0 +1,5 @@
+/* 自分の情報（自風）。手牌の上段（self-row）に置く。 */
+.seat-info__role {
+  font-size: clamp(0.7rem, 1.2vw, 0.9rem);
+  font-weight: 700;
+}

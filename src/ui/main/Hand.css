@@ -1,0 +1,81 @@
+/* 手牌の並び（Hand.tsx 専用）。装飾は CSS／構造は TSX（architecture.md §5）。
+   牌そのもの（.tile / .tile__*）のスキンは common/tiles/TileSvg.css に同梱。 */
+.hand {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.25rem;
+  align-items: flex-end;
+  justify-content: center;
+  max-width: 100%;
+}
+
+/* 牌は残り幅を flex で等分（上限なし）。牌は常に14枚で余白は固定先取りなので、
+   14牌が残り幅をちょうど埋め、大きさは手の状況に依らず一定。副露ラッパーも中身でぴったり埋まる */
+.hand__tile {
+  flex: 1 1 0;
+  min-width: 22px;
+}
+
+/* あがり牌の前の固定の余白（flex スロットにせず先取り） */
+.hand__gap {
+  flex: 0 0 auto;
+  width: clamp(20px, 6vh, 44px);
+}
+
+/* 副露面子：flex-grow は牌枚数ぶん（inline）で門前と同じ牌サイズに。面子の前に固定の余白。
+   ラベルは牌の真上に絶対配置（高さを変えない） */
+.hand__meld {
+  position: relative;
+  flex-basis: 0;
+  flex-shrink: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.25rem;
+  margin-left: clamp(10px, 1.6vh, 22px);
+}
+
+/* 鳴き種別ラベル（ポン/チー/カン）。面子の牌の真上に中央 */
+.hand__call-label {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0.25rem;
+  font-size: clamp(0.7rem, 1.2vw, 0.95rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #9aa3b2;
+  white-space: nowrap;
+}
+
+/* あがり方ラベル（ツモ/ロン）：あがり牌の真上に中央揃え（絶対配置でレイアウト高さを変えない） */
+.hand__tile--winning {
+  position: relative;
+}
+
+.hand__win-label {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0.25rem;
+  font-size: clamp(0.75rem, 1.3vw, 1rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+/* 解説で「ツモ／ロン」表示を指すとき */
+.hand__win-label--lit {
+  color: var(--color-highlight);
+  text-shadow: 0 0 0.4rem var(--color-highlight);
+}
+
+/* ロン：あがり牌を浮かせて逆向きに（他家の捨て牌＝場から来た感）。transform は見た目だけでスロットは不変 */
+.hand__tile--ron {
+  transform: translateY(-30%);
+}
+
+.hand__tile--ron .tile {
+  transform: rotate(180deg);
+}

@@ -1,0 +1,9 @@
+/* 蝶モチーフ（装飾レイヤ）。低アルファで立ち絵・文字の可読性を守る（uxui §4）。 */
+.butterfly-motif {
+  width: 100%;
+  height: 100%;
+}
+
+.butterfly-motif__wings {
+  opacity: 0.2;
+}

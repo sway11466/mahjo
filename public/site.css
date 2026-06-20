@@ -1,0 +1,793 @@
+/* 公開サイト（LP・キャラ紹介）共有スタイル。
+   public/ の素 HTML はバンドラを通らないため src/ui/index.css のトークンを import できない。
+   ここはサイトに必要な値だけを持つ独立トークン（アプリ配色＝docs/design/uxui.md §4 に準拠）。
+   正＝docs/design/screens.md §6 / 配色＝docs/design/uxui.md。 */
+
+:root {
+  color-scheme: dark;
+
+  /* 配色（アプリと揃える。src/ui/index.css と同値） */
+  --bg: #15121f; /* 背景ベース（濃い紫紺） */
+  --bg-top: #221c3a; /* 背景グラデ上端 */
+  --text: #f2f2f2;
+  --muted: #b3acc4; /* 補助テキスト */
+  --gold: #f5c451; /* ハイライト金（まおの差し色＝--color-highlight 同値） */
+  --silver: #cfd2dc; /* りんの差し色（銀） */
+  --mao: #6a4fb0; /* まおのテーマ色（紫） */
+  --rin: #7d2c5c; /* りんのテーマ色（ワインマゼンタ） */
+
+  --panel: rgba(255, 255, 255, 0.045);
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --card-bg: linear-gradient(160deg, #3a3550, #211f2e);
+
+  --maxw: 64rem;
+  --radius: 18px;
+
+  font-family: system-ui, -apple-system, 'Segoe UI', 'Hiragino Kaku Gothic ProN',
+    'Noto Sans JP', sans-serif;
+  line-height: 1.7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  /* 奥行き：対角グラデ＋まお（左上・紫）／りん（右下・ワイン）の淡いラジアルグロー。
+     状況で変えない一定の雰囲気（uxui §4）。 */
+  background:
+    radial-gradient(
+      48% 38% at 12% 16%,
+      color-mix(in srgb, var(--mao) 34%, transparent),
+      transparent 72%
+    ),
+    radial-gradient(
+      46% 40% at 88% 84%,
+      color-mix(in srgb, var(--rin) 30%, transparent),
+      transparent 74%
+    ),
+    linear-gradient(168deg, var(--bg-top), var(--bg) 60%), var(--bg);
+  background-attachment: fixed;
+  min-height: 100dvh;
+}
+
+a {
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.wrap {
+  width: min(100% - 2.4rem, var(--maxw));
+  margin-inline: auto;
+}
+
+/* ── ヘッダー ── */
+.site-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 1.1rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+
+.brand__name {
+  background: linear-gradient(92deg, #fff, var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.site-nav {
+  display: flex;
+  gap: 1.4rem;
+  font-size: 0.92rem;
+}
+
+.site-nav a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.site-nav a:hover {
+  color: var(--text);
+}
+
+/* ── ボタン ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.5rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn--primary {
+  color: #1c1630;
+  background: linear-gradient(120deg, var(--gold), #ffd980);
+  box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--gold) 60%, transparent);
+}
+
+.btn--ghost {
+  color: var(--text);
+  border-color: var(--panel-border);
+  background: var(--panel);
+}
+
+.btn--ghost:hover {
+  border-color: color-mix(in srgb, var(--gold) 50%, var(--panel-border));
+}
+
+/* ── ヒーロー ── */
+.hero {
+  text-align: center;
+  padding-block: clamp(2.5rem, 7vw, 5rem) clamp(2rem, 5vw, 3.5rem);
+}
+
+.hero__eyebrow {
+  margin: 0 0 0.9rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.18em;
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.hero__title {
+  margin: 0;
+  font-size: clamp(2.6rem, 9vw, 5rem);
+  line-height: 1.05;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+
+.hero__title span {
+  background: linear-gradient(96deg, #fff 20%, var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero__tagline {
+  margin: 1.1rem 0 0;
+  font-size: clamp(1.15rem, 3.4vw, 1.6rem);
+  font-weight: 700;
+}
+
+.hero__lead {
+  margin: 1rem auto 0;
+  max-width: 40rem;
+  color: var(--muted);
+  font-size: clamp(0.98rem, 2.2vw, 1.08rem);
+}
+
+.hero__cta {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* 立ち絵デュオ（まお＝左・りん＝右）。画像が来たら馴染むよう枠とグローを先に用意。 */
+.duo {
+  margin-top: clamp(2rem, 5vw, 3.5rem);
+  display: flex;
+  gap: clamp(1rem, 4vw, 3rem);
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.standee {
+  position: relative;
+  width: min(38vw, 18rem);
+  aspect-ratio: 3 / 4;
+}
+
+.standee::before {
+  /* 立ち絵背後のテーマ色グロー（identity の空気） */
+  content: '';
+  position: absolute;
+  inset: 8% 0 0;
+  border-radius: 50%;
+  filter: blur(34px);
+  opacity: 0.55;
+  z-index: 0;
+}
+
+.standee--mao::before {
+  background: radial-gradient(closest-side, var(--mao), transparent);
+}
+
+.standee--rin::before {
+  background: radial-gradient(closest-side, var(--rin), transparent);
+}
+
+.standee__img,
+.standee__ph {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.standee__img {
+  object-fit: contain;
+  object-position: bottom center;
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.45));
+}
+
+/* 画像未配置時のプレースホルダ（onerror で img を隠すと下のこれが見える） */
+.standee__ph {
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius);
+  border: 1px solid var(--panel-border);
+  background: var(--card-bg);
+  font-size: clamp(3rem, 12vw, 6rem);
+  font-weight: 900;
+  color: color-mix(in srgb, var(--text) 22%, transparent);
+}
+
+.standee__name {
+  position: absolute;
+  bottom: -1.8rem;
+  inset-inline: 0;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--muted);
+  z-index: 2;
+}
+
+/* ── セクション共通 ── */
+.section {
+  padding-block: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.section__title {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  font-weight: 800;
+  text-align: center;
+}
+
+.section__lead {
+  margin: 0 auto 2.2rem;
+  max-width: 38rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* ── 特徴グリッド ── */
+.features {
+  display: grid;
+  gap: 1.1rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.feature {
+  padding: 1.6rem;
+  border-radius: var(--radius);
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+}
+
+.feature__icon {
+  font-size: 2.8rem;
+  text-align: center;
+  margin-bottom: 0.7rem;
+  line-height: 1;
+}
+
+.feature h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.12rem;
+}
+
+.feature p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* ── 学び方（役 → 点数） ── */
+.flow {
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.flow__step {
+  flex: 1 1 16rem;
+  max-width: 22rem;
+  padding: 1.6rem;
+  border-radius: var(--radius);
+  background: var(--card-bg);
+  border: 1px solid var(--panel-border);
+}
+
+.flow__badge {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  margin-bottom: 0.5rem;
+}
+
+.flow__step h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+}
+
+.flow__step p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.flow__arrow {
+  align-self: center;
+  font-size: 1.6rem;
+  color: var(--gold);
+}
+
+/* ── キャラ紹介カード ── */
+.chars {
+  display: grid;
+  gap: 1.4rem;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+}
+
+.char-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  background: var(--card-bg);
+  border: 1px solid var(--panel-border);
+  transition: transform 0.18s ease, border-color 0.2s, box-shadow 0.25s;
+}
+
+.char-card:hover {
+  transform: translateY(-4px);
+}
+
+.char-card--mao:hover {
+  border-color: color-mix(in srgb, var(--mao) 70%, transparent);
+  box-shadow: 0 20px 50px -24px var(--mao);
+}
+
+.char-card--rin:hover {
+  border-color: color-mix(in srgb, var(--rin) 70%, transparent);
+  box-shadow: 0 20px 50px -24px var(--rin);
+}
+
+.char-card__art {
+  position: relative;
+  aspect-ratio: 5 / 4;
+  display: grid;
+  place-items: center;
+}
+
+.char-card--mao .char-card__art {
+  background: radial-gradient(
+    70% 80% at 50% 30%,
+    color-mix(in srgb, var(--mao) 40%, transparent),
+    transparent 70%
+  );
+}
+
+.char-card--rin .char-card__art {
+  background: radial-gradient(
+    70% 80% at 50% 30%,
+    color-mix(in srgb, var(--rin) 38%, transparent),
+    transparent 70%
+  );
+}
+
+.char-card__art img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom center;
+}
+
+.char-card__ph {
+  font-size: 3.4rem;
+  font-weight: 900;
+  color: color-mix(in srgb, var(--text) 24%, transparent);
+}
+
+/* LP のキャラ一覧とハブ /characters/ は立ち絵（全身）を見せる：絵エリアを縦長にして
+   全身が収まるように（詳細ページの「関わりのある占い師」.related はバストアップのまま） */
+#characters .char-card__art,
+.cast-group .char-card__art {
+  aspect-ratio: 3 / 4;
+}
+
+.char-card__body {
+  padding: 1.3rem 1.4rem 1.5rem;
+  text-align: center;
+}
+
+.char-card__role {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.char-card--mao .char-card__role {
+  color: color-mix(in srgb, var(--gold) 80%, var(--text));
+}
+
+.char-card--rin .char-card__role {
+  color: var(--silver);
+}
+
+.char-card__name {
+  margin: 0.3rem 0 0.5rem;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.char-card__desc {
+  margin: 0 0 0.9rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.char-card__more {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--gold);
+}
+
+/* ── 末尾 CTA ── */
+.cta-band {
+  text-align: center;
+  padding: clamp(2.5rem, 6vw, 4rem) 1.5rem;
+  border-radius: var(--radius);
+  background: var(--card-bg);
+  border: 1px solid var(--panel-border);
+}
+
+.cta-band h2 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+}
+
+.cta-band p {
+  margin: 0 0 1.6rem;
+  color: var(--muted);
+}
+
+/* ── フッター ── */
+.site-foot {
+  padding-block: 2.5rem 3rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.site-foot a {
+  color: var(--muted);
+}
+
+/* ── キャラ紹介ページ ── */
+.char-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: center;
+  padding-block: clamp(2rem, 5vw, 3.5rem);
+}
+
+.char-hero__art {
+  position: relative;
+  aspect-ratio: 3 / 4;
+}
+
+.char-hero__art::before {
+  content: '';
+  position: absolute;
+  inset: 6% 0 0;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.5;
+  z-index: 0;
+}
+
+.char-hero--mao .char-hero__art::before {
+  background: radial-gradient(closest-side, var(--mao), transparent);
+}
+
+.char-hero--rin .char-hero__art::before {
+  background: radial-gradient(closest-side, var(--rin), transparent);
+}
+
+.char-hero__art img,
+.char-hero__art .standee__ph {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.char-hero__art img {
+  object-fit: contain;
+  object-position: bottom center;
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.45));
+}
+
+.char-hero__role {
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.char-hero--mao .char-hero__role {
+  color: var(--gold);
+}
+
+.char-hero--rin .char-hero__role {
+  color: var(--silver);
+}
+
+.char-hero__name {
+  margin: 0;
+  font-size: clamp(2.2rem, 7vw, 3.4rem);
+  font-weight: 900;
+}
+
+.char-hero__copy {
+  margin: 1rem 0 1.6rem;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.facts {
+  display: grid;
+  gap: 0.8rem;
+  margin: 0 0 1.8rem;
+  padding: 0;
+  list-style: none;
+}
+
+.facts li {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: 0.8rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--panel-border);
+  font-size: 0.95rem;
+}
+
+.facts dt,
+.facts .facts__k {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.prose {
+  max-width: 42rem;
+  margin-inline: auto;
+}
+
+.prose h2 {
+  font-size: 1.3rem;
+  margin: 2rem 0 0.6rem;
+}
+
+.prose p {
+  color: var(--muted);
+}
+
+.backlink {
+  display: inline-block;
+  margin-top: 1rem;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.92rem;
+}
+
+.backlink:hover {
+  color: var(--text);
+}
+
+/* ── パンくず（下層ページ：ハブ・各キャラ） ── */
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  padding-block: 0.6rem 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.crumbs a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.crumbs a:hover {
+  color: var(--text);
+}
+
+.crumbs__sep {
+  color: color-mix(in srgb, var(--muted) 55%, transparent);
+}
+
+.crumbs [aria-current='page'] {
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* ── ハブ：世界観リード ── */
+.world-intro {
+  max-width: 44rem;
+  margin: 0 auto clamp(2rem, 5vw, 3rem);
+  text-align: center;
+  color: var(--muted);
+  font-size: clamp(0.98rem, 2.2vw, 1.08rem);
+}
+
+/* ── ハブ：人物相関図 ── */
+.worldmap {
+  margin: 0 auto clamp(2.5rem, 6vw, 4rem);
+  max-width: 48rem;
+}
+
+.worldmap img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--panel-border);
+  background: var(--bg);
+}
+
+.worldmap figcaption {
+  margin-top: 0.7rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ── ハブ：館・系譜グルーピング ── */
+.cast-group {
+  margin-bottom: clamp(2rem, 5vw, 3rem);
+}
+
+.cast-group__title {
+  margin: 0 0 0.3rem;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.cast-group__note {
+  margin: 0 0 1.2rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+/* ハブ：館グループのカードは横並び（絵＝左／文＝右）。立ち絵が大きくなりすぎて
+   粗が目立たないよう、絵は控えめサイズに抑える。 */
+.char-card--row {
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+}
+
+.char-card--row .char-card__art {
+  flex: 0 0 38%;
+  max-width: 12rem;
+  aspect-ratio: 5 / 6;
+}
+
+.char-card--row .char-card__body {
+  flex: 1 1 auto;
+  text-align: left;
+  padding: 1.3rem 1.6rem;
+}
+
+/* 交互レイアウト（ジグザグ）：偶数カードは絵を右へ。文は読みやすさ優先で左揃えのまま。 */
+.char-card--row.char-card--reverse {
+  flex-direction: row-reverse;
+}
+
+/* ── 各キャラ：関わりのある占い師（相関ベースの相互リンク） ── */
+.related {
+  max-width: 42rem;
+  margin: 2.4rem auto 0;
+}
+
+.related__title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 0 0 0.9rem;
+}
+
+/* ── レスポンシブ ── */
+@media (max-width: 40rem) {
+  .site-nav {
+    display: none;
+  }
+
+  .duo {
+    gap: 0.5rem;
+  }
+
+  .standee {
+    width: 42vw;
+  }
+
+  .char-hero {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .char-hero__art {
+    max-width: 18rem;
+    margin-inline: auto;
+  }
+
+  .facts li {
+    grid-template-columns: 5rem 1fr;
+  }
+
+  .char-card--row,
+  .char-card--row.char-card--reverse {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .char-card--row .char-card__art {
+    flex-basis: auto;
+    max-width: none;
+  }
+
+  .char-card--row .char-card__body {
+    text-align: center;
+  }
+}

@@ -1,0 +1,288 @@
+import {
+  generate,
+  generateForSeed,
+  seedIds,
+  seedPool,
+  unlockedBands,
+  BAND_THRESHOLD,
+  type GeneratedQuestion,
+} from './generate.ts';
+import { parse } from './parse.ts';
+import { detectYaku } from './yaku.ts';
+import { getYaku } from './yaku-table.ts';
+import { mulberry32, pick } from './rng.ts';
+import { tileKind } from './tiles.ts';
+import { rules } from './__tests__/hands.ts';
+import type { Tile, YakuId, Progress } from '../types/index.ts';
+
+function progress(over: Partial<Progress> = {}): Progress {
+  return { correctTotal: 0, correctByMode: {}, ...over };
+}
+
+function allTiles(q: GeneratedQuestion): Tile[] {
+  return [
+    ...q.hand.concealed,
+    q.hand.winningTile,
+    ...q.hand.calledMelds.flatMap((m) => m.tiles),
+  ];
+}
+
+/** 全分解にわたって検出される役の和集合 */
+function detectedUnion(q: GeneratedQuestion): Set<YakuId> {
+  const s = new Set<YakuId>();
+  for (const d of parse(q.hand)) {
+    for (const id of detectYaku(d, q.hand, q.table, q.winContext, rules())) s.add(id);
+  }
+  return s;
+}
+
+const MENZEN_ONLY: YakuId[] = ['pinfu', 'iipeikou', 'ryanpeikou', 'chiitoitsu'];
+
+describe('generate — シードごとの合法性と役の成立', () => {
+  it.each(seedIds())('「%s」を含む合法な和了形を生成する（多数回）', (seed) => {
+    for (let s = 0; s < 30; s++) {
+      const q = generateForSeed(seed, mulberry32(s * 131 + 7), rules());
+
+      // 牌が一意・各種別4枚以内・合計14枚（＋カン1つにつき1枚）
+      const tiles = allTiles(q);
+      const kanCount = q.hand.calledMelds.filter((m) => m.type === 'kantsu').length;
+      expect(tiles).toHaveLength(14 + kanCount);
+      expect(new Set(tiles.map((t) => t.id)).size).toBe(14 + kanCount);
+      const counts = new Map<number, number>();
+      for (const t of tiles) counts.set(tileKind(t), (counts.get(tileKind(t)) ?? 0) + 1);
+      for (const c of counts.values()) expect(c).toBeLessThanOrEqual(4);
+
+      // 和了形として分解でき、シード役が実際に成立している
+      expect(parse(q.hand).length).toBeGreaterThan(0);
+      expect(detectedUnion(q)).toContain(seed);
+
+      // 門前限定役は門前で構築されている
+      if (MENZEN_ONLY.includes(seed)) {
+        expect(q.hand.calledMelds.every((m) => !m.open)).toBe(true);
+      }
+    }
+  });
+});
+
+describe('generate — 決定性', () => {
+  it('同じ seed・進捗・ルールなら同じ問題を返す', () => {
+    const a = generate(progress(), 'yaku', mulberry32(2024), rules());
+    const b = generate(progress(), 'yaku', mulberry32(2024), rules());
+    expect(a).toEqual(b);
+  });
+});
+
+describe('generate — 難易度のアンロック', () => {
+  it('正答0は易のみ、しきい値で中・難が解放される', () => {
+    expect(unlockedBands(progress(), 'yaku')).toEqual(['easy']);
+    expect(
+      unlockedBands(progress({ correctByMode: { yaku: BAND_THRESHOLD.medium } }), 'yaku'),
+    ).toEqual(['easy', 'medium']);
+    expect(
+      unlockedBands(progress({ correctByMode: { yaku: BAND_THRESHOLD.hard } }), 'yaku'),
+    ).toEqual(['easy', 'medium', 'hard']);
+  });
+
+  it('アンロックはモード別（点数モードの進捗は役モードに効かない）', () => {
+    const p = progress({ correctByMode: { score: BAND_THRESHOLD.hard } });
+    expect(unlockedBands(p, 'yaku')).toEqual(['easy']);
+    expect(unlockedBands(p, 'score')).toEqual(['easy', 'medium', 'hard']);
+  });
+});
+
+describe('generate — 出題プール', () => {
+  it('易帯のプールに中・難の役は入らない', () => {
+    const pool = seedPool(rules(), ['easy']);
+    expect(pool).toContain('tanyao');
+    expect(pool).not.toContain('honitsu'); // medium
+    expect(pool).not.toContain('pinfu'); // hard
+  });
+
+  it('enabledYaku でオフにした役はプールから除外される', () => {
+    const pool = seedPool(rules({ enabledYaku: { tanyao: false } }), ['easy', 'medium', 'hard']);
+    expect(pool).not.toContain('tanyao');
+    expect(pool).toContain('chiitoitsu');
+  });
+
+  it('解放帯が広がるとプールは増える方向にのみ変わる', () => {
+    const easy = new Set(seedPool(rules(), ['easy']));
+    const all = new Set(seedPool(rules(), ['easy', 'medium', 'hard']));
+    for (const id of easy) expect(all.has(id)).toBe(true);
+    expect(all.size).toBeGreaterThan(easy.size);
+  });
+});
+
+describe('generate — 場風（セッション連携）', () => {
+  const WINDS = ['east', 'south', 'west', 'north'] as const;
+
+  it.each(WINDS)('場風 %s を渡すと table.roundWind に反映される', (w) => {
+    // round 設定では出ない west/north も、引数で渡せば反映される
+    const q = generateForSeed('tanyao', mulberry32(20), rules(), w);
+    expect(q.table.roundWind).toBe(w);
+  });
+
+  it.each(WINDS)('yakuhai-round は渡された場風牌の刻子で構築する（%s）', (w) => {
+    const q = generateForSeed('yakuhai-round', mulberry32(31), rules(), w);
+    expect(q.table.roundWind).toBe(w);
+    expect(q.winContext.seatWind).not.toBe(w); // 連風回避＝自風は場風と別
+    expect(detectedUnion(q)).toContain('yakuhai-round');
+  });
+
+  it('場風を省略すると RuleSettings.round に従う（east-fixed→east）', () => {
+    for (let s = 0; s < 10; s++) {
+      const q = generateForSeed('tanyao', mulberry32(s + 1), rules({ round: 'east-fixed' }));
+      expect(q.table.roundWind).toBe('east');
+    }
+  });
+
+  it('場風を省略・random のときは east か south（西北は出ない）', () => {
+    const seen = new Set<string>();
+    for (let s = 0; s < 40; s++) {
+      seen.add(generateForSeed('tanyao', mulberry32(s * 7 + 3), rules({ round: 'random' })).table.roundWind);
+    }
+    expect([...seen].every((w) => w === 'east' || w === 'south')).toBe(true);
+  });
+
+  it('generate（高レベル入口）も場風を素通しする', () => {
+    const q = generate(progress(), 'yaku', mulberry32(55), rules(), 'north');
+    expect(q.table.roundWind).toBe('north');
+  });
+});
+
+describe('generate — 生成後ガード（難易度の暴れ抑制）', () => {
+  // 易帯を超える「形役」。これらか役満が出たら解放帯(easy)超過とみなす（realizedRank と同基準）
+  const OVER_EASY: YakuId[] = [
+    'pinfu', 'sanankou', 'iipeikou', 'sanshoku-doujun', 'ittsuu', 'honitsu', 'chinitsu', 'ryanpeikou',
+  ];
+  function exceedsEasy(q: GeneratedQuestion): boolean {
+    for (const d of parse(q.hand)) {
+      for (const id of detectYaku(d, q.hand, q.table, q.winContext, rules())) {
+        if (getYaku(id)?.yakuman) return true;
+        if (OVER_EASY.includes(id)) return true;
+      }
+    }
+    return false;
+  }
+
+  it('易のみ解放では、ガード（1回振り直し）で中・難の複合が明確に減る', () => {
+    const easyPool = seedPool(rules(), ['easy']);
+    const N = 1200;
+    let raw = 0;
+    let guarded = 0;
+    for (let i = 0; i < N; i++) {
+      const seed = pick(mulberry32(i * 9 + 1), easyPool);
+      if (exceedsEasy(generateForSeed(seed, mulberry32(i * 9 + 2), rules()))) raw++; // ガードなし
+      if (exceedsEasy(generate(progress(), 'yaku', mulberry32(i * 9 + 3), rules()))) guarded++; // ガードあり
+    }
+    expect(guarded).toBeLessThan(raw); // 1回の振り直しで減る
+    expect(guarded / N).toBeLessThan(raw / N); // （意図の明示）
+  });
+
+  it('ガード後も手は常に合法（14＋カン数枚・分解可能）', () => {
+    for (let i = 0; i < 60; i++) {
+      const q = generate(progress(), 'yaku', mulberry32(i * 3 + 1), rules());
+      const kc = q.hand.calledMelds.filter((m) => m.type === 'kantsu').length;
+      expect(allTiles(q)).toHaveLength(14 + kc);
+      expect(parse(q.hand).length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('generate — 和了状況の付与（副露・リーチ・ドラ）', () => {
+  function handIds(q: GeneratedQuestion): number[] {
+    return allTiles(q).map((t) => t.id);
+  }
+
+  const kanCount = (q: GeneratedQuestion): number =>
+    q.hand.calledMelds.filter((m) => m.type === 'kantsu').length;
+
+  it('ドラ表示牌は基本1枚＋カン1つにつき1枚、手牌と id が衝突しない', () => {
+    for (let i = 0; i < 100; i++) {
+      const q = generate(progress({ correctByMode: { yaku: 30 } }), 'yaku', mulberry32(i * 7 + 1), rules());
+      expect(q.table.doraIndicators).toHaveLength(1 + kanCount(q));
+      for (const ind of q.table.doraIndicators) expect(handIds(q)).not.toContain(ind.id);
+    }
+  });
+
+  it('裏ドラ表示牌はリーチ時のみ、ドラと同数（カンドラぶん）', () => {
+    for (let i = 0; i < 200; i++) {
+      const q = generate(progress(), 'yaku', mulberry32(i * 11 + 5), rules());
+      if (q.winContext.riichi) {
+        expect(q.table.uraDoraIndicators).toHaveLength(1 + kanCount(q));
+      } else {
+        expect(q.table.uraDoraIndicators).toBeUndefined();
+      }
+    }
+  });
+
+  it('副露した手はリーチにならない（門前必須の依存）', () => {
+    for (let i = 0; i < 400; i++) {
+      const q = generate(progress({ correctByMode: { yaku: 30 } }), 'yaku', mulberry32(i * 13 + 2), rules());
+      const open = q.hand.calledMelds.some((m) => m.open); // 明い面子（暗槓は門前なので除く）
+      if (open) expect(q.winContext.riichi).toBe(false);
+    }
+  });
+
+  it('門前限定・形が崩れるシードは副露しない（暗槓は可＝門前維持）', () => {
+    for (const seed of ['pinfu', 'iipeikou', 'ryanpeikou', 'chiitoitsu', 'sanankou'] as const) {
+      for (let i = 0; i < 30; i++) {
+        const q = generateForSeed(seed, mulberry32(i * 17 + 3), rules());
+        expect(q.hand.calledMelds.every((m) => !m.open)).toBe(true); // 明い面子は無い（暗槓はOK）
+      }
+    }
+  });
+
+  it('副露可能シードは副露版が出る（喰い下がりが出題に現れる）', () => {
+    let open = 0;
+    for (let i = 0; i < 60; i++) {
+      if (generateForSeed('honitsu', mulberry32(i * 3 + 1), rules()).hand.calledMelds.length > 0) open++;
+    }
+    expect(open).toBeGreaterThan(0);
+  });
+
+  it('リーチ・一発が確率で出る（一発はリーチより十分まれ）', () => {
+    let riichi = 0;
+    let ippatsu = 0;
+    let open = 0;
+    const N = 2000;
+    for (let i = 0; i < N; i++) {
+      const q = generate(progress({ correctByMode: { yaku: 30 } }), 'yaku', mulberry32(i * 19 + 7), rules());
+      if (q.winContext.riichi) riichi++;
+      if (q.winContext.ippatsu) ippatsu++;
+      if (q.hand.calledMelds.length > 0) open++;
+    }
+    expect(riichi).toBeGreaterThan(0);
+    expect(open).toBeGreaterThan(0);
+    expect(ippatsu).toBeLessThan(riichi); // 一発はリーチの一部（5%）
+  });
+});
+
+describe('generate — カン生成', () => {
+  // 暗刻ベースの toitoi/sanankou は槓を引きうる
+  it('副露可能シードは槓（明/暗）を生成しうる', () => {
+    let kan = 0;
+    for (let i = 0; i < 200; i++) {
+      const q = generateForSeed('toitoi', mulberry32(i * 5 + 1), rules());
+      if (q.hand.calledMelds.some((m) => m.type === 'kantsu')) kan++;
+    }
+    expect(kan).toBeGreaterThan(0);
+  });
+
+  it('槓のある手はドラ表示牌が1＋槓数になり、合計牌が14＋槓数', () => {
+    for (let i = 0; i < 300; i++) {
+      const q = generateForSeed('sanankou', mulberry32(i * 7 + 3), rules());
+      const kc = q.hand.calledMelds.filter((m) => m.type === 'kantsu').length;
+      if (kc === 0) continue;
+      expect(q.table.doraIndicators).toHaveLength(1 + kc);
+      const total =
+        q.hand.concealed.length + 1 + q.hand.calledMelds.reduce((s, m) => s + m.tiles.length, 0);
+      expect(total).toBe(14 + kc);
+      // 暗槓は門前を崩さない（open:false）
+      const ankan = q.hand.calledMelds.filter((m) => m.type === 'kantsu' && !m.open);
+      if (ankan.length === q.hand.calledMelds.length && ankan.length > 0) {
+        // 全ての副露が暗槓ならリーチ可能（門前）
+        expect(q.hand.calledMelds.every((m) => !m.open)).toBe(true);
+      }
+    }
+  });
+})

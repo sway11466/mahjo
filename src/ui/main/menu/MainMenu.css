@@ -1,0 +1,71 @@
+/* 画面左上のハンバーガーメニュー（装飾は CSS／構造は TSX：architecture.md §5）。
+   位置は .screen 基準の絶対配置。チップ（InfoBox）と同系の枠・半透明背景で揃える。 */
+.main-menu {
+  position: absolute;
+  top: 2vh;
+  left: 3%;
+  z-index: 10;
+}
+
+.main-menu__button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  padding: 0;
+  color: var(--color-text);
+  background: rgba(18, 20, 28, 0.6);
+  border: 1px solid #3b3f4d;
+  border-radius: 0.7rem;
+  cursor: pointer;
+}
+
+.main-menu__button:hover {
+  border-color: var(--char-glow);
+}
+
+.main-menu__icon {
+  width: 1.4rem;
+  height: 1.4rem;
+  fill: currentColor;
+}
+
+/* 開いた項目リスト：ボタンの下に出すドロップダウン */
+.main-menu__list {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  min-width: 11rem;
+  margin: 0;
+  padding: 0.3rem;
+  list-style: none;
+  background: rgba(18, 20, 28, 0.92);
+  border: 1px solid #3b3f4d;
+  border-radius: 0.7rem;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.4);
+}
+
+/* 区切り線（参照系とナビゲーションの間など） */
+.main-menu__divider {
+  margin: 0.3rem 0.4rem;
+  border: none;
+  border-top: 1px solid #3b3f4d;
+}
+
+.main-menu__item {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0.8rem;
+  font: inherit;
+  text-align: left;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.main-menu__item:hover {
+  background: color-mix(in srgb, var(--char-glow) 28%, transparent);
+}

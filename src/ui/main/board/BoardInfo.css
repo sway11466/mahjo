@@ -1,0 +1,46 @@
+/* 盤面上部の場情報バー（装飾は CSS／構造は TSX：architecture.md §5）。
+   枠付きチップの見た目は InfoBox.css。ここはバーの配置と牌サイズのみ。 */
+/* 3カラム：左スペーサ／中央＝局チップ／右＝ドラ。両端の 1fr を等幅にして局を真ん中に固定。
+   minmax(0,1fr) で内容幅による膨張を防ぎ、ドラが多少広くても中央がずれないようにする。 */
+.board-info {
+  flex: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+  padding-bottom: 1.5vh;
+}
+
+/* 中央：現在の局（場風＋局番号） */
+.board-info__round {
+  grid-column: 2;
+  justify-self: center;
+}
+
+/* 右側：ドラ・裏ドラの行 */
+.board-info__right {
+  grid-column: 3;
+  justify-self: end;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+/* ドラ・裏ドラを横並び（並びは ドラ → 裏ドラ） */
+.board-info__dora-row {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.info-box--dora .info-box__value {
+  gap: 0.4rem;
+}
+
+/* 場情報の小さな牌（ドラ・裏ドラ） */
+.board-info__tile {
+  display: block;
+  width: 6vh;
+  min-width: 28px; /* 牌の最小幅 */
+}

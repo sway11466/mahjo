@@ -1,0 +1,32 @@
+/* 枠付きの情報チップ（装飾は CSS／構造は TSX：architecture.md §5）。
+   会話窓と同系の枠・角丸・半透明背景。 */
+.info-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  background: rgba(18, 20, 28, 0.6);
+  border: 1px solid #3b3f4d;
+  border-radius: 0.7rem;
+}
+
+.info-box__label {
+  font-size: clamp(0.7rem, 1.2vw, 0.9rem);
+  line-height: 1; /* 値と行高を揃えて上下中央に */
+  color: #8a93a3;
+}
+
+.info-box__value {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: clamp(1.05rem, 1.8vw, 1.5rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ハイライト時：枠をやわらかく光らせる（解説・ヒント連携） */
+.info-box--lit {
+  border-color: var(--color-highlight);
+  box-shadow: 0 0 0.5rem rgba(245, 196, 81, 0.7);
+}

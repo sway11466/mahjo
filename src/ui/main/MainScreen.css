@@ -1,0 +1,127 @@
+/* メイン画面（クイズ）のレイアウト。装飾は CSS／構造は TSX（architecture.md §5）。
+   index.css から MainScreen 専用ぶんを co-locate。手牌そのものは Hand.css。 */
+
+/* 画面シェル：縦に 100dvh をフルに使う。上＝盤面（伸縮）、下＝ステージ（常設）。
+   寸法は相対単位（vh/%/clamp）。絶対 px は牌の最小幅のみ（architecture.md §5）。
+   背景：全体の淡い対角グラデ＋キャラ色のラジアルグロー（左下＝ステージ背後、右上＝弱アンビエント）。
+   いずれも低アルファで盤面の白牌の可読性を守る。方針は uxui.md §4。 */
+.screen {
+  position: relative; /* 左上ハンバーガーメニュー（.main-menu）の絶対配置の基準 */
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(
+      55% 42% at 13% 92%,
+      color-mix(in srgb, var(--char-glow) 32%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      70% 55% at 88% 0%,
+      color-mix(in srgb, var(--char-glow) 13%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(165deg, var(--color-bg-top), var(--color-bg) 58%),
+    var(--color-bg);
+}
+
+.screen__board {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 2vh 3% 4vh; /* 下を広めにして4択とキャラエリアの隙間を空ける */
+}
+
+/* 場情報バーの下、自分エリア（自風＋手牌）を中央に置く領域 */
+.board-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 自分エリア：自風（左上）→リーチ千点棒→手牌 の縦並び */
+.player {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* 操作ボタンはすべてキャラの会話窓内（CharacterStage 右下）に集約＝ノベルゲームの送り位置。
+   盤面には操作を置かない（回答前後で盤面要素が増減せず手牌が動かない）。 */
+
+/* セッション結果：盤面を隠した広い領域の中央に点数を置く（操作は会話窓側） */
+.quiz-result {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.quiz-result__score {
+  margin: 0;
+  font-size: clamp(1.2rem, 2.4vw, 1.8rem);
+  font-weight: 700;
+}
+
+/* 自分エリアの上段：自風は左、リーチ千点棒は手牌の中央に重ねる（同じ行） */
+.self-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.self-row .seat-info {
+  grid-column: 1;
+  justify-self: start;
+}
+
+/* リーチ：手牌の中央上に「リーチ」＋横長の千点棒を縦並びで */
+.riichi {
+  grid-column: 2;
+  justify-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  width: 34vh;
+  min-width: 140px; /* 棒が短くなりすぎない下限 */
+}
+
+.riichi__labels {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.riichi__label {
+  font-size: clamp(0.75rem, 1.3vw, 1rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+/* 一発：リーチ脇の小バッジ（リーチ前提の条件） */
+.riichi__ippatsu {
+  padding: 0.1rem 0.5rem;
+  font-size: clamp(0.65rem, 1.1vw, 0.85rem);
+  font-weight: 700;
+  color: #1a1a1a;
+  background: #e2c44e;
+  border-radius: 999px;
+}
+
+.riichi__stick {
+  width: 100%;
+}
+
+.screen__board-inner {
+  width: 100%;
+}

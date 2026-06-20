@@ -1,0 +1,100 @@
+/* 参照系オーバーレイの共通の器（端末別）。装飾は CSS／構造は TSX（architecture.md §5）。
+   .screen 内に重ねるが position:fixed で画面全体を覆う（クイズは背後に保持）。 */
+.ref-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50; /* ハンバーガー（z 10）より上 */
+}
+
+/* PC：中央モーダル（バックドロップ＋カード） */
+.ref-overlay--modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4vh 4%;
+}
+
+.ref-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+/* パネル：縦に header（固定）＋body（伸縮スクロール） */
+.ref-overlay__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--color-bg-top);
+  border: 1px solid #3b3f4d;
+  border-radius: 1rem;
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.5);
+}
+
+.ref-overlay--modal .ref-overlay__panel {
+  /* 四槓子（18枚）の参考手牌が折り返さない幅で開く。 */
+  width: min(800px, 94vw);
+  max-height: 86vh;
+}
+
+/* モバイル：全画面シート（バックドロップなし・角丸なし） */
+.ref-overlay--sheet .ref-overlay__panel {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  background: var(--color-bg);
+}
+
+.ref-overlay__header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid #3b3f4d;
+}
+
+.ref-overlay__title {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  font-weight: 700;
+}
+
+.ref-overlay__back,
+.ref-overlay__close {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid #3b3f4d;
+  border-radius: 0.6rem;
+  cursor: pointer;
+}
+
+.ref-overlay__back:hover,
+.ref-overlay__close:hover {
+  border-color: var(--char-glow);
+}
+
+.ref-overlay__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 1rem;
+  overflow: hidden; /* 内部スクロールは中身（一覧）が担う */
+  display: flex;
+}
+
+.ref-overlay__body > * {
+  flex: 1 1 auto;
+}

@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#15121f" />
+
+    <title>Mahjo — 初心者向けの麻雀学習Webアプリ</title>
+    <meta
+      name="description"
+      content="Mahjo（マージョ）は、ランダムな和了形を出題し、成立役と点数をビジュアルで解説。答えを言わない段階ヒントが、自力の「気づき」をそっと後押しする麻雀の学習Webアプリ。インストール不要・ブラウザだけで遊べます。"
+    />
+
+    <!-- 配信ドメイン確定（backlog feature-6）まで canonical / og:url は mahjo.link 前提の仮。 -->
+    <link rel="canonical" href="https://mahjo.link/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Mahjo（マージョ）" />
+    <meta property="og:title" content="Mahjo — 初心者向けの麻雀学習Webアプリ" />
+    <meta
+      property="og:description"
+      content="Mahjo（マージョ）は、答えを言わない段階ヒントで「気づき」を促す、麻雀の役と点数の学習Webアプリ。インストール不要・ブラウザだけで遊べます。"
+    />
+    <meta property="og:url" content="https://mahjo.link/" />
+    <meta property="og:image" content="https://mahjo.link/img/og.png" />
+    <meta property="og:locale" content="ja_JP" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="stylesheet" href="site.css" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Mahjo（マージョ）",
+        "url": "https://mahjo.link/",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Web",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "JPY" },
+        "description": "麻雀の役と点数を、役→点数の順で学べる個人用の学習Webアプリ。"
+      }
+    </script>
+  </head>
+  <body>
+    <header class="wrap site-head">
+      <a class="brand" href="./">
+        <span class="brand__name">Mahjo</span>
+      </a>
+      <nav class="site-nav">
+        <a href="#features">特徴</a>
+        <a href="#how">学び方</a>
+        <a href="characters/">キャラクター</a>
+        <a href="app.html">アプリを開く</a>
+      </nav>
+    </header>
+
+    <main>
+      <!-- ヒーロー：まお＆りんのデュオを見せる -->
+      <section class="wrap hero">
+        <h1 class="hero__title"><span>Mahjo</span></h1>
+        <p class="hero__lead">
+          ランダムな和了形（あがり）を出題し、成立役と点数をビジュアルで解説します。<br />
+          答えを言わない段階ヒントが、自力の「気づき」をそっと後押しする学習アプリです。<br />
+          魅力的なキャラクターたちが、あなたの学びにそっと寄り添います。<br />
+          インストール不要・ブラウザだけで遊べます。
+        </p>
+        <div class="hero__cta">
+          <a class="btn btn--primary" href="app.html">ゲームを始める</a>
+        </div>
+
+        <div class="duo" aria-label="サポートキャラクター まお と りん">
+          <div class="standee standee--mao">
+            <span class="standee__ph" aria-hidden="true">ま</span>
+            <img
+              class="standee__img"
+              src="img/mao-bust.webp"
+              alt="まお"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+            <span class="standee__name">まお</span>
+          </div>
+          <div class="standee standee--rin">
+            <span class="standee__ph" aria-hidden="true">り</span>
+            <img
+              class="standee__img"
+              src="img/rin-bust.webp"
+              alt="りん"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+            <span class="standee__name">りん</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 特徴（product-concept §3 の背骨） -->
+      <section id="features" class="wrap section">
+        <h2 class="section__title">学び方の背骨</h2>
+        <p class="section__lead">
+          Mahjo は、ただの出題型クイズではなく「答えに辿り着く“過程”」を支えます。
+        </p>
+        <div class="features">
+          <article class="feature">
+            <div class="feature__icon">🀄</div>
+            <h3>役 → 点数の順で学ぶ</h3>
+            <p>役が分からないと点数は数えられない。まず成立役を理解し、その役を前提に符・点数を積みます。</p>
+          </article>
+          <article class="feature">
+            <div class="feature__icon">💡</div>
+            <h3>答えを言わない段階ヒント</h3>
+            <p>「ぼんやり→具体」へ小出し。最終段でも気づきを促す止まり。確定的な答えは解説側に置きます。</p>
+          </article>
+          <article class="feature">
+            <div class="feature__icon">✨</div>
+            <h3>クリックで内訳ハイライト</h3>
+            <p>どの牌がこの符・この役か。回答後の解説で、説明と盤面の要素を視覚で結びます。</p>
+          </article>
+          <article class="feature">
+            <div class="feature__icon">🌙</div>
+            <h3>プレッシャーをかけない</h3>
+            <p>連続記録の強制や“サボると咎める”はやらない。累計はお祝いとアンロックにだけ使います。</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- 学び方（役モード → 点数モード） -->
+      <section id="how" class="wrap section">
+        <h2 class="section__title">2つのモードで積み上げる</h2>
+        <div class="flow">
+          <div class="flow__step">
+            <span class="flow__badge">STEP 1</span>
+            <h3>役モード</h3>
+            <p>出題された手牌に、どんな役が成立しているか。段階ヒントで自分で気づき、成立役を確かめます。</p>
+          </div>
+          <div class="flow__arrow" aria-hidden="true">→</div>
+          <div class="flow__step">
+            <span class="flow__badge">STEP 2</span>
+            <h3>点数モード</h3>
+            <p>その役を前提に、符・翻・点数を厳密に計算。計算過程を段階表示で、数え方そのものを身につけます。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- キャラクター紹介（まお・りん） -->
+      <section id="characters" class="wrap section">
+        <h2 class="section__title">あなたをサポートする魅力的なキャラクター達</h2>
+        <div class="chars">
+          <a class="char-card char-card--mao" href="characters/mao/">
+            <div class="char-card__art">
+              <span class="char-card__ph" aria-hidden="true">ま</span>
+              <img
+                src="img/mao-full.webp"
+                alt="まおの立ち絵"
+                loading="lazy"
+                onerror="this.style.display='none'"
+              />
+            </div>
+            <div class="char-card__body">
+              <span class="char-card__role">占い館の住み込み見習い</span>
+              <h3 class="char-card__name">まお</h3>
+              <p class="char-card__desc">
+                まっすぐで素直ながんばり屋。使い魔の猫・ココと一緒に、<br />寄り添って学びを進めます。
+              </p>
+              <span class="char-card__more">紹介を見る →</span>
+            </div>
+          </a>
+          <a class="char-card char-card--rin" href="characters/rin/">
+            <div class="char-card__art">
+              <span class="char-card__ph" aria-hidden="true">り</span>
+              <img
+                src="img/rin-full.webp"
+                alt="りんの立ち絵"
+                loading="lazy"
+                onerror="this.style.display='none'"
+              />
+            </div>
+            <div class="char-card__body">
+              <span class="char-card__role">自称ライバル・小悪魔メンター</span>
+              <h3 class="char-card__name">りん</h3>
+              <p class="char-card__desc">
+                からかい上手で面倒見のいい見習い占い師。銀の鈴を鳴らしながら、<br />試すように導いてくれます。
+              </p>
+              <span class="char-card__more">紹介を見る →</span>
+            </div>
+          </a>
+        </div>
+        <p style="text-align: center; margin-top: 1.8rem">
+          <a class="btn btn--ghost" href="characters/">全員を見る →</a>
+        </p>
+      </section>
+
+      <!-- 末尾 CTA -->
+      <section class="wrap section">
+        <div class="cta-band">
+          <h2>さっそく一局、始めてみる？</h2>
+          <p>インストール不要。ブラウザですぐに学習できます。</p>
+          <a class="btn btn--primary" href="app.html">ゲームを始める</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="wrap site-foot">
+      <p>Mahjo — 役を覚え、点数を数える。麻雀の基礎が身につく個人用の学習Webアプリ。</p>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,137 @@
+/* 牌の装飾とトークン（architecture.md §5：装飾は CSS／幾何は TSX）。
+   牌専用の値なので、グローバル（:root）ではなく牌のルート .tile にスコープする。
+   カスタムプロパティは子（.tile__face / .tile__ink）に継承される。
+   アプリ横断で共有したいトークンが出てきたら、その時に中央の tokens.css へ昇格する。 */
+.tile {
+  --tile-face: #f7f4ea;
+  --tile-edge: #d8d2c2;
+  --tile-kanji-font: 'Yu Mincho', 'Hiragino Mincho ProN', 'Noto Serif JP', serif;
+
+  /* 筒子の丸の配色（本物に倣う：青地に赤が混じる） */
+  --pip-blue: #0d47a1;
+  --pip-red: #d84a3a;
+
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 74 / 100;
+  border-radius: 10px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+}
+
+.tile__face {
+  fill: var(--tile-face);
+  stroke: var(--tile-edge);
+  stroke-width: 2;
+}
+
+/* 裏向きの牌（裏ドラ未公開など）：面を見せず裏一色 */
+.tile__back {
+  fill: #3f6b5e;
+  stroke: #2c4a40;
+  stroke-width: 2;
+}
+
+.tile__ink {
+  fill: var(--ink, #2f3a4a);
+  font-family: var(--tile-kanji-font);
+}
+
+/* 萬子：漢数字（濃紺）＋萬（赤）。同サイズで縦に積む */
+.man-face__num {
+  font-size: 34px;
+  font-weight: 700;
+}
+.man-face__suit {
+  font-size: 34px;
+  font-weight: 700;
+  fill: #c62828; /* 萬は赤字（伝統。中と同じ赤） */
+}
+
+/* 字牌：東南西北發中 */
+.honor-face {
+  font-size: 50px;
+  font-weight: 700;
+}
+
+/* 筒子：ドーナツ（外円・白抜き・芯）。丸ごとに色が付く（青地に赤が混じる） */
+.pip--blue {
+  --pip: var(--pip-blue);
+}
+.pip--red {
+  --pip: var(--pip-red);
+}
+.pip__outer {
+  fill: var(--pip);
+}
+.pip__inner {
+  fill: var(--tile-face);
+}
+.pip__core {
+  fill: var(--pip);
+}
+/* 赤5筒：赤ドラは丸を一様に赤くして区別する */
+.tile--red .pip__outer,
+.tile--red .pip__core {
+  fill: var(--pip-red);
+}
+
+/* 索子：竹（縦棒2本＋横棒3本の「日」字ラダー）。既定は緑（--ink）、赤竹は --pip-red */
+.bamboo__bar {
+  fill: var(--bamboo-color, var(--ink));
+}
+.bamboo--red {
+  --bamboo-color: var(--pip-red);
+}
+
+/* 索子の1索：鳥（緑の胴＋赤の差し色） */
+.bird__body,
+.bird__perch {
+  fill: var(--ink);
+}
+.bird__accent {
+  fill: var(--pip-red);
+}
+.bird__leg {
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.bird__eye {
+  fill: var(--tile-face);
+}
+
+/* 修飾クラスが文字色（--ink）を選ぶ */
+.tile--man {
+  --ink: #2f3a4a; /* 萬子：濃紺 */
+}
+.tile--pin {
+  --ink: #1565c0; /* 筒子：青 */
+}
+.tile--sou {
+  --ink: #2e7d32; /* 索子：緑 */
+}
+.tile--wind {
+  --ink: #2f3a4a; /* 風牌（東南西北） */
+}
+.tile--haku {
+  --ink: #1565c0; /* 白 */
+}
+.tile--hatsu {
+  --ink: #2e7d32; /* 發 */
+}
+.tile--chun {
+  --ink: #c62828; /* 中 */
+}
+.tile--red {
+  --ink: #e53935; /* 赤ドラ */
+}
+
+/* 解説・ヒントのハイライト：やわらかく光らせる（uxui §3）。色は中立トークン */
+.tile--lit {
+  filter: drop-shadow(0 0 0.3rem var(--color-highlight)) drop-shadow(0 0 0.12rem var(--color-highlight));
+}
+.tile--lit .tile__face {
+  stroke: var(--color-highlight);
+  stroke-width: 3;
+}

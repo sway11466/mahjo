@@ -1,0 +1,113 @@
+/* 回答の4択バー（装飾は CSS／構造は TSX：architecture.md §5）。
+   広い画面は横1列、狭い画面（40rem以下）は2×2に折り返す。 */
+.choices {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+  width: 100%;
+}
+
+@media (max-width: 40rem) {
+  .choices {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.choices__btn {
+  position: relative; /* ○/✗ マークを角に絶対配置するため */
+  padding: 0.9rem 1rem;
+  font-size: clamp(0.95rem, 1.6vw, 1.2rem);
+  font-weight: 700;
+  color: #f2f2f2;
+  background: rgba(30, 34, 44, 0.92);
+  border: 1px solid #3b3f4d;
+  border-radius: 0.7rem;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+/* 正誤マーク（○/✗）：右端・縦中央に絶対配置（値テキストの中央位置はずらさない）。
+   左→右＝時系列（先に選択＝御札・左／後に正誤＝○/✗・右）。筆書き風に大きく。色は文字色を継承。 */
+.choices__mark {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(1.9rem, 4.4vw, 2.8rem);
+  height: clamp(1.9rem, 4.4vw, 2.8rem);
+  line-height: 0;
+}
+
+.choices__mark-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ○/✗ の筆ストローク（塗り）。色はボタン文字色を継承 */
+.choices__brush {
+  fill: currentColor;
+}
+
+/* 自分の選択に重ねるキャラ固有マークの枠（中立の位置決めのみ。見た目はマーク側）。
+   右上に少しはみ出させて「置かれた」感。○/✗（左上）とぶつからない。 */
+.choices__select-mark {
+  position: absolute;
+  top: -0.9rem;
+  left: 0.5rem;
+  height: clamp(3rem, 7vw, 4.2rem);
+  pointer-events: none;
+}
+
+/* ホバー時（回答前）：御札がふわっと乗る。終状態は固定と同じ位置・見た目（連続して見える）。 */
+.choices__select-mark--hover {
+  opacity: 0;
+  transform: translateY(0.3rem) scale(0.9);
+  transform-origin: left center;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.choices__btn:not(:disabled):hover .choices__select-mark--hover {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* 選択後：同じ位置に固定（ホバーの終状態と一致＝そのまま留まって見える）。 */
+.choices__select-mark--fixed {
+  opacity: 1;
+}
+
+/* ホバー/アクティブは回答前（未 disabled）のみ。回答表示中は色を変えない
+   （disabled なボタンに hover が当たって正解/誤答の色が消えるのを防ぐ）。 */
+.choices__btn:not(:disabled):hover {
+  background: rgba(44, 50, 64, 0.96);
+  border-color: #5a6172;
+}
+
+.choices__btn:not(:disabled):active {
+  background: rgba(54, 60, 76, 0.98);
+}
+
+/* 選択直後（答え合わせ前）の「選んだ」表示。正誤の色（--correct/--wrong）が出るまでの間だけ。 */
+.choices__btn[aria-pressed='true']:not(.choices__btn--correct):not(.choices__btn--wrong) {
+  border-color: #8a8fa0;
+  background: rgba(54, 60, 76, 0.98);
+}
+
+.choices__btn:disabled {
+  cursor: default;
+}
+
+/* 回答後：正解は緑、選んだ誤答は赤 */
+.choices__btn--correct {
+  background: rgba(46, 125, 50, 0.85);
+  border-color: #2e7d32;
+  color: #fff;
+}
+
+.choices__btn--wrong {
+  background: rgba(198, 40, 40, 0.8);
+  border-color: #c62828;
+  color: #fff;
+}

@@ -1,0 +1,421 @@
+/* 設定画面（ルール設定／アプリ設定）共通スタイル。装飾は CSS に集約（architecture.md §5）。
+   2カラム（左：立ち絵固定／右：タイトル＋設定一覧、一覧だけスクロール）。スタート画面と同系のグロー。 */
+
+/* 外周は overflow:hidden で固定（二重スクロールバーを出さない＝スクロールは右カラムの一覧だけ）。 */
+.settings-screen {
+  position: relative;
+  overflow: hidden;
+  height: 100dvh;
+  display: flex;
+  align-items: stretch;
+  /* 列間の余白は無し（立ち絵を設定側に寄せ、画像自体の余白を緩衝にする）。 */
+  gap: 0;
+  padding: 2vh 2rem; /* 左右は固定幅（画面幅で立ち絵の左位置を動かさない）。メニュー画面と共通。 */
+  background:
+    radial-gradient(
+      55% 50% at 22% 90%,
+      color-mix(in srgb, var(--char-glow) 34%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      70% 55% at 88% 8%,
+      color-mix(in srgb, var(--char-glow) 12%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(165deg, var(--color-bg-top), var(--color-bg) 58%),
+    var(--color-bg);
+}
+
+/* 左カラム：立ち絵（ずっと立っている）。下寄せで存在感を出す。
+   立ち絵カラム＝メニュー画面と同じ clamp 幅（480〜640px）。この幅が伸び縮みを決める（flex:0 0 auto）。
+   640超の余白は右パネルが吸い（flex:1 1 auto）、480未満の幅では下の @media が2段で受ける。 */
+.settings-screen__figure {
+  flex: 0 0 auto;
+  width: clamp(var(--standee-min), 55vw, var(--standee-max));
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end; /* 立ち絵を設定側（右端）に寄せて余白を詰める */
+}
+
+/* 立ち絵はカラム幅いっぱい（メニュー画面と同サイズ）。縦が短い画面でだけ max-height で頭打ち。 */
+.settings-screen__standee,
+.settings-screen__standee-ph {
+  width: 100%;
+  max-height: 94vh;
+  object-fit: contain;
+  object-position: bottom center;
+}
+
+.settings-screen__standee-ph {
+  width: clamp(10rem, 22vw, 16rem);
+  height: 70vh;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(160deg, #3a3550, #211f2e);
+  border: 1px solid #4a4663;
+  border-radius: 0.8rem;
+  color: #b9b3d4;
+  letter-spacing: 0.1em;
+}
+
+/* 右カラム：タイトル（中央・固定）＋設定一覧（ここだけスクロール）。
+   立ち絵が固定幅なので、こちらが余った横幅を全部吸う（flex:1 1 auto）。
+   一覧は .settings 側が min(680px) で内側に頭打ちなので、広がっても中身は中央寄せで崩れない。 */
+.settings-screen__panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.settings-screen__title {
+  flex: none;
+  margin: 0 0 2vh;
+  text-align: center;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 1.2rem color-mix(in srgb, var(--char-glow) 55%, transparent);
+}
+
+.settings-screen__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  /* 末尾が右下固定の戻るボタンに隠れないよう余白を確保。 */
+  padding: 0 0.6rem 5rem;
+}
+
+/* 立ち絵が下限(480px)に達する幅で縦積みへ（立ち絵を上に小さく、その下に一覧＝一覧がスクロール）。
+   しきい値 54rem はメニュー画面と共通（共有トークンの可変係数 55vw と対）。 */
+@media (max-width: 54rem) {
+  .settings-screen {
+    flex-direction: column;
+    gap: 1vh;
+  }
+  .settings-screen__figure {
+    flex: none;
+    width: auto; /* 縦積みでは固定幅を解除（高さ基準で頭打ち） */
+    max-height: 46vh;
+    justify-content: center; /* 横並び用の flex-end（右寄せ）を解除し、縦積みでは中央に置く */
+  }
+  .settings-screen__standee,
+  .settings-screen__standee-ph {
+    width: auto; /* 縦積みでは固定幅を解除して高さ基準にする */
+    max-height: 46vh;
+    height: 46vh;
+  }
+  .settings-screen__panel {
+    flex: 1 1 auto;
+  }
+}
+
+.settings {
+  width: min(1000px, 100%);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2.4vh;
+}
+
+.settings__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.settings__section-title {
+  margin: 0 0 0.2rem;
+  font-size: clamp(0.85rem, 1.5vw, 1rem);
+  font-weight: 700;
+  color: var(--color-highlight);
+  letter-spacing: 0.06em;
+}
+
+/* ── 設定の1行 ── */
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.6rem;
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
+}
+
+.setting-row--soon {
+  opacity: 0.6;
+}
+
+.setting-row__text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.setting-row__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: clamp(0.85rem, 1.5vw, 0.98rem);
+  font-weight: 600;
+}
+
+.setting-row__soon-badge {
+  flex: none;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.4rem;
+  color: #c8cdd8;
+  background: color-mix(in srgb, var(--color-text) 14%, transparent);
+}
+
+.setting-row__desc {
+  margin: 0.25rem 0 0;
+  font-size: clamp(0.72rem, 1.2vw, 0.82rem);
+  line-height: 1.45;
+  color: #9aa3b2;
+}
+
+.setting-row__control {
+  flex: none;
+}
+
+.setting-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #c8cdd8;
+}
+
+/* ── トグルスイッチ ── */
+.toggle {
+  position: relative; /* 隠し input の絶対配置の基準。無いと input が文書原点に飛び、
+                         フォーカス時にブラウザが画面先頭までスクロールしてしまう。 */
+  display: inline-flex;
+  cursor: pointer;
+}
+.toggle[aria-disabled='true'] {
+  cursor: default;
+}
+
+/* 実チェックボックスはトグルの上に透明で重ねる（見た目はトラックで描く。クリック・キーボード・
+   aria は input が担う）。トグル領域いっぱいに置くことで、フォーカスしても画面がスクロールしない。 */
+.toggle__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.toggle__track {
+  display: inline-flex;
+  align-items: center;
+  width: 2.6rem;
+  height: 1.5rem;
+  padding: 0.15rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-text) 22%, transparent);
+  transition: background 0.15s ease;
+}
+
+.toggle__thumb {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: #f2f2f2;
+  transition: transform 0.15s ease;
+}
+
+.toggle__input:checked + .toggle__track {
+  background: var(--char-glow);
+}
+.toggle__input:checked + .toggle__track .toggle__thumb {
+  transform: translateX(1.1rem);
+}
+
+/* フォーカスリング（キーボード操作の可視化）。 */
+.toggle__input:focus-visible + .toggle__track {
+  outline: 2px solid var(--color-highlight);
+  outline-offset: 2px;
+}
+
+.toggle__input:disabled + .toggle__track {
+  opacity: 0.7;
+}
+
+/* ── 出題する役（enabledYaku） ── */
+.enabled-yaku {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.6rem;
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
+}
+
+.enabled-yaku__group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+}
+
+.enabled-yaku__group-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.enabled-yaku__group-count {
+  font-size: 0.72rem;
+  color: #9aa3b2;
+}
+
+.enabled-yaku__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.3rem 1rem;
+}
+
+.enabled-yaku__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.25rem 0.1rem;
+}
+
+.enabled-yaku__name {
+  flex: 1 1 auto;
+  min-width: 0; /* flex 子が縮めるように（折り返しの前提） */
+  font-size: clamp(0.78rem, 1.3vw, 0.88rem);
+  line-height: 1.3;
+  /* 長い役名（例 国士無双十三面（コクシムソウ ジュウサンメン））は省略せず折り返して全部見せる。 */
+  overflow-wrap: anywhere;
+}
+
+.enabled-yaku__note {
+  margin: 0;
+  font-size: 0.72rem;
+  color: #9aa3b2;
+  line-height: 1.45;
+}
+
+/* ── キャラクター選択（screens.md §4。設定の2カラム土台＝SettingsLayout の右パネルに載る） ── */
+.char-select {
+  width: min(640px, 100%);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2.4vh;
+}
+
+/* 成績（好感度ハート）。咎めない・お祝い止まり。 */
+.char-select__rating-label {
+  margin: 0 0 0.5rem;
+  font-size: clamp(0.8rem, 1.3vw, 0.95rem);
+  color: #c9c3e0;
+}
+
+.char-select__hearts {
+  display: flex;
+  gap: 0.4rem;
+}
+
+/* キャラ一覧（サムネのグリッド）。登録キャラぶん並ぶ（レジストリ駆動）。 */
+.char-select__grid {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: 1.2rem 0.8rem;
+}
+
+/* 箱（カード枠）は持たない＝丸アバター＋名前だけ。クリック領域は中身ぶんで確保。 */
+.char-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.2rem;
+  background: none;
+  border: none;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.char-card__thumb {
+  width: clamp(5rem, 14vw, 7.5rem);
+  height: clamp(5rem, 14vw, 7.5rem);
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top center;
+  background: linear-gradient(160deg, #3a3550, #211f2e);
+  /* リングは box-shadow で丸に沿わせる。常時 0px の透明枠でレイアウトを揺らさない。 */
+  box-shadow: 0 0 0 0 transparent;
+  transition: box-shadow 0.15s ease;
+}
+
+/* ホバー＝選択で同じ見た目：そのキャラ自身のテーマ色（--card-glow）でリング＋淡く発光。 */
+.char-card:hover .char-card__thumb,
+.char-card--current .char-card__thumb {
+  box-shadow:
+    0 0 0 3px var(--card-glow),
+    0 0 1rem color-mix(in srgb, var(--card-glow) 55%, transparent);
+}
+
+.char-card:hover .char-card__name,
+.char-card--current .char-card__name {
+  color: var(--card-glow);
+}
+
+/* avatar・立ち絵とも無いキャラのプレースホルダ（名前の頭文字）。 */
+.char-card__thumb--ph {
+  display: grid;
+  place-items: center;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #b9b3d4;
+}
+
+.char-card__name {
+  font-size: clamp(0.82rem, 1.4vw, 0.95rem);
+  font-weight: 700;
+}
+
+/* ── ハート（好感度レーティング）。輪郭層の上に塗り層を重ね、塗りを clip で部分表示。 ── */
+.char-heart {
+  position: relative;
+  display: inline-block;
+  width: clamp(1.7rem, 4vw, 2.4rem);
+  height: clamp(1.7rem, 4vw, 2.4rem);
+}
+
+.char-heart__base,
+.char-heart__fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.char-heart__base path {
+  fill: rgba(255, 255, 255, 0.12);
+  stroke: #6b7180;
+  stroke-width: 1.4;
+}
+
+.char-heart__fill path {
+  fill: #e0607f; /* 好感度の温かいピンク */
+}

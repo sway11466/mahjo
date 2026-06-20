@@ -1,0 +1,28 @@
+/* 銀鈴の見た目（色は CSS／幾何は Suzu.tsx：architecture §5）。銀の塗り＋中銀の線で、
+   明・暗どちらの背景でも読めるようにする。drop-shadow で背景から浮かせる（御札と同じ）。 */
+.suzu {
+  display: block;
+  height: 100%;
+  width: auto;
+  /* 鈴は正方形＝御札（縦長）より横に張って大きく見えるので少し縮める（数値で微調整可）。 */
+  transform: scale(0.82);
+  transform-origin: center;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+}
+
+.suzu__body,
+.suzu__band {
+  fill: #e9ebf0; /* 明るい銀 */
+  stroke: #8f96a5; /* 中銀 */
+  stroke-width: 5;
+}
+
+.suzu__clapper {
+  fill: #8f96a5; /* 中銀（玉は塗りで強調） */
+}
+
+.suzu__slit {
+  stroke: #8f96a5;
+  stroke-width: 4.5;
+  stroke-linecap: round;
+}

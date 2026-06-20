@@ -1,0 +1,152 @@
+/* 点数表の中身（装飾は CSS／構造は TSX：architecture.md §5）。
+   役一覧・符の数え方と同系の枠・配色。包みは ReferenceOverlay 側。 */
+.score-table {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.75rem; /* 表とスクロールバーの間に余白 */
+}
+
+/* 子／親タブ */
+.score-table__tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.score-table__tab {
+  padding: 0.35rem 1.4rem;
+  font: inherit;
+  font-size: clamp(0.85rem, 1.5vw, 1rem);
+  font-weight: 700;
+  color: var(--color-text);
+  background: rgba(18, 20, 28, 0.6);
+  border: 1px solid #3b3f4d;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.score-table__tab--active {
+  color: #15121f;
+  background: var(--char-glow);
+  border-color: var(--char-glow);
+}
+
+/* 表の見方（凡例） */
+.score-table__legend {
+  margin: 0;
+  font-size: clamp(0.78rem, 1.35vw, 0.92rem);
+  line-height: 1.5;
+  color: #8a93a3;
+}
+
+/* 横に広いので必要なら横スクロール。
+   縦 flex（.score-table）の直接の子になるとき、overflow 指定により最小高さ0へ潰れるのを防ぐ
+   （flex-shrink を止めて内容の高さを保つ）。 */
+.score-table__scroll {
+  overflow-x: auto;
+  flex: none;
+}
+
+.score-table__grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(0.75rem, 1.3vw, 0.9rem);
+  /* 列幅を内容でなく定義で決める＝子/親を切り替えても列幅（符列など）が変わらない。 */
+  table-layout: fixed;
+}
+
+/* 先頭列（符／区分の行ヘッダー）は固定幅。「符＼翻」が窮屈にならない幅を確保し、
+   余白はセル内（ラベル↔数値）を詰めて捻出する（下記 .score-table__cell）。 */
+.score-table__grid tr > :first-child {
+  width: 4.25rem;
+}
+
+/* 本体グリッド（符×翻）は最小幅を確保し、狭い画面では横スクロール（列は潰さない）。
+   通常のモーダル幅では横スクロールが出ない範囲に収める。 */
+.score-table__grid--main {
+  min-width: 36rem;
+}
+
+.score-table__grid th,
+.score-table__grid td {
+  padding: 0.3rem 0.35rem;
+  border: 1px solid #3b3f4d;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.score-table__grid thead th {
+  background: rgba(18, 20, 28, 0.6);
+  font-weight: 700;
+}
+
+.score-table__grid tbody th {
+  background: rgba(18, 20, 28, 0.6);
+  font-weight: 700;
+}
+
+/* セル内：ラベル（左）＋数値（右寄せ）の2列。ロン／ツモ子／ツモ親の縦をそろえる。
+   数値列は 1fr で広げず内容幅（auto）にしてラベル↔数値を詰め、セルごと中央寄せ。
+   こうして空いた横幅を先頭列（符＼翻）に回す。 */
+.score-table__cell {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: center;
+  column-gap: 0.3rem;
+  row-gap: 0.1rem;
+  align-items: baseline;
+}
+
+.score-table__k {
+  text-align: left;
+}
+
+.score-table__v {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 成立しない欄（セル全体／セル内のロン「—」とも同じ淡色にそろえる） */
+.score-table__none,
+.score-table__v--none {
+  color: #555b68;
+}
+
+.score-table__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.score-table__heading {
+  margin: 0;
+  font-size: clamp(1rem, 1.7vw, 1.2rem);
+  font-weight: 700;
+  color: var(--color-highlight);
+}
+
+.score-table__steps {
+  margin: 0;
+  padding-left: 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: clamp(0.85rem, 1.5vw, 1rem);
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+.score-table__steps code {
+  font-size: 0.95em;
+  color: var(--color-text);
+}
+
+.score-table__note {
+  margin: 0;
+  padding-left: 1.3rem; /* 手順リストの本文に揃えてインデント */
+  font-size: clamp(0.8rem, 1.4vw, 0.95rem);
+  line-height: 1.5;
+  color: #8a93a3;
+}

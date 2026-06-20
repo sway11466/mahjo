@@ -1,0 +1,25 @@
+<!doctype html>
+<!--
+  開発用（dev-only）リダイレクト。本番には出ません。
+
+  `npm run dev`（localhost:5173）の `/` は、ルート index.html が無いと 404 になる
+  （ビルドの input は app.html のみ＝docs/design/architecture.md §4・docs/dev/development.md）。
+  この index.html は dev の `/` から app.html へ飛ばすためだけのショートカット。
+
+  ビルド時は vite の rollupOptions.input（app.html のみ）に含まれないため dist へ出力されず、
+  本番の `/`（＝LP）は public/index.html が担う。＝本番のLP/サイトには一切影響しない。
+-->
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content="0; url=app.html" />
+    <title>Mahjo — リダイレクト中…</title>
+    <script>
+      // 履歴を汚さないよう replace で即時遷移（meta refresh は JS 無効時のフォールバック）
+      location.replace('app.html');
+    </script>
+  </head>
+  <body>
+    <p>アプリへ移動しています… <a href="app.html">開かない場合はこちら</a></p>
+  </body>
+</html>

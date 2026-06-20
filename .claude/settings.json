@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/sync-main.sh\"",
+            "timeout": 30,
+            "statusMessage": "Syncing main…"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/sync-main.sh\"",
+            "timeout": 30,
+            "statusMessage": "Syncing main…"
+          }
+        ]
+      }
+    ]
+  }
+}

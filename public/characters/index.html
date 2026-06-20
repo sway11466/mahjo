@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#15121f" />
+
+    <title>キャラクター紹介 — Mahjo の占い師たち</title>
+    <meta
+      name="description"
+      content="Mahjo（マージョ）の世界と、学習をサポートする占い師たち。運河沿いの町の同門ライバル二軒——さびれた館の見習い・まおと、繁盛する館の弟子・りん。人物相関と各キャラの紹介。"
+    />
+
+    <!-- 配信ドメイン確定（backlog feature-6）まで canonical / og:url は仮。 -->
+    <link rel="canonical" href="https://mahjo.link/characters/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Mahjo（マージョ）" />
+    <meta property="og:title" content="キャラクター紹介 — Mahjo の占い師たち" />
+    <meta
+      property="og:description"
+      content="運河沿いの町の同門ライバル二軒。さびれた館の見習い・まおと、繁盛する館の弟子・りん。人物相関と各キャラの紹介。"
+    />
+    <meta property="og:url" content="https://mahjo.link/characters/" />
+    <meta property="og:image" content="https://mahjo.link/img/og.png" />
+    <meta property="og:locale" content="ja_JP" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="stylesheet" href="../site.css" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "CollectionPage",
+            "name": "キャラクター紹介 — Mahjo の占い師たち",
+            "url": "https://mahjo.link/characters/",
+            "description": "Mahjo の世界と、学習をサポートする占い師たちの一覧。",
+            "isPartOf": { "@type": "WebSite", "name": "Mahjo（マージョ）", "url": "https://mahjo.link/" }
+          },
+          {
+            "@type": "ItemList",
+            "itemListOrder": "https://schema.org/ItemListOrderAscending",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "url": "https://mahjo.link/characters/mao/",
+                "name": "まお"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "url": "https://mahjo.link/characters/rin/",
+                "name": "りん"
+              }
+            ]
+          },
+          {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://mahjo.link/" },
+              { "@type": "ListItem", "position": 2, "name": "キャラクター", "item": "https://mahjo.link/characters/" }
+            ]
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <header class="wrap site-head">
+      <a class="brand" href="../">
+        <span class="brand__name">Mahjo</span>
+      </a>
+      <nav class="site-nav">
+        <a href="../#features">特徴</a>
+        <a href="../#how">学び方</a>
+        <a href="./">キャラクター</a>
+        <a href="../app.html">アプリを開く</a>
+      </nav>
+    </header>
+
+    <main class="wrap">
+      <nav class="crumbs" aria-label="パンくず">
+        <a href="../">ホーム</a>
+        <span class="crumbs__sep" aria-hidden="true">›</span>
+        <span aria-current="page">キャラクター</span>
+      </nav>
+
+      <section class="hero">
+        <p class="hero__eyebrow">CHARACTERS</p>
+        <h1 class="hero__title" style="font-size: clamp(2.2rem, 7vw, 3.6rem)">
+          <span>Mahjo の占い師たち</span>
+        </h1>
+        <p class="world-intro">
+          運河沿いの中華風の町。ここでは麻雀牌は娯楽ではなく、運命を読む<strong>神聖な占術の道具</strong>です。<br />
+          和了形（あがり）を結ぶことは、ひとつの卦（け）を立てること。<br />
+          役は読み取れる兆し、符・翻はその効き目の強さ—— 占い師たちはそうやって運命を読みます。<br />
+          まお と りん は、同じ大師匠を頂く<strong>同門ながらライバルの二軒の占い館</strong>で学ぶ、同年代の見習い。<br />
+          師匠どうしは旧知で、姉弟子格の先輩もいます。<br />
+          占いは「答えを押し付けず、気づかせる」もの—— だから二人とも、答えは言わずにそっと導きます。
+        </p>
+      </section>
+
+      <figure class="worldmap">
+        <img
+          src="../img/world-relationships.svg"
+          alt="Mahjo の人物相関図。大師匠を頂点に、まおの師匠・姉弟子・りんの師匠が連なり、その下で見習いのまおとりんがライバル関係にある。"
+          loading="lazy"
+        />
+        <figcaption>世界観・人物相関図</figcaption>
+      </figure>
+
+      <section class="section" style="padding-top: 0">
+        <div class="cast-group">
+          <h2 class="cast-group__title">由緒ある、いまは少しさびれた占い館</h2>
+          <p class="cast-group__note">
+            歴史はあるが活気を失いつつある館。まおは住み込みで働きながら、館を立て直そうとがんばっています。
+          </p>
+          <div class="chars">
+            <a class="char-card char-card--mao char-card--row" href="mao/">
+              <div class="char-card__art">
+                <span class="char-card__ph" aria-hidden="true">ま</span>
+                <img
+                  src="../img/mao-bust.webp"
+                  alt="まお"
+                  loading="lazy"
+                  onerror="this.style.display='none'"
+                />
+              </div>
+              <div class="char-card__body">
+                <span class="char-card__role">占い館の住み込み見習い</span>
+                <h3 class="char-card__name">まお</h3>
+                <p class="char-card__desc">
+                  まっすぐで素直ながんばり屋。使い魔の猫・ココと一緒に、<br />寄り添って学びを進めます。
+                </p>
+                <span class="char-card__more">紹介を見る →</span>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <div class="cast-group">
+          <h2 class="cast-group__title">エレガントで繁盛している占い館</h2>
+          <p class="cast-group__note">
+            町で評判の華やかな館。りんはその弟子で、勝手にまおをライバル視しています（同門どうしの身内の張り合い）。
+          </p>
+          <div class="chars">
+            <a class="char-card char-card--rin char-card--row char-card--reverse" href="rin/">
+              <div class="char-card__art">
+                <span class="char-card__ph" aria-hidden="true">り</span>
+                <img
+                  src="../img/rin-bust.webp"
+                  alt="りん"
+                  loading="lazy"
+                  onerror="this.style.display='none'"
+                />
+              </div>
+              <div class="char-card__body">
+                <span class="char-card__role">自称ライバル・小悪魔メンター</span>
+                <h3 class="char-card__name">りん</h3>
+                <p class="char-card__desc">
+                  からかい上手で面倒見のいい見習い占い師。銀の鈴を鳴らしながら、<br />試すように導いてくれます。
+                </p>
+                <span class="char-card__more">紹介を見る →</span>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <p class="cast-group__note" style="text-align: center">
+          大師匠や両館の師匠、姉弟子など、この町にはほかにも占い師がいます。仲間は少しずつ増えていく予定です。
+        </p>
+
+        <p style="text-align: center; margin-top: 2rem">
+          <a class="backlink" href="../">← トップへ戻る</a>
+        </p>
+      </section>
+    </main>
+
+    <footer class="wrap site-foot">
+      <p>Mahjo — 役を覚え、点数を数える。</p>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,117 @@
+/* 役一覧の中身（装飾は CSS／構造は TSX：architecture.md §5）。
+   包み（モーダル／全画面）は YakuListOverlay 側。ここは中身の見た目だけ。 */
+.yaku-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 0; /* 親（オーバーレイ）の中でスクロールできるように */
+}
+
+/* 難易度フィルタのチップ列。横スクロールせず折り返す。 */
+.yaku-list__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.yaku-list__filter {
+  padding: 0.35rem 0.9rem;
+  font: inherit;
+  font-size: clamp(0.8rem, 1.4vw, 0.95rem);
+  color: var(--color-text);
+  background: rgba(18, 20, 28, 0.6);
+  border: 1px solid #3b3f4d;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.yaku-list__filter--active {
+  color: #15121f;
+  background: var(--char-glow);
+  border-color: var(--char-glow);
+  font-weight: 700;
+}
+
+/* 役の行（カード）。スクロール領域。 */
+.yaku-list__rows {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  padding-right: 0.75rem; /* カードとスクロールバーの間に余白（点数表・符と同じ） */
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.yaku-list__row {
+  padding: 0.7rem 0.9rem;
+  background: rgba(18, 20, 28, 0.5);
+  border: 1px solid #3b3f4d;
+  border-radius: 0.7rem;
+}
+
+.yaku-list__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.yaku-list__name {
+  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  font-weight: 700;
+}
+
+.yaku-list__han {
+  flex: none;
+  font-size: clamp(0.8rem, 1.4vw, 0.95rem);
+  color: var(--color-highlight);
+  white-space: nowrap;
+}
+
+.yaku-list__condition {
+  margin: 0.35rem 0 0;
+  font-size: clamp(0.85rem, 1.5vw, 1rem);
+  line-height: 1.5;
+  color: #c8ccd6;
+}
+
+/* 参考手牌：小さな牌を横並び（入りきらなければ折り返す） */
+.yaku-list__example {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  margin-top: 0.55rem;
+}
+
+.yaku-list__example-tile {
+  width: 4.4vh;
+  min-width: 22px;
+  max-width: 32px;
+}
+
+/* リーチ系：参考手牌の代わりに置くリーチ棒（横長の千点棒）＋一発バッジ */
+.yaku-list__riichi {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.yaku-list__riichi-stick {
+  width: 12rem;
+  max-width: 60%;
+}
+
+/* 一発バッジ：アプリのリーチ脇表記（MainScreen.css .riichi__ippatsu）と同じ金色ピル */
+.yaku-list__riichi-badge {
+  padding: 0.1rem 0.5rem;
+  font-size: clamp(0.65rem, 1.1vw, 0.85rem);
+  font-weight: 700;
+  color: #1a1a1a;
+  background: #e2c44e;
+  border-radius: 999px;
+}
