@@ -79,3 +79,31 @@
 .hand__tile--ron .tile {
   transform: rotate(180deg);
 }
+
+/* 縦持ちスマホ：14牌を1列に並べると幅が足りず読めないので2段に折り返す（見やすさ犠牲OKの縦専用）。
+   横並び（nowrap・flex 伸縮）の base は据え置き＝横持ち/PC は landscape 判定でここに該当しない。 */
+@media (orientation: portrait) {
+  /* 段間は広めに取る：2段目の牌の真上に出る「ロン/ツモ」「ポン/チー/カン」ラベル
+     （bottom:100%・ロンは牌が上に浮く）が1段目に隠れないだけの隙間を確保する。 */
+  .hand {
+    flex-wrap: wrap;
+    row-gap: 1.9rem;
+    justify-content: center;
+  }
+  /* 牌は読める固定幅にして折り返す（幅基準の flex 伸縮をやめ、行ごとに大きさを揃える） */
+  .hand__tile {
+    flex: 0 0 auto;
+    width: 2.6rem;
+    min-width: 0;
+  }
+  /* あがり牌前の余白は縦では詰める（折り返しを乱さない程度に） */
+  .hand__gap {
+    width: 0.6rem;
+  }
+  /* 副露面子は内容ぶんの幅に（門前と同じ固定幅の牌が塊で並ぶ）。
+     TSX のインライン flex-grow を CSS だけで打ち消すため important（構造は触らない）。 */
+  .hand__meld {
+    flex: 0 0 auto !important;
+    margin-left: 0.6rem;
+  }
+}

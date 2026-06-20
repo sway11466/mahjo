@@ -194,3 +194,80 @@
     0 0 0.5rem color-mix(in srgb, currentColor 35%, transparent);
   filter: brightness(1.12);
 }
+
+/* 横持ちスマホ等＝縦が低い画面では、キャラの取り分を減らして盤面（牌・4択）に高さを回す。
+   出し分けは orientation でなく max-height で行う：PC モニタも幅>高さで landscape 判定になるため、
+   orientation だと PC を巻き込む。縦が低いのは横持ちスマホ固有なので height で線を引く＝PC は素通り。
+   既定の min-height:10rem は低い画面で縮小を打ち消すのでここで下げる（値は実機で詰める暫定）。 */
+@media (max-height: 540px) {
+  .stage {
+    height: 34vh;
+    min-height: 7rem;
+  }
+  /* 会話枠は base の固定比率（68%・下寄せ）のまま＝バッジの有無など状態で大きさが変わらない（PCと同じ）。
+     低い画面では本文を内側でスクロールさせ（枠の高さは一定）、本文フォントを少し小さくして狭い枠に収める。
+     操作ボタンは base のまま絶対配置＝枠基準で動かず、本文の上に重なって留まる（重なりは許容）。 */
+  .stage__dialogue {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .stage__dialogue-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    /* 本文末尾に余白を足す：ボタンが重なる最後の行も、スクロールで上に逃がして読める。 */
+    padding-bottom: 3rem;
+  }
+  /* 本文フォントを少し小さく（狭い枠に収める） */
+  .stage__line {
+    font-size: 0.85rem;
+    line-height: 1.55;
+  }
+  /* 内訳バッジは会話枠の上の空き（base の下寄せで空く上側）に単一行で置き、会話枠を押し縮めない。
+     多いときは横スクロール（縦に増えて枠を食わないように）。 */
+  .stage__badges {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+}
+
+/* 縦持ちスマホ：47vh のままだと立ち絵が大きすぎ、(1) 盤面の高さが足りず手牌と4択が近接、
+   (2) 4択の下段がキャラに食われ、(3) 会話枠が顔を覆う／立ち絵が横幅を占有して会話が潰れる。
+   縦のときだけステージ高さを大きく下げる＝立ち絵が小さなバストアップになり（横並び base のまま＝
+   顔の framing は維持）、会話枠に幅が戻り、盤面にも縦の余裕が生まれて手牌と4択が離れる。
+   全幅オーバーレイは小さくすると顔が帯状に切れるため不採用。base の横並びは据え置き
+   （横持ち/PC は landscape 判定でここに該当しない）。高さは実機で詰める暫定値。 */
+@media (orientation: portrait) {
+  /* 縦持ちは横並び（立ち絵｜会話枠）だと会話枠の幅が足りず、本文の折り返し過多＋
+     操作ボタン（絶対配置）が本文に重なる。縦は縦積みに組み替える：
+     小さな立ち絵を上に、会話枠を全幅で下に置き、操作ボタンは本文の下へ普通に流す。
+     ステージ高さは内容ぶん（auto）にして、長い解説でも会話枠がボタンごと収まる
+     （盤面は .board-main の min-content＋overflow で守られる）。base の横並びは据え置き。 */
+  .stage {
+    height: auto;
+    min-height: 0;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  /* 縦持ちは立ち絵を出さない（狭い幅では会話枠を圧迫するだけ。推奨の横持ちには出るので
+     キャラ駆動の背骨は保たれる）。名札「まお」は会話枠に残るので無個性にはならない。 */
+  .stage__avatar {
+    display: none;
+  }
+  .stage__panel {
+    flex: 0 0 auto;
+    margin-left: 0;
+  }
+  /* 会話枠は全幅・内容ぶんの高さ（立ち絵が上に分離したぶん幅が稼げる） */
+  .stage__dialogue {
+    height: auto;
+  }
+  /* 操作ボタンは絶対配置をやめ本文の下に流す（狭い枠で本文と重ならない） */
+  .stage__actions {
+    position: static;
+    justify-content: flex-end;
+    margin-top: 0.7rem;
+    flex-wrap: wrap;
+  }
+}
