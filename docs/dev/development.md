@@ -30,7 +30,7 @@ npm run preview   # ビルド成果物のローカル確認
 
 ## デプロイ／ブランチ戦略
 
-配信先は GitHub Pages。本番の手前に「本番前の動作確認」用のサブパスを設け、ブランチで本番／確認版を出し分ける。当面は github.io ドメイン、将来は独自ドメイン `mahjo.link`（[backlog](../backlog.md) feature-6）へ移行する前提で組む。
+配信先は GitHub Pages。本番の手前に「本番前の動作確認」用のサブパスを設け、ブランチで本番／確認版を出し分ける。当面は github.io ドメイン、将来は独自ドメイン `mahjo.academy`（[backlog](../backlog.md) feature-6）へ移行する前提で組む。
 
 ### ブランチ → デプロイ先
 
@@ -58,7 +58,7 @@ preview → production     PR マージで本番を公開
 | 時期 | production | preview |
 |---|---|---|
 | 当面（github.io） | `https://<user>.github.io/mahjo/`（base `/mahjo/`） | `…/mahjo/preview/`（base `/mahjo/preview/`） |
-| 独自ドメイン後 | `https://mahjo.link/`（base `/`） | `https://mahjo.link/preview/`（base `/preview/`） |
+| 独自ドメイン後 | `https://mahjo.academy/`（base `/`） | `https://mahjo.academy/preview/`（base `/preview/`） |
 
 - `base` は **CI のビルド引数で渡す**（`vite build --base=…`）。`vite.config.ts` には焼き込まず、CI 変数（例 `BASE_PROD` / `BASE_PREVIEW`）にしておく。ドメイン移行時はこの2変数を `/`・`/preview/` に書き換える1行で済み、コード・ブランチ戦略は無変更。
 - PWA の Service Worker スコープ・manifest の `start_url` は `base` から自動で決まるため、確認版（`/preview/`）と本番のキャッシュは `base` 分離で自動的に分かれる。確認時はキャッシュ無効化（DevTools の "Update on reload"）で本番アセットの混入を避ける。
@@ -75,7 +75,7 @@ preview → production     PR マージで本番を公開
 ### 独自ドメインへの移行（将来・feature-6）
 
 1. `BASE_PROD` / `BASE_PREVIEW` を `/`・`/preview/` に変更。
-2. リポジトリの Pages 設定に `mahjo.link` を登録（公開出力に `CNAME` が生成される）。
+2. リポジトリの Pages 設定に `mahjo.academy` を登録（公開出力に `CNAME` が生成される）。
 3. DNS を GitHub Pages へ向ける（apex の A レコード等）＋ "Enforce HTTPS" を ON。
 
 旧 `…/mahjo/` へのアクセスは GitHub が新ドメインへ自動リダイレクトする。手順詳細は feature-6 を正とする。
