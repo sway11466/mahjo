@@ -79,7 +79,10 @@ export function CharacterStage({
           </div>
         )}
         <div className="stage__dialogue">
-        <div className="stage__dialogue-head">
+        {/* 名札＋本文をひとまとめのスクロール枠に包む（低い画面では名札も本文と一緒にスクロール、
+            ボタンだけ枠外で固定）。base では CSS を当てないので素の block＝描画は不変。 */}
+        <div className="stage__dialogue-scroll">
+          <div className="stage__dialogue-head">
           <div className="stage__name">{name}</div>
           {/* ヒントボタンは常に場所を確保し、出さないときは不可視＋不活性に
               （名札の位置が状況で動かないように。表示有無でレイアウトを変えない） */}
@@ -103,6 +106,7 @@ export function CharacterStage({
           </button>
         </div>
         <p className="stage__line">{line}</p>
+        </div>
         {actions.length > 0 && (
           <div className="stage__actions">
             {actions.map((a, i) => (
