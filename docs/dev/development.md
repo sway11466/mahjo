@@ -30,7 +30,7 @@ npm run preview   # ビルド成果物のローカル確認
 
 ## デプロイ／ブランチ戦略
 
-配信先は GitHub Pages。本番の手前に「本番前の動作確認」用のサブパスを設け、ブランチで本番／確認版を出し分ける。当面は github.io ドメイン、将来は独自ドメイン `mahjo.academy`（[backlog](../backlog.md) feature-6）へ移行する前提で組む。
+配信先は GitHub Pages。本番の手前に「本番前の動作確認」用のサブパスを設け、ブランチで本番／確認版を出し分ける。配信は独自ドメイン **`mahjo.academy`** で行う（2026-06-20 移行済み。base＝production `/`・preview `/preview/`）。
 
 ### ブランチ → デプロイ先
 
@@ -57,10 +57,10 @@ preview → production     PR マージで本番を公開
 
 | 時期 | production | preview |
 |---|---|---|
-| 当面（github.io） | `https://<user>.github.io/mahjo/`（base `/mahjo/`） | `…/mahjo/preview/`（base `/mahjo/preview/`） |
-| 独自ドメイン後 | `https://mahjo.academy/`（base `/`） | `https://mahjo.academy/preview/`（base `/preview/`） |
+| 旧（github.io・移行前） | `https://<user>.github.io/mahjo/`（base `/mahjo/`） | `…/mahjo/preview/`（base `/mahjo/preview/`） |
+| **現行（mahjo.academy）** | `https://mahjo.academy/`（base `/`） | `https://mahjo.academy/preview/`（base `/preview/`） |
 
-- `base` は **CI のビルド引数で渡す**（`vite build --base=…`）。`vite.config.ts` には焼き込まず、CI 変数（例 `BASE_PROD` / `BASE_PREVIEW`）にしておく。ドメイン移行時はこの2変数を `/`・`/preview/` に書き換える1行で済み、コード・ブランチ戦略は無変更。
+- `base` は **CI のビルド引数で渡す**（`vite build --base=…`）。`vite.config.ts` には焼き込まず、CI 変数（例 `BASE_PROD` / `BASE_PREVIEW`）にしておく。ドメイン移行（2026-06-20）でこの2変数を `/mahjo/` 系から `/`・`/preview/` へ変更済み（コード・ブランチ戦略は無変更）。
 - PWA の Service Worker スコープ・manifest の `start_url` は `base` から自動で決まるため、確認版（`/preview/`）と本番のキャッシュは `base` 分離で自動的に分かれる。確認時はキャッシュ無効化（DevTools の "Update on reload"）で本番アセットの混入を避ける。
 
 ### デプロイ機構
@@ -71,13 +71,16 @@ preview → production     PR マージで本番を公開
 - `base` はワークフローの env（`BASE_PROD` / `BASE_PREVIEW`）で渡す（`vite build --base=…`）。`vite.config.ts` には焼き込まない。
 - `github-pages` 環境の**デプロイ許可ブランチ**に `preview` と `production` を登録しておく（未登録ブランチは "environment protection rules" で弾かれデプロイ失敗する）。設定：Settings → Environments → github-pages → Deployment branches、または `gh api repos/<owner>/<repo>/environments/github-pages/deployment-branch-policies -f name=<branch> -f type=branch`。
 
-### 独自ドメインへの移行（将来・feature-6）
+### 独自ドメインへの移行（実施済み・2026-06-20）
 
-1. `BASE_PROD` / `BASE_PREVIEW` を `/`・`/preview/` に変更。
-2. リポジトリの Pages 設定に `mahjo.academy` を登録（公開出力に `CNAME` が生成される）。
-3. DNS を GitHub Pages へ向ける（apex の A レコード等）＋ "Enforce HTTPS" を ON。
+`mahjo.academy`（AWS/Route 53 管理）へ移行済み。実施手順の記録：
 
-旧 `…/mahjo/` へのアクセスは GitHub が新ドメインへ自動リダイレクトする。手順詳細は feature-6 を正とする。
+1. **Route 53（DNS）**：apex に A（`185.199.108-111.153`）＋ AAAA（`2606:50c0:8000-8003::153`）＝GitHub Pages 固定IP、`www` は CNAME→`<user>.github.io`。apex は CNAME 不可なので A/AAAA 直指定（Route 53 Alias も github.io 不可）。
+2. **Pages 独自ドメイン**：Settings → Pages → Custom domain ＝ `mahjo.academy`（Actions デプロイなので `CNAME` ファイルは不要・設定に保存され消えない）。証明書が自動発行される。
+3. **base 変更**：`BASE_PROD` `/mahjo/`→`/`、`BASE_PREVIEW` `/mahjo/preview/`→`/preview/`（env はトリガーしたブランチのワークフローから読まれるため preview/production 両方へ promote して揃える）。
+4. **Enforce HTTPS** を ON（証明書発行後）。
+
+旧 `…/mahjo/` へのアクセスは GitHub が新ドメインへ自動リダイレクトする。SEO 絶対URL（`sitemap.xml`・`robots.txt`・各 `public/**/*.html` の canonical/og）も `mahjo.academy` に更新済み。
 
 ## テスト
 

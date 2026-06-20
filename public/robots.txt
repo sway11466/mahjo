@@ -1,5 +1,5 @@
 User-agent: *
 Allow: /
 
-# 配信ドメイン確定（backlog feature-6）まで仮。移行時に host を確認する。
-Sitemap: https://mahjo.link/sitemap.xml
+# 配信ドメイン＝mahjo.academy（移行済み）。
+Sitemap: https://mahjo.academy/sitemap.xml

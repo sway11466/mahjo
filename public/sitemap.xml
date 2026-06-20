@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 配信ドメイン確定（backlog feature-6）まで loc は mahjo.link 前提の仮。移行時に書き換える。 -->
+<!-- 配信ドメイン＝mahjo.academy（2026-06-20 移行済み）。 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://mahjo.link/</loc>
+    <loc>https://mahjo.academy/</loc>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://mahjo.link/characters/</loc>
+    <loc>https://mahjo.academy/characters/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://mahjo.link/characters/mao/</loc>
+    <loc>https://mahjo.academy/characters/mao/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://mahjo.link/characters/rin/</loc>
+    <loc>https://mahjo.academy/characters/rin/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
