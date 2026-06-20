@@ -9,6 +9,12 @@
             "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/sync-main.sh\"",
             "timeout": 30,
             "statusMessage": "Syncing main…"
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/disable-stop-git-check.sh\"",
+            "timeout": 10,
+            "statusMessage": "Disabling git-nag stop hook…"
           }
         ]
       }
