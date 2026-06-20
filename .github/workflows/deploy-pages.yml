@@ -1,0 +1,56 @@
+name: Deploy to GitHub Pages
+
+# 本番前の確認版（preview）を公開する。
+#   preview ブランチへ push → base=/mahjo/preview/ でビルド → /preview/ 配下へ配置してデプロイ。
+# production（ルート /）は後日この同じワークフローに追加する（docs/dev/development.md）。
+# base は CI 変数（env）に置き、独自ドメイン移行時はここだけ書き換える。
+
+on:
+  push:
+    branches: [preview]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  BASE_PREVIEW: /mahjo/preview/
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build (preview, base=${{ env.BASE_PREVIEW }})
+        run: npm run build -- --base=${{ env.BASE_PREVIEW }}
+
+      - name: Assemble site (preview under /preview/)
+        run: |
+          mkdir -p _site/preview
+          cp -r dist/. _site/preview/
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
