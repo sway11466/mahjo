@@ -2,8 +2,9 @@
    構造は TSX、装飾は CSS（architecture.md §5）。寸法は相対単位。 */
 .start {
   position: relative; /* 背景装飾レイヤ（.char-decor）の基準 */
-  overflow: hidden;
-  height: 100dvh;
+  /* 中身が収まる画面では従来どおり100dvh（見た目不変）。横持ちで縦が低く入りきらないときは
+     min-height で伸びてページがスクロールする（メニューが切れて選べないのを防ぐ）。 */
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   padding: 2vh 2rem; /* 左右は固定幅（画面幅で立ち絵の左位置を動かさない）。設定画面と共通。 */
