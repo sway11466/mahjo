@@ -70,7 +70,6 @@ preview → production     PR マージで本番を公開
   - Actions 方式はアーティファクト＝サイト全体を毎回置き換えるため、production と preview を**毎デプロイで両方含める**必要がある（上記「両方ビルド」がその理由）。
 - `base` はワークフローの env（`BASE_PROD` / `BASE_PREVIEW`）で渡す（`vite build --base=…`）。`vite.config.ts` には焼き込まない。
 - `github-pages` 環境の**デプロイ許可ブランチ**に `preview` と `production` を登録しておく（未登録ブランチは "environment protection rules" で弾かれデプロイ失敗する）。設定：Settings → Environments → github-pages → Deployment branches、または `gh api repos/<owner>/<repo>/environments/github-pages/deployment-branch-policies -f name=<branch> -f type=branch`。
-- PWA アイコン（`pwa-*.png`）は未作成（[backlog](../backlog.md) feature-11）。アプリ動作には影響しないが、インストール時アイコンが 404 になる。
 
 ### 独自ドメインへの移行（将来・feature-6）
 
