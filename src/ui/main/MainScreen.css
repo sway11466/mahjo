@@ -34,10 +34,14 @@
   padding: 2vh 3% 4vh; /* 下を広めにして4択とキャラエリアの隙間を空ける */
 }
 
-/* 場情報バーの下、自分エリア（自風＋手牌）を中央に置く領域 */
+/* 場情報バーの下、自分エリア（自風＋手牌）を中央に置く領域。
+   min-height は手牌の高さ（min-content）を下限にする＝牌より下に潰れない。
+   これで縦が詰まっても手牌が4択に重なることはなく、入りきらないぶんは
+   親（.screen__board の overflow:auto）がスクロールに化けて壊れない（最後の保険）。
+   PC など盤面に余白がある画面では flex-grow で伸びており下限は効かない＝描画不変。 */
 .board-main {
   flex: 1 1 auto;
-  min-height: 0;
+  min-height: min-content;
   display: flex;
   align-items: center;
   justify-content: center;
