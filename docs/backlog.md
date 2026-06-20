@@ -22,8 +22,8 @@
 
 **独自ドメインの取得**（優先度：低）
 
-- 背景：配布は完全静的クライアントを任意の静的ホスティングに置くだけ（[development](./dev/development.md) 配布・[architecture](./design/architecture.md) §1）で、現状ドメイン未取得。独自ドメインは SEO の直接効果は薄いが、URL・評価を自分の資産として恒久維持でき、PWA の scope を綺麗に持てる・人に勧めやすい等の利点がある。対象は「作者を主対象・将来は歓迎」（[decisions](./decisions.md) 2026-06-05）で、意味を縛らない中立ドメインが望ましい。
-- 対応：中立で安価なドメインを取得する。候補は `mahjo.link`（≈ $5/年・Route 53 管理）。`mahjo.app` は取得済みで不可、`mahjo.study` は学習以外へ機能を広げる際に意味が矛盾するため見送り。取得後、静的ホスティング配信先へ DNS を設定。`.link` は HTTPS 強制でない点のみ留意（PWA は常時 HTTPS 前提で実害なし）。当面は github.io ドメインで運用し、取得後に独自ドメインへ移行する（base の切り替え・移行手順の正は [development](./dev/development.md)「デプロイ／ブランチ戦略」）。
+- 背景：配布は完全静的クライアントを任意の静的ホスティングに置くだけ（[development](./dev/development.md) 配布・[architecture](./design/architecture.md) §1）で、現状ドメイン未取得。独自ドメインは SEO の直接効果は薄いが、URL・評価を自分の資産として恒久維持でき、PWA の scope を綺麗に持てる・人に勧めやすい等の利点がある。対象は「作者を主対象・将来は歓迎」（[decisions](./decisions.md) 2026-06-05）。当初は意味を縛らない中立ドメインを志向したが、世界観が**占術院＝学院**に固まった（[characters/world](./characters/world.md) §2・§4）ため、academy（機関）を実体名として採る判断に至った（下記）。
+- 対応：**`mahjo.academy` を取得する**（AWS/Route 53 で ≈ $13/年・空き確認済み）。当初候補 `mahjo.link`（≈ $5/年）も中立で安いが、世界が**占術院（院主・本院・分院＝学院そのもの）**になったため、academy が**メタファでなく世界の実体名**になり整合する。かつて見送った `mahjo.study` の論拠（学習以外へ広げると意味が矛盾）は **academy には当たらない**——study は「学習する行為」だが academy は「学び舎＝機関」で、対戦・拡張も器として呑むため。`mahjo.app` は取得済みで不可。取得後、静的ホスティング配信先へ DNS を設定。`.academy` は HTTPS 強制（HSTS preload）でない点のみ留意（PWA は常時 HTTPS 前提で実害なし）。当面は github.io ドメインで運用し、取得後に独自ドメインへ移行する（base の切り替え・移行手順の正は [development](./dev/development.md)「デプロイ／ブランチ戦略」）。
 - 該当：新規（配布／インフラ）。方式の正は [development](./dev/development.md)「デプロイ／ブランチ戦略」（GitHub Pages・ブランチ・base・移行手順）。技術選定は [architecture](./design/architecture.md) §1。公開サイト（LP・[screens.md](./design/screens.md) §6）と関連。
 
 ### feature-8
@@ -58,14 +58,6 @@
 - 背景：公開サイトの LP・キャラ一覧は `og:image` に `public/img/og.png` を参照しているが未作成。いま URL を SNS（X／LINE／Discord 等）に貼ると画像なしのカードになる（タイトル・説明は出る）。立ち絵・バストアップ（透過・縦長）は共有カード枠（横長）に合わないため、専用の1枚絵が要る。
 - 対応：横長バナー `og.png`（1200×630・png/jpg、webp は一部SNS非対応で避ける）を作成し `public/img/` に配置。まお＆りん＋「Mahjo」＋一言を焼き込む。詳細ページ（まお/りん）の `og:image` は立ち絵 `*-full.webp` を指す現状でよいか（共通 og.png に揃えるか）も判断。absolute URL（`og:url`/`og:image`）は base/ドメイン依存＝[feature-6](#feature-6) 確定時に見直し。
 - 該当：新規（`public/img/og.png`）。参照は `public/index.html`・`public/characters/index.html` の `og:image`。関連：[feature-6](#feature-6)（ドメイン・canonical/base）。
-
-### feature-15
-
-**favicon・PWAアイコンの作成・配置**（優先度：低）
-
-- 背景：公開サイト（[screens.md](./design/screens.md) §6）と PWA（[architecture.md](./design/architecture.md) §1・§4）は favicon と PWA アイコン（`pwa-*.png`）を `public/` 直下の固定パス資産として想定しているが未作成。現状 各素 HTML に `<link rel="icon">` が無く `/favicon.ico` は 404。PWA アイコンは vite-plugin-pwa の manifest（インストール時のホーム画面アイコン）にも要る。
-- 対応：(1) favicon（`favicon.svg`＋フォールバック `favicon.ico`／`.png`）を作成し `public/` 直下に置き、各素 HTML の `<head>` に `<link rel="icon">` を追加（LP・ハブ・各キャラ）。(2) PWA アイコン（`pwa-192x192.png`・`pwa-512x512.png`＋ maskable）を作成し manifest（vite-plugin-pwa）に登録。デザインは「Mahjo」ブランド（牌＋月星モチーフ 等）。favicon・PWA アイコンとも未作成で、favicon 単体（公開サイト向け）から着手できる。absolute path・base 依存は [feature-6](#feature-6) と整合。
-- 該当：新規（`public/favicon.*`・`public/pwa-*.png`）。参照は `public/**/*.html` の `<head>`（favicon link）＋ vite-plugin-pwa の manifest（[architecture.md](./design/architecture.md) §1）。関連：[feature-13](#feature-13)（共有ビジュアル）・アプリ scaffold（PWA）。
 
 ### feature-12
 
@@ -134,7 +126,19 @@
 - 累計正答数による表情/衣装/特別セリフのアンロック・節目演出（好感度）。
 - 音（SE/BGM）の実装（[sound](./design/sound.md)）。収集済み SE の再生配線（`AppSettings.se`／autoplay 制限／precache）と BGM。SE 素材の収集は [feature-9](#feature-9) が先。
 - 連続正解などのゲーム要素。
-- ストーリーモード（将来・新ゲームモード）：世界に厄災が起こりかけるが、麻雀の和了（あがり）が良いと防げる、という物語モード。**ここだけは制限時間・正解率が結果に響くハードモード**（通常の「プレッシャーをかけない」方針からの意図的な例外＝[product-concept](./product-concept.md) §3 と緊張するため、着手時に整合を再検討する）。舞台＝世界観の正は [characters/world.md](./characters/world.md)。
+- **ストーリーモード（兼ハードモード｜将来・新ゲームモード）**：世界に厄災（＝人間の悪意を増幅する思念体。[characters/world.md](./characters/world.md) §3）が起こりかけるが、麻雀の和了を正しく読むと防げる物語モード。**通常の「プレッシャーをかけない」方針からの唯一の意図的な例外**＝ハードたるゆえん（[product-concept](./product-concept.md) §3 と緊張するが、下記の失敗演出で優しさを保つ）。舞台＝[characters/world.md](./characters/world.md)。
+  - **システム（構想）**：練習と同じ手牌が出る→役/点数を当てる**タイムアタック**。**1ラン＝1ステージ**（タイマー全体一本・単位/閾値はステージ内固定）。
+    - **得点**：正解＝その手の配点ぶん加点／誤答＝失点。**速く回すほど大量得点**＝習熟→速い判断→報酬の好循環。
+    - **当てる単位はステージで進化**（`QuizTarget`＝yaku/han/fu/score の段に対応＝[data-model](./design/data-model.md) §12）。序盤は易しい役のみ＝**役だけ当てればOK**、目標も点数でなく「XX役を目指せ」。後半（点数へ上がる先・ボス構成）は **TBD**。
+    - **ブタ（役無し手）**：正解しても0点・誤答は失点＝厄災の惑わし（「正しい読みが鎮め、誤り・悪意が太らせる」§3 と一致）。
+    - **失点はストーリーで重くなる**：序盤ほぼ無害→最終＝厄災本体（ラスボス）で大量失点。緊張を段階的にしか出さない。
+    - **好感度ボーナス**：そのストーリーに登場するキャラとの好感度が高いと得点にボーナス（好感度＝[data-model](./design/data-model.md) §16 Progress 由来。細部 **TBD**）。
+    - **固定ルール**：`RuleSettings` 設定不可＝ステージごとに難度帯をオーサリングで固定。
+    - **スキップなし・解説なし**（テンポ優先。学ぶ場は練習モード＝「もっと勉強しなきゃ」で送り返す導線）。
+    - **失敗演出（人を責めない枠）**：救済者が現れ役満で締め、「もっと勉強しなきゃ！」で終わる＝罰でなく自発の動機づけ＋役満を拝めるご褒美。**救済者は話で変わる**（第1話＝ひすい姉さん。当初案のロウシ等も話次第）。リトライでステージを進める想定。
+  - **第1話（構想）**：まおとりんが**食事の支度（見習いの役目）で市場へ**出かけ、町でばったり出くわす。そこで**厄災の瘴気にやられた人**が騒ぎを起こすが、その場の占い師は二人だけ＝**まお・りんが協力して祓う**（りんの一方的ライバル心とまおの素直な慕いが交差する初手＝[characters/world.md](./characters/world.md) §5）。**失敗＝ひすい姉さんが登場して救済／成功＝ひすいが登場して二人を褒める**（ひすい＝両世代の橋渡し・慕われる姉＝§5 と整合）。
+  - **実装の新規**：(1) **ブタ（役無し）生成**＝今の生成器は常に役ありを保証（[architecture](./design/architecture.md) §3・[scoring-rules](./spec/scoring-rules.md) §1.4）なので役無しを意図的に作るモードが要る。(2) **ステージ定義データ**＝単位/難度帯/ブタ率/制限時間/閾値/失点スケール/物語ビート/登場キャラ/救済者 を持つオーサリングデータ（「ロジック不変・データで足す」枠）。
+  - **物語の骨格**：厄災が増幅した悪意の小さな危機（町のケンカ等）→厄災本体へ。**四方＝四風の拠点**（[characters/world.md](./characters/world.md) §2）をステージの幕に対応づけ可（世界地図＝難易度カーブ）。着手時に product-concept §3 との整合を最終確認＋専用のストーリー doc を新設。
 - キャラ固有のシグネチャ牌（低優先・飾り）：1ピンや字牌など一部の牌に、選択中キャラの固有絵を見せる。牌SVG（下層）はそのまま描き、その上にキャラのラスター画像をオーバーレイで重ねる方式（ハイライト・赤ドラ・上がり牌マーカーは下層SVGで従来どおり効く）。`Tile`・engine は不変、ui に「キャラ→牌識別→差し替え素材」の解決を足すのみ。字牌は嘘字回避のため正字SVGベース＋装飾どまり（[character-guide](./characters/character-guide.md) §4）。アンロック報酬として解放（お祝い止まり）。
 - 使い魔アイコン `familiar.webp` の制作・配置（ヒントボタン＝使い魔。UI の枠は実装済みで、素材未配置の間はテキスト「ヒント」にフォールバック中。[character-guide](./characters/character-guide.md) §2・[hints](./spec/hints.md) §1）。
 - 頻出表情の差分バリアント（`portrait_<expr>_b.webp` 等）の用意（`srcs` ローテーションは配線済み＝旧 refactoring-8・素材待ちで休眠。各キャラ `expressions[].srcs` に追記すれば有効化。[character-guide](./characters/character-guide.md) §4）。

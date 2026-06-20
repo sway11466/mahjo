@@ -3,9 +3,9 @@ name: Deploy to GitHub Pages
 # production（ルート /）と preview（/preview/）を一括デプロイする。
 #   preview / production のどちらへ push しても起動し、両ブランチをビルドして
 #   1つのアーティファクトに束ね、Pages（ソース＝GitHub Actions）へ配信する。
-#   - production → base=/mahjo/      → サイトルート
-#   - preview    → base=/mahjo/preview/ → /preview/ 配下
-# base は env（BASE_PROD / BASE_PREVIEW）。独自ドメイン移行時はここだけ書き換える。
+#   - production → base=/        → サイトルート（独自ドメイン mahjo.academy）
+#   - preview    → base=/preview/ → /preview/ 配下
+# base は env（BASE_PROD / BASE_PREVIEW）。ドメイン構成が変わるときはここだけ書き換える。
 # 正は docs/dev/development.md「デプロイ／ブランチ戦略」。
 
 on:
@@ -23,8 +23,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  BASE_PROD: /mahjo/
-  BASE_PREVIEW: /mahjo/preview/
+  BASE_PROD: /
+  BASE_PREVIEW: /preview/
 
 jobs:
   build-deploy:
