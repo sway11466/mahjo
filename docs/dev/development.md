@@ -63,8 +63,12 @@ preview → production     push で本番を公開
 
 ### デプロイ機構
 
-- 公開元は `gh-pages` ブランチ（出力が積み上がり、サブパスを共存させられる）。
-- どちらのブランチへ push しても、`production`→ルート・`preview`→`/preview/` を**両方ビルドして一括デプロイ**する（GitHub Actions）。冗長だが出力が常に2ブランチの最新と一致してズレない。意図の読み取りやすさ・シンプルさ優先（[architecture.md](../design/architecture.md) 冒頭）。小さな静的アプリなのでビルド時間は問題にならない。
+- 公開ソースは **GitHub Actions**（リポジトリ Settings → Pages → Source ＝ "GitHub Actions"）。`gh-pages` ブランチは使わず、Actions が生成したアーティファクト（サイト全体）を直接 Pages へ配信する。
+- ワークフローは `.github/workflows/deploy-pages.yml` 1本。`preview` / `production` のいずれかへ push すると起動し、**両ブランチを毎回ビルドして1つのアーティファクトに束ね、一括デプロイ**する（`production`→ルート `/`、`preview`→`/preview/`）。冗長だが出力が常に2ブランチの最新と一致してズレない。意図の読み取りやすさ・シンプルさ優先（[architecture.md](../design/architecture.md) 冒頭）。小さな静的アプリなのでビルド時間は問題にならない。
+  - Actions 方式はアーティファクト＝サイト全体を毎回置き換えるため、production と preview を**毎デプロイで両方含める**必要がある（上記「両方ビルド」がその理由）。
+- `base` はワークフローの env（`BASE_PROD` / `BASE_PREVIEW`）で渡す（`vite build --base=…`）。`vite.config.ts` には焼き込まない。
+- `github-pages` 環境の**デプロイ許可ブランチ**に `preview` と `production` を登録しておく（未登録ブランチは "environment protection rules" で弾かれデプロイ失敗する）。設定：Settings → Environments → github-pages → Deployment branches、または `gh api repos/<owner>/<repo>/environments/github-pages/deployment-branch-policies -f name=<branch> -f type=branch`。
+- PWA アイコン（`pwa-*.png`）は未作成（[backlog](../backlog.md) feature-11）。アプリ動作には影響しないが、インストール時アイコンが 404 になる。
 
 ### 独自ドメインへの移行（将来・feature-6）
 

@@ -1,13 +1,16 @@
 name: Deploy to GitHub Pages
 
-# 本番前の確認版（preview）を公開する。
-#   preview ブランチへ push → base=/mahjo/preview/ でビルド → /preview/ 配下へ配置してデプロイ。
-# production（ルート /）は後日この同じワークフローに追加する（docs/dev/development.md）。
-# base は CI 変数（env）に置き、独自ドメイン移行時はここだけ書き換える。
+# production（ルート /）と preview（/preview/）を一括デプロイする。
+#   preview / production のどちらへ push しても起動し、両ブランチをビルドして
+#   1つのアーティファクトに束ね、Pages（ソース＝GitHub Actions）へ配信する。
+#   - production → base=/mahjo/      → サイトルート
+#   - preview    → base=/mahjo/preview/ → /preview/ 配下
+# base は env（BASE_PROD / BASE_PREVIEW）。独自ドメイン移行時はここだけ書き換える。
+# 正は docs/dev/development.md「デプロイ／ブランチ戦略」。
 
 on:
   push:
-    branches: [preview]
+    branches: [production, preview]
   workflow_dispatch:
 
 permissions:
@@ -20,6 +23,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  BASE_PROD: /mahjo/
   BASE_PREVIEW: /mahjo/preview/
 
 jobs:
@@ -29,28 +33,43 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
 
-      - run: npm ci
+      # production → サイトルート
+      - uses: actions/checkout@v4
+        with:
+          ref: production
+          path: prod
+      - name: Build production (base=${{ env.BASE_PROD }})
+        working-directory: prod
+        run: |
+          npm ci
+          npm run build -- --base=${{ env.BASE_PROD }}
+      - name: Place production at site root
+        run: |
+          mkdir -p _site
+          cp -r prod/dist/. _site/
 
-      - name: Build (preview, base=${{ env.BASE_PREVIEW }})
-        run: npm run build -- --base=${{ env.BASE_PREVIEW }}
-
-      - name: Assemble site (preview under /preview/)
+      # preview → /preview/
+      - uses: actions/checkout@v4
+        with:
+          ref: preview
+          path: preview
+      - name: Build preview (base=${{ env.BASE_PREVIEW }})
+        working-directory: preview
+        run: |
+          npm ci
+          npm run build -- --base=${{ env.BASE_PREVIEW }}
+      - name: Place preview under /preview/
         run: |
           mkdir -p _site/preview
-          cp -r dist/. _site/preview/
+          cp -r preview/dist/. _site/preview/
 
       - uses: actions/configure-pages@v5
-
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
-
       - id: deploy
         uses: actions/deploy-pages@v4
