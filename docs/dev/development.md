@@ -43,13 +43,15 @@ npm run preview   # ビルド成果物のローカル確認
 昇格は一方向（未検証コードが本番へ入らないように）：
 
 ```
-feature → main          開発・統合（ローカル確認）
-   main → preview        push で確認版を公開 → ネットで動作確認
-preview → production     push で本番を公開
+feature → main          PR マージで統合（ローカル確認は npm run dev / preview）
+   main → preview        PR マージで確認版を公開 → ネットで動作確認
+preview → production     PR マージで本番を公開
 ```
 
 - `production` には必ず `preview` を通った状態だけが来る。
 - preview と production は同じコミット（違いは `base` だけ）。`/preview/` で確認したものと本番のロジックは同一で、パスが違うだけ＝本番前確認として信頼できる。
+- **直 push は禁止**：`main`/`preview`/`production` に GitHub Ruleset「protect main branches」を設定済み（PR必須・承認0件＝ソロで自分のPRを即マージ可・force-push/ブランチ削除禁止・管理者もバイパス不可）。更新は必ず「作業ブランチ → PR → 対象ブランチへマージ」。
+- デプロイは push 起動だが、**PR のマージ＝対象ブランチへの push** なのでマージで自動起動する（仕組みは無変更・入口が PR になっただけ）。
 
 ### URL と base（ドメイン移行で変わるのは base のみ）
 
