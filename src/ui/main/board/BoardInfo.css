@@ -44,3 +44,18 @@
   width: 6vh;
   min-width: 28px; /* 牌の最小幅 */
 }
+
+/* 縦持ちスマホ：3カラム中央寄せ（局チップを中央固定）だと狭い幅で局とドラが重なる。
+   縦では中央寄せをやめ、左＝局／右＝ドラの flex に（入らなければドラを下段へ折り返す）。
+   左上のハンバーガーメニュー（絶対配置・約3.3rem幅）を避ける左余白を取る。
+   3カラムグリッドの base は据え置き＝横持ち/PC は landscape 判定でここに該当しない。 */
+@media (orientation: portrait) {
+  .board-info {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding-left: 3.2rem;
+  }
+}
