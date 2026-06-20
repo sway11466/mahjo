@@ -59,14 +59,6 @@
 - 対応：横長バナー `og.png`（1200×630・png/jpg、webp は一部SNS非対応で避ける）を作成し `public/img/` に配置。まお＆りん＋「Mahjo」＋一言を焼き込む。詳細ページ（まお/りん）の `og:image` は立ち絵 `*-full.webp` を指す現状でよいか（共通 og.png に揃えるか）も判断。absolute URL（`og:url`/`og:image`）は base/ドメイン依存＝[feature-6](#feature-6) 確定時に見直し。
 - 該当：新規（`public/img/og.png`）。参照は `public/index.html`・`public/characters/index.html` の `og:image`。関連：[feature-6](#feature-6)（ドメイン・canonical/base）。
 
-### feature-15
-
-**favicon・PWAアイコンの作成・配置**（優先度：低）
-
-- 背景：公開サイト（[screens.md](./design/screens.md) §6）と PWA（[architecture.md](./design/architecture.md) §1・§4）は favicon と PWA アイコン（`pwa-*.png`）を `public/` 直下の固定パス資産として想定しているが未作成。現状 各素 HTML に `<link rel="icon">` が無く `/favicon.ico` は 404。PWA アイコンは vite-plugin-pwa の manifest（インストール時のホーム画面アイコン）にも要る。
-- 対応：(1) favicon（`favicon.svg`＋フォールバック `favicon.ico`／`.png`）を作成し `public/` 直下に置き、各素 HTML の `<head>` に `<link rel="icon">` を追加（LP・ハブ・各キャラ）。(2) PWA アイコン（`pwa-192x192.png`・`pwa-512x512.png`＋ maskable）を作成し manifest（vite-plugin-pwa）に登録。デザインは「Mahjo」ブランド（牌＋月星モチーフ 等）。favicon・PWA アイコンとも未作成で、favicon 単体（公開サイト向け）から着手できる。absolute path・base 依存は [feature-6](#feature-6) と整合。
-- 該当：新規（`public/favicon.*`・`public/pwa-*.png`）。参照は `public/**/*.html` の `<head>`（favicon link）＋ vite-plugin-pwa の manifest（[architecture.md](./design/architecture.md) §1）。関連：[feature-13](#feature-13)（共有ビジュアル）・アプリ scaffold（PWA）。
-
 ### feature-12
 
 **設定画面に並べただけで未実装の項目を、実際に動くよう配線する**（優先度：低）
