@@ -30,6 +30,9 @@ Thumbs.db
 # test / coverage
 coverage/
 
+# git worktrees (EnterWorktree creates them here)
+.claude/worktrees/
+
 # env
 .env
 .env.*
