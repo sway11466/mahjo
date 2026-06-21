@@ -4,7 +4,7 @@
 
 ## index
 
-次回採番: bug=3 / feature=17 / refactoring=14
+次回採番: bug=3 / feature=18 / refactoring=14
 
 項目（バグ bug / 機能追加 feature / リファクタリング refactoring）を追加するときは、該当カテゴリの採番を +1 して ID を継ぐ。完了した項目は本書から削除し、番号は再利用しない（過去の使用済み番号は `git log -p -- docs/backlog.md | grep -oE '(feature|refactoring)-[0-9]+' | sort -u` で確認できる）。状態は「本書に載っていれば未完了／消えていれば完了」で表す（状態列は持たない）。優先度は各エントリ見出しに 高（設計の背骨に関わる）／中／低（飾り・潜在）で記す。
 
@@ -17,6 +17,14 @@
 ## 機能追加
 
 実装済みコードに足す機能。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す。
+
+### feature-17
+
+**GTM（Google タグマネージャー）導入でユーザートラッキング**（優先度：低）
+
+- 背景：現状アプリは完全静的・バックエンドなし（[architecture](./design/architecture.md) §1）で、利用状況を計測する手段を持たない（どの画面・どのモードがどれだけ使われるか不明）。学習体験の改善判断の材料として、GTM を入れてアクセス／行動のトラッキングをしたい。
+- 対応：GTM コンテナを公開ページ（`public/` の素 HTML＝LP・キャラ紹介）とアプリ（`app.html`）に読み込み、計測タグ（GA4 等）を GTM 経由で配信する。SPA なので画面遷移は仮想ページビュー／カスタムイベントで送る（役モード・点数モード開始、クイズ回答、ヒント開封 等の学習イベントを設計）。PWA／オフラインとの整合、プライバシー（個人を特定しない＝[product-concept](./product-concept.md) の個人学習思想）と Consent／プライバシー表記の要否、計測 ID・コンテナ ID の管理方法（CI 変数か直書きか）を確認・決定する。
+- 該当：`public/**/*.html`（LP・キャラ紹介の `<head>`）・`app.html`（アプリの `<head>`）・イベント発火点は `src/ui/`（セッション開始・回答・ヒント等）。設計・URL/PWA は [architecture](./design/architecture.md) §4・[development](./dev/development.md)。
 
 ### feature-16
 
