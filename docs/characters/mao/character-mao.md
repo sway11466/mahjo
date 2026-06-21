@@ -59,6 +59,12 @@
 
 まお（＋使い魔ココ）の master・派生（道具付き立ち絵／バストアップ）・使い魔の**画像生成プロンプトは [character-mao-image-prompts.md](./character-mao-image-prompts.md) に分離**（本ファイルの肥大化回避）。本§の識別情報（外見コンセプト・模様・モチーフ・配色・使い魔設定）が正で、プロンプトはそれを参照して組む。作る画像セットと順序・一貫性ワークフローは [character-guide.md](../character-guide.md) §4。
 
+### 表情アセット（作成済み）
+
+- リアクション（パレット駆動・`Expression`）：neutral / happy / troubled / smile / thinking / insight（`reactions`：既定マップどおり・上書きなし）。
+- ストーリー（パス参照・別系統＝[character-guide.md](../character-guide.md) §3）：confused / determined / surprised / relieved / pained（第一話分＝[story/episode-01.md](../../story/episode-01.md)）。
+- いずれも `original/` に `mao-portrait-<token>-a.png` で保管。WebP化・配布・`expressions[]` 登録は別パス（未）。
+
 ## 4. セリフ
 
 全セリフ（場面別・ヒント・解説・誤答）は [character-mao-script.md](./character-mao-script.md)。共通規則は [character-guide.md](../character-guide.md) §2「セリフ」、口調と「答え（役名・確定値）を言わない」原則は §2 ペルソナ。
