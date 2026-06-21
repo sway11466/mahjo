@@ -20,7 +20,7 @@ export default defineConfig({
       manifest: {
         name: 'Mahjo（マージョ）',
         short_name: 'Mahjo',
-        description: '役を覚え、点数を数える。麻雀の基礎が身につく個人用の学習Webアプリ。',
+        description: '麻雀の役と点数の基礎が、魅力的なキャラクターと一緒に身につく個人用の学習Webアプリ。',
         // インストール起動・リピーターは LP を飛ばしてアプリへ直行（/ 直アクセスのみ LP）。
         // manifest 位置（base 配下）からの相対なので base 移行にも追従する。
         start_url: 'app.html',

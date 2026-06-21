@@ -4,15 +4,15 @@ import type { Character } from '../../types/index.ts';
  * サポートキャラ「りん」（魔女・まおの自称ライバル）。定義は docs/characters/rin/character-rin.md、
  * セリフは character-rin-script.md が正。ここはそのデータ化（ロジックは持たない）。
  *
- * 画像アセットは現状 full.webp（立ち絵）＋ portrait_neutral_a.webp（neutral バストアップ）を配置済み。
- * 他の表情ポートレートは未配置で、配置されしだい同名（characters/rin/portrait_<expr>_<variant>.webp）で
+ * 画像アセットは現状 rin-full-stand-a.webp（立ち絵）＋ rin-portrait-neutral-a.webp（neutral バストアップ）を配置済み。
+ * 他の表情ポートレートは未配置で、配置されしだい同名（characters/rin/rin-portrait-<expr>-<variant>.webp）で
  * 差し込めるよう expressions を宣言だけしておく。未配置の表情は portraitUrl が neutral ベース顔へ
  * フォールバックする（avatarAssets.portraitUrl ②・data-model §13）ので、当面は全場面で neutral が出る。
  * motif（鈴・蝶）は ui の resolver 未登録のため描画されない（未登録キーは適用なし＝data-model §10）。
  */
 
 const PORTRAIT = (expr: string, variant = 'a') =>
-  `characters/rin/portrait_${expr}_${variant}.webp`;
+  `characters/rin/rin-portrait-${expr}-${variant}.webp`;
 
 const PORTRAITS = (expr: string, ...variants: string[]) =>
   variants.map((v) => PORTRAIT(expr, v));
@@ -20,11 +20,11 @@ const PORTRAITS = (expr: string, ...variants: string[]) =>
 export const rin: Character = {
   id: 'rin',
   displayName: 'りん',
-  avatar: 'characters/rin/avatar.webp',
+  avatar: 'characters/rin/rin-avatar.webp',
   themeColor: '#7d2c5c', // 濃い赤紫（ワインマゼンタ）。character-rin.md §3（暫定・要微調整）
   accentColor: '#cfd2dc', // 銀（鈴・髪飾りに呼応）。装飾モチーフ（蝶）の色
   motif: { ritual: 'suzu', decor: 'butterfly' }, // 法具＝銀鈴・装飾＝蝶（resolver は順次・未登録の間は非表示）
-  // りんが持つ（予定の）表情。実画像は未配置（full.webp のみ）。配置後は同名で有効化。
+  // りんが持つ（予定の）表情。実画像は未配置（rin-full-stand-a.webp のみ）。配置後は同名で有効化。
   expressions: [
     { expression: 'neutral', srcs: PORTRAITS('neutral', 'a') }, // 配置済み（ベース顔・全場面のフォールバック先）
     { expression: 'smug', srcs: PORTRAITS('smug', 'a') },
