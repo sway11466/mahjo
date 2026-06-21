@@ -320,7 +320,7 @@ export function MainScreen({
         avatarSrc={avatarSrc}
         showHint={hintsRemain}
         onHint={onHint}
-        hintIconSrc={assetUrl(`characters/${character.id}/familiar.webp`)}
+        hintIconSrc={assetUrl(`characters/${character.id}/${character.id}-familiar.webp`)}
         actions={actions}
         badges={explainBadges}
       />
