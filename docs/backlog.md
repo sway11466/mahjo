@@ -4,7 +4,7 @@
 
 ## index
 
-次回採番: bug=3 / feature=16 / refactoring=14
+次回採番: bug=3 / feature=17 / refactoring=14
 
 項目（バグ bug / 機能追加 feature / リファクタリング refactoring）を追加するときは、該当カテゴリの採番を +1 して ID を継ぐ。完了した項目は本書から削除し、番号は再利用しない（過去の使用済み番号は `git log -p -- docs/backlog.md | grep -oE '(feature|refactoring)-[0-9]+' | sort -u` で確認できる）。状態は「本書に載っていれば未完了／消えていれば完了」で表す（状態列は持たない）。優先度は各エントリ見出しに 高（設計の背骨に関わる）／中／低（飾り・潜在）で記す。
 
@@ -17,6 +17,15 @@
 ## 機能追加
 
 実装済みコードに足す機能。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す。
+
+### feature-16
+
+**キャラ表情差分の加工・配布・登録**（優先度：高）
+
+- 背景：まお・りんの表情ソース（リアクション＋ストーリー）が `original/` に揃った（PR #19）が、WebP化・`src/assets` 配置・`expressions[]` 登録が未。アプリにはまだ neutral 系しか反映されていない。
+- 対応：キャラごとにクロップ枠を確定（master を切る→透過→640×768 で既存 neutral と顔スケールを合わせる）→ `original/` の全表情を クロップ→透過→640×768→WebP 化し `src/assets/characters/<id>/` に配置（リアクション・ストーリー両方＝アセット管理は共通）。コードはソース上で区別：まおは `expressions[]` にリアクション5つ（happy/troubled/smile/thinking/insight）を追記、りんは宣言済みで画像配置により自動有効化。ストーリー表情（confused/determined/surprised/relieved/bashful/pained）は `expressions[]` に入れずパス参照（[character-guide](./characters/character-guide.md) §3）。検証は typecheck/build/test（vitest は OneDrive 対策で `--pool=threads`）。
+- 関連（別タスク）：ひすいのキャラ立ち上げ・第一話の NPC アート（漁師のおっちゃん／香辛料屋のおばちゃん）は本項の外（[story/episode-01.md](./story/episode-01.md)）。
+- 該当：`docs/characters/{mao,rin}/original/`・`src/assets/characters/{mao,rin}/`・`src/characters/mao/index.ts`（`expressions`）。加工手順は [character-guide](./characters/character-guide.md) §4 ステップ2。
 
 ### feature-8
 
@@ -42,14 +51,6 @@
 - 対応：**共通ハウススタイルを定義**（例 `clean bold crisp anime lineart, sharp clean outlines, flat-ish cel shading, modest gloss`）し、[character-guide](./characters/character-guide.md) と各 `character-<id>.md` §3 に反映。**まおを新画風で t2i 再生成**（i2i 再塗りは線が眠くなるので不可＝新規 t2i で仕切り直し）し、master／立ち絵／バストアップ／表情差分を作り直して**同名上書き**（配線不変）。個性は色・モチーフ・表情で出し、レンダリングは統一。**v1（アプリ完成）後に着手**。
 - 内包：**旧 feature-10（ポートレートのフリンジ除去）を統合**。まおを新画風で作り直せばフリンジは根本解消するため、別途の脱マット作業は不要（v1 までは現行のソフト画像のまま運用）。
 - 該当：`docs/characters/character-guide.md`・`docs/characters/mao/character-mao.md` §3・`src/assets/characters/mao/*`（再生成・同名上書き）。今後の新キャラも共通ハウススタイルに従う。
-
-### feature-13
-
-**OGP画像（SNS共有カード用バナー）の作成**（優先度：低）
-
-- 背景：公開サイトの LP・キャラ一覧は `og:image` に `public/img/og.png` を参照しているが未作成。いま URL を SNS（X／LINE／Discord 等）に貼ると画像なしのカードになる（タイトル・説明は出る）。立ち絵・バストアップ（透過・縦長）は共有カード枠（横長）に合わないため、専用の1枚絵が要る。
-- 対応：横長バナー `og.png`（1200×630・png/jpg、webp は一部SNS非対応で避ける）を作成し `public/img/` に配置。まお＆りん＋「Mahjo」＋一言を焼き込む。詳細ページ（まお/りん）の `og:image` は立ち絵 `*-full.webp` を指す現状でよいか（共通 og.png に揃えるか）も判断。absolute URL（`og:url`/`og:image`）は mahjo.academy で設定済み（`public/`・2026-06-20）。
-- 該当：新規（`public/img/og.png`）。参照は `public/index.html`・`public/characters/index.html` の `og:image`。
 
 ### feature-12
 
@@ -128,12 +129,12 @@
     - **固定ルール**：`RuleSettings` 設定不可＝ステージごとに難度帯をオーサリングで固定。
     - **スキップなし・解説なし**（テンポ優先。学ぶ場は練習モード＝「もっと勉強しなきゃ」で送り返す導線）。
     - **失敗演出（人を責めない枠）**：救済者が現れ役満で締め、「もっと勉強しなきゃ！」で終わる＝罰でなく自発の動機づけ＋役満を拝めるご褒美。**救済者は話で変わる**（第1話＝ひすい姉さん。当初案のロウシ等も話次第）。リトライでステージを進める想定。
-  - **第1話（構想）**：まおとりんが**食事の支度（見習いの役目）で市場へ**出かけ、町でばったり出くわす。そこで**厄災の瘴気にやられた人**が騒ぎを起こすが、その場の占い師は二人だけ＝**まお・りんが協力して祓う**（りんの一方的ライバル心とまおの素直な慕いが交差する初手＝[characters/world.md](./characters/world.md) §5）。**失敗＝ひすい姉さんが登場して救済／成功＝ひすいが登場して二人を褒める**（ひすい＝両世代の橋渡し・慕われる姉＝§5 と整合）。
+  - **第1話（構想）**：まおとりんが**食事の支度（見習いの役目）で市場へ**出かけ、町でばったり出くわす。そこで**厄災の瘴気にやられた人**が騒ぎを起こすが、その場の占い師は二人だけ＝**まお・りんが協力して祓う**（りんの一方的ライバル心とまおの素直な慕いが交差する初手＝[characters/world.md](./characters/world.md) §5）。**失敗＝ひすい姉さんが登場して救済／成功＝ひすいが登場して二人を褒める**（ひすい＝両世代の橋渡し・慕われる姉＝§5 と整合）。詳細な台本（あらすじ＋セリフ＋必要アセット）は [story/episode-01.md](./story/episode-01.md)。
   - **実装の新規**：(1) **ブタ（役無し）生成**＝今の生成器は常に役ありを保証（[architecture](./design/architecture.md) §3・[scoring-rules](./spec/scoring-rules.md) §1.4）なので役無しを意図的に作るモードが要る。(2) **ステージ定義データ**＝単位/難度帯/ブタ率/制限時間/閾値/失点スケール/物語ビート/登場キャラ/救済者 を持つオーサリングデータ（「ロジック不変・データで足す」枠）。
   - **物語の骨格**：厄災が増幅した悪意の小さな危機（町のケンカ等）→厄災本体へ。**四方＝四風の拠点**（[characters/world.md](./characters/world.md) §2）をステージの幕に対応づけ可（世界地図＝難易度カーブ）。着手時に product-concept §3 との整合を最終確認＋専用のストーリー doc を新設。
 - キャラ固有のシグネチャ牌（低優先・飾り）：1ピンや字牌など一部の牌に、選択中キャラの固有絵を見せる。牌SVG（下層）はそのまま描き、その上にキャラのラスター画像をオーバーレイで重ねる方式（ハイライト・赤ドラ・上がり牌マーカーは下層SVGで従来どおり効く）。`Tile`・engine は不変、ui に「キャラ→牌識別→差し替え素材」の解決を足すのみ。字牌は嘘字回避のため正字SVGベース＋装飾どまり（[character-guide](./characters/character-guide.md) §4）。アンロック報酬として解放（お祝い止まり）。
-- 使い魔アイコン `familiar.webp` の制作・配置（ヒントボタン＝使い魔。UI の枠は実装済みで、素材未配置の間はテキスト「ヒント」にフォールバック中。[character-guide](./characters/character-guide.md) §2・[hints](./spec/hints.md) §1）。
-- 頻出表情の差分バリアント（`portrait_<expr>_b.webp` 等）の用意（`srcs` ローテーションは配線済み＝旧 refactoring-8・素材待ちで休眠。各キャラ `expressions[].srcs` に追記すれば有効化。[character-guide](./characters/character-guide.md) §4）。
-- りんの「照れ隠し」表情（rin 実装時に判断：既存 `flustered` 兼用か、専用キー追加か。[character-rin](./characters/rin/character-rin.md)）。
+- 使い魔アイコン `<id>-familiar.webp` の制作・配置（ヒントボタン＝使い魔。UI の枠は実装済みで、素材未配置の間はテキスト「ヒント」にフォールバック中。[character-guide](./characters/character-guide.md) §2・[hints](./spec/hints.md) §1）。
+- 頻出表情の差分バリアント（`<id>-portrait-<expr>-b.webp` 等）の用意（`srcs` ローテーションは配線済み＝旧 refactoring-8・素材待ちで休眠。各キャラ `expressions[].srcs` に追記すれば有効化。[character-guide](./characters/character-guide.md) §4）。
+- りんの「照れ隠し」表情：ストーリー用 `bashful` を作成済み（[story/episode-01.md](./story/episode-01.md)・素材は `original/`）。リアクション系でも 照れ隠し が要るかは rin 実装時に判断（既存 `flustered` 兼用か、専用キー追加か。[character-rin](./characters/rin/character-rin.md)）。
 - 実機での感性チェック（hinting=insight の強さ・ヒントの“気づきビート”（「…あ。」等）の単調さ・smile↔happy の見分け）。[testing](./dev/testing.md) §6 のチェックリストで回す。
 - decisions.md 2026-06-10 エントリの整理（内容は hints / character-guide / character-mao-script へ移行済み。使い魔素材が入って未決が無くなったらエントリを削除）。

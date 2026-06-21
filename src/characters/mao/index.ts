@@ -9,7 +9,7 @@ import type { Character } from '../../types/index.ts';
  */
 
 const PORTRAIT = (expr: string, variant = 'a') =>
-  `characters/mao/portrait_${expr}_${variant}.webp`;
+  `characters/mao/mao-portrait-${expr}-${variant}.webp`;
 
 /** 表情の差分プール（variant 複数）をまとめて作る。先頭が既定（character-guide §4）。 */
 const PORTRAITS = (expr: string, ...variants: string[]) =>
@@ -18,7 +18,7 @@ const PORTRAITS = (expr: string, ...variants: string[]) =>
 export const mao: Character = {
   id: 'mao',
   displayName: 'まお',
-  avatar: 'characters/mao/avatar.webp',
+  avatar: 'characters/mao/mao-avatar.webp',
   themeColor: '#6a4fb0', // まおの世界観の紫（暫定・要微調整）。character-mao.md §3
   // モチーフ（character-mao.md §3）：金の差し色＋法具＝御札・装飾＝月/星。描画は ui（selectionMark／decor）。
   accentColor: '#f5c451',

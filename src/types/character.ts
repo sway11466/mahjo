@@ -21,7 +21,7 @@ export type Expression =
 export interface ExpressionAsset {
   expression: Expression;
   /** 同一フレーミングの差分プール（出番の多い表情だけ複数枚）。先頭が既定 */
-  srcs: string[]; // 例 ['characters/mao/portrait_happy_a.webp', '..._b.webp']
+  srcs: string[]; // 例 ['characters/mao/mao-portrait-happy-a.webp', '...-b.webp']
 }
 
 /**
