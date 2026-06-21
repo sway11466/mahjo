@@ -24,6 +24,7 @@
 
 - 背景：現状アプリは完全静的・バックエンドなし（[architecture](./design/architecture.md) §1）で、利用状況を計測する手段を持たない（どの画面・どのモードがどれだけ使われるか不明）。学習体験の改善判断の材料として、GTM を入れてアクセス／行動のトラッキングをしたい。
 - 対応：GTM コンテナを公開ページ（`public/` の素 HTML＝LP・キャラ紹介）とアプリ（`app.html`）に読み込み、計測タグ（GA4 等）を GTM 経由で配信する。SPA なので画面遷移は仮想ページビュー／カスタムイベントで送る（役モード・点数モード開始、クイズ回答、ヒント開封 等の学習イベントを設計）。PWA／オフラインとの整合、プライバシー（個人を特定しない＝[product-concept](./product-concept.md) の個人学習思想）と Consent／プライバシー表記の要否、計測 ID・コンテナ ID の管理方法（CI 変数か直書きか）を確認・決定する。
+  - **オフライン計測の論点**：オンライン起動はそのまま計上でき、`display-mode: standalone` 判定で「PWA 起動 vs ブラウザ閲覧」を分けられる。オフライン起動は素の GTM/GA だと送信できず落ちる（`gtm.js` 未キャッシュなら GTM 自体が起動しない）ため、取りこぼさないなら Service Worker 側の仕掛けが要る＝Workbox の offline-google-analytics（`workbox-google-analytics`）で収集リクエストを横取りし Background Sync でキュー→再接続時に元タイムスタンプで再送。ただし GA4 のタイムスタンプ補正ウィンドウ（概ね 72 時間）を超えた再送は破棄、再接続しない端末は原理的に不可。導入時にこの方式を採るか（precache 込み）を判断する。
 - 該当：`public/**/*.html`（LP・キャラ紹介の `<head>`）・`app.html`（アプリの `<head>`）・イベント発火点は `src/ui/`（セッション開始・回答・ヒント等）。設計・URL/PWA は [architecture](./design/architecture.md) §4・[development](./dev/development.md)。
 
 ### feature-16
