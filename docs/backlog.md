@@ -4,7 +4,7 @@
 
 ## index
 
-次回採番: bug=3 / feature=16 / refactoring=14
+次回採番: bug=3 / feature=17 / refactoring=14
 
 項目（バグ bug / 機能追加 feature / リファクタリング refactoring）を追加するときは、該当カテゴリの採番を +1 して ID を継ぐ。完了した項目は本書から削除し、番号は再利用しない（過去の使用済み番号は `git log -p -- docs/backlog.md | grep -oE '(feature|refactoring)-[0-9]+' | sort -u` で確認できる）。状態は「本書に載っていれば未完了／消えていれば完了」で表す（状態列は持たない）。優先度は各エントリ見出しに 高（設計の背骨に関わる）／中／低（飾り・潜在）で記す。
 
@@ -17,6 +17,15 @@
 ## 機能追加
 
 実装済みコードに足す機能。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す。
+
+### feature-16
+
+**キャラ表情差分の加工・配布・登録**（優先度：高）
+
+- 背景：まお・りんの表情ソース（リアクション＋ストーリー）が `original/` に揃った（PR #19）が、WebP化・`src/assets` 配置・`expressions[]` 登録が未。アプリにはまだ neutral 系しか反映されていない。
+- 対応：キャラごとにクロップ枠を確定（master を切る→透過→640×768 で既存 neutral と顔スケールを合わせる）→ `original/` の全表情を クロップ→透過→640×768→WebP 化し `src/assets/characters/<id>/` に配置（リアクション・ストーリー両方＝アセット管理は共通）。コードはソース上で区別：まおは `expressions[]` にリアクション5つ（happy/troubled/smile/thinking/insight）を追記、りんは宣言済みで画像配置により自動有効化。ストーリー表情（confused/determined/surprised/relieved/bashful/pained）は `expressions[]` に入れずパス参照（[character-guide](./characters/character-guide.md) §3）。検証は typecheck/build/test（vitest は OneDrive 対策で `--pool=threads`）。
+- 関連（別タスク）：ひすいのキャラ立ち上げ・第一話の NPC アート（漁師のおっちゃん／香辛料屋のおばちゃん）は本項の外（[story/episode-01.md](./story/episode-01.md)）。
+- 該当：`docs/characters/{mao,rin}/original/`・`src/assets/characters/{mao,rin}/`・`src/characters/mao/index.ts`（`expressions`）。加工手順は [character-guide](./characters/character-guide.md) §4 ステップ2。
 
 ### feature-8
 
