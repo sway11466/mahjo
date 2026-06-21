@@ -132,8 +132,8 @@
   - **実装の新規**：(1) **ブタ（役無し）生成**＝今の生成器は常に役ありを保証（[architecture](./design/architecture.md) §3・[scoring-rules](./spec/scoring-rules.md) §1.4）なので役無しを意図的に作るモードが要る。(2) **ステージ定義データ**＝単位/難度帯/ブタ率/制限時間/閾値/失点スケール/物語ビート/登場キャラ/救済者 を持つオーサリングデータ（「ロジック不変・データで足す」枠）。
   - **物語の骨格**：厄災が増幅した悪意の小さな危機（町のケンカ等）→厄災本体へ。**四方＝四風の拠点**（[characters/world.md](./characters/world.md) §2）をステージの幕に対応づけ可（世界地図＝難易度カーブ）。着手時に product-concept §3 との整合を最終確認＋専用のストーリー doc を新設。
 - キャラ固有のシグネチャ牌（低優先・飾り）：1ピンや字牌など一部の牌に、選択中キャラの固有絵を見せる。牌SVG（下層）はそのまま描き、その上にキャラのラスター画像をオーバーレイで重ねる方式（ハイライト・赤ドラ・上がり牌マーカーは下層SVGで従来どおり効く）。`Tile`・engine は不変、ui に「キャラ→牌識別→差し替え素材」の解決を足すのみ。字牌は嘘字回避のため正字SVGベース＋装飾どまり（[character-guide](./characters/character-guide.md) §4）。アンロック報酬として解放（お祝い止まり）。
-- 使い魔アイコン `familiar.webp` の制作・配置（ヒントボタン＝使い魔。UI の枠は実装済みで、素材未配置の間はテキスト「ヒント」にフォールバック中。[character-guide](./characters/character-guide.md) §2・[hints](./spec/hints.md) §1）。
-- 頻出表情の差分バリアント（`portrait_<expr>_b.webp` 等）の用意（`srcs` ローテーションは配線済み＝旧 refactoring-8・素材待ちで休眠。各キャラ `expressions[].srcs` に追記すれば有効化。[character-guide](./characters/character-guide.md) §4）。
+- 使い魔アイコン `<id>-familiar.webp` の制作・配置（ヒントボタン＝使い魔。UI の枠は実装済みで、素材未配置の間はテキスト「ヒント」にフォールバック中。[character-guide](./characters/character-guide.md) §2・[hints](./spec/hints.md) §1）。
+- 頻出表情の差分バリアント（`<id>-portrait-<expr>-b.webp` 等）の用意（`srcs` ローテーションは配線済み＝旧 refactoring-8・素材待ちで休眠。各キャラ `expressions[].srcs` に追記すれば有効化。[character-guide](./characters/character-guide.md) §4）。
 - りんの「照れ隠し」表情（rin 実装時に判断：既存 `flustered` 兼用か、専用キー追加か。[character-rin](./characters/rin/character-rin.md)）。
 - 実機での感性チェック（hinting=insight の強さ・ヒントの“気づきビート”（「…あ。」等）の単調さ・smile↔happy の見分け）。[testing](./dev/testing.md) §6 のチェックリストで回す。
 - decisions.md 2026-06-10 エントリの整理（内容は hints / character-guide / character-mao-script へ移行済み。使い魔素材が入って未決が無くなったらエントリを削除）。

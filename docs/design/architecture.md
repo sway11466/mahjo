@@ -113,7 +113,7 @@ SVG コンポーネントの分類：
 看板牌（1筒/1索）：牌の中でいちばん絵画的な部品。中立牌に対しキャラの絵を被せられる差し替え枠とし、御札と同じ二層分離で扱う。
 
 - 解決は ui の resolver（`ui/common/tiles/heroTiles.ts`）：`(牌種)→デフォルト画像URL`、将来 `(characterId,牌種)→キャラ画像URL`。該当が無ければ中立SVG（`PinOne`/`SouOne`）にフォールバック。`TileSvg` は 1筒/1索 のとき、面の角丸（`rx=10`）でクリップした `<image>` を viewBox `0 0 74 100` にフィットさせて描く（歪み防止に `preserveAspectRatio="xMidYMid meet"`）。
-- 画像の置き場所：キャラ非依存のデフォルトは `src/assets/tiles/`（命名 `sou1.webp` / `pin1.webp`）。キャラ別は `src/assets/characters/<id>/`（命名 `tile_sou1.webp` 等）。`src/ui/common/tiles` はコード（SVG/リゾルバ）置き場で画像は置かない。
+- 画像の置き場所：キャラ非依存のデフォルトは `src/assets/tiles/`（命名 `sou1.webp` / `pin1.webp`）。キャラ別は `src/assets/characters/<id>/`（命名 `<id>-tile-sou1.webp` 等）。`src/ui/common/tiles` はコード（SVG/リゾルバ）置き場で画像は置かない。
 - 画像仕様：縁・影・ハイライトは SVG 側が描くので画像に焼かず、不透明な牌面の絵柄だけを乗せる（形式・背景色・比率・書き出しサイズ等の制作仕様の正は [character-guide.md](../characters/character-guide.md) §3「画像アセット」）。
 
 理由：装飾の一元管理、テーマ化（ダーク／キャラ別）への拡張余地、牌SVGの色の意味づけ（man/pin/sou）を保つため。ユーティリティCSS（Tailwind 等）は現時点で未導入（判断と再評価条件は [decisions.md](../decisions.md)）。

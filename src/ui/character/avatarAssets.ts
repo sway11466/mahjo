@@ -1,5 +1,5 @@
 /**
- * キャラの抽象アセットパス（例 'characters/mao/portrait_happy_a.webp'）→
+ * キャラの抽象アセットパス（例 'characters/mao/mao-portrait-happy-a.webp'）→
  * Vite がバンドルした実 URL の解決。表情→画像の解決は ui の責務（architecture.md §2）。
  *
  * characters 層はバンドラ非依存のデータ（パス文字列）だけを持ち、ここで URL へ橋渡しする。
@@ -18,7 +18,7 @@ const modules = import.meta.glob('../../assets/characters/**/*.{webp,png}', {
 const PREFIX = '../../assets/';
 const byPath: Record<string, string> = {};
 for (const [key, url] of Object.entries(modules)) {
-  // '../../assets/characters/mao/avatar.webp' → 'characters/mao/avatar.webp'
+  // '../../assets/characters/mao/mao-avatar.webp' → 'characters/mao/mao-avatar.webp'
   byPath[key.slice(PREFIX.length)] = url;
 }
 
@@ -81,19 +81,22 @@ export function portraitUrl(
 }
 
 /**
- * キャラ選択グリッドのサムネ URL。セレクト用 avatar を優先し、無ければ立ち絵 full.webp に落とす
+ * キャラ選択グリッドのサムネ URL。セレクト用 avatar を優先し、無ければ立ち絵 <id>-full-stand-a.webp に落とす
  * （avatar 未用意のキャラでも顔が出る）。どちらも無ければ undefined（呼び出し側は名前プレースホルダ）。
  */
 export function avatarThumbUrl(
   characterId: string,
   avatar: string | undefined,
 ): string | undefined {
-  return assetUrl(avatar) ?? assetUrl(`characters/${characterId}/full.webp`);
+  return (
+    assetUrl(avatar) ??
+    assetUrl(`characters/${characterId}/${characterId}-full-stand-a.webp`)
+  );
 }
 
 /**
  * スタート画面・キャラクター画面で見せる立ち絵（全身）の URL。
- * 全身 full.webp を優先し、無ければベース表情（あいさつ＝greeting の表情。まおは neutral）→
+ * 全身 <id>-full-stand-a.webp を優先し、無ければベース表情（あいさつ＝greeting の表情。まおは neutral）→
  * avatar の順にフォールバック。（全身は character-guide §2 で任意のため、未用意でも崩れないように）
  */
 export function standeeUrl(
@@ -102,7 +105,7 @@ export function standeeUrl(
   avatar: string | undefined,
 ): string | undefined {
   return (
-    assetUrl(`characters/${characterId}/full.webp`) ??
+    assetUrl(`characters/${characterId}/${characterId}-full-stand-a.webp`) ??
     assetUrl(baselineSrc) ??
     assetUrl(avatar)
   );
