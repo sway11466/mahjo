@@ -106,6 +106,8 @@
 
 飾り表情（既定トリガーなし。`reactions` で割り当てたキャラだけ用意・任意）：`flustered`（焦り）／`smug`（得意げ）／`mischievous`（いたずら）／`grateful`（謝意）／`crying`（泣き顔）。
 
+ストーリーモードの表情（リアクションとは別系統）：上の `Expression` パレットは練習ループのリアクション（`ReactionTrigger`→表情）で使う。一方ストーリーモード（[backlog](../backlog.md) parking lot・世界観は [world.md](./world.md)）は、場面ごとにオーサリングした台本で表情を当てるため、パレット外の表情トークンを使う（例 `confused`／`determined`／`surprised`／`relieved`／`bashful`／`pained`）。これらは `Expression` 型や各キャラ `expressions[]` には載せず、ストーリー機構がパス参照（`assetUrl('characters/<id>/<id>-portrait-<token>-a.webp')`＝avatar/full と同じ経路）で使う。アセット（画像）としての管理は共通＝同じ `original/` に同じ `<id>-portrait-<token>-a` 命名で置き、同じ加工（WebP化→`src/assets`）に通す。区別はソース上だけ（リアクション＝パレット駆動／ストーリー＝パス参照）。トークンは物語ごとに増える（具体の割当は各ストーリー doc、例 [story/episode-01.md](../story/episode-01.md)）。各キャラが実際に持つ表情の一覧は character-`<id>`.md。
+
 共通仕様（厳守）：
 
 - 形式：PNG または WebP・背景透過。配布最適化のため WebP 推奨（PWAオフライン）。
