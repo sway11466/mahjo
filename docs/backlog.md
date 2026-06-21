@@ -52,14 +52,6 @@
 - 内包：**旧 feature-10（ポートレートのフリンジ除去）を統合**。まおを新画風で作り直せばフリンジは根本解消するため、別途の脱マット作業は不要（v1 までは現行のソフト画像のまま運用）。
 - 該当：`docs/characters/character-guide.md`・`docs/characters/mao/character-mao.md` §3・`src/assets/characters/mao/*`（再生成・同名上書き）。今後の新キャラも共通ハウススタイルに従う。
 
-### feature-13
-
-**OGP画像（SNS共有カード用バナー）の作成**（優先度：低）
-
-- 背景：公開サイトの LP・キャラ一覧は `og:image` に `public/img/og.png` を参照しているが未作成。いま URL を SNS（X／LINE／Discord 等）に貼ると画像なしのカードになる（タイトル・説明は出る）。立ち絵・バストアップ（透過・縦長）は共有カード枠（横長）に合わないため、専用の1枚絵が要る。
-- 対応：横長バナー `og.png`（1200×630・png/jpg、webp は一部SNS非対応で避ける）を作成し `public/img/` に配置。まお＆りん＋「Mahjo」＋一言を焼き込む。詳細ページ（まお/りん）の `og:image` は立ち絵 `*-full.webp` を指す現状でよいか（共通 og.png に揃えるか）も判断。absolute URL（`og:url`/`og:image`）は mahjo.academy で設定済み（`public/`・2026-06-20）。
-- 該当：新規（`public/img/og.png`）。参照は `public/index.html`・`public/characters/index.html` の `og:image`。
-
 ### feature-12
 
 **設定画面に並べただけで未実装の項目を、実際に動くよう配線する**（優先度：低）
