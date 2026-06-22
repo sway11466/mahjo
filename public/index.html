@@ -3,6 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Google Tag Manager（/preview/ は preview コンテナ、本番ホストは本番コンテナ、ローカル等は無効） -->
+    <script>
+      (function (w, d, s, l, i) {
+        if (!i) return;
+        w[l] = w[l] || [];
+        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+        var f = d.getElementsByTagName(s)[0], j = d.createElement(s);
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer',
+        location.pathname.indexOf('/preview/') === 0 ? 'GTM-KKL34BJJ'
+          : location.hostname === 'mahjo.academy' ? 'GTM-5PKT73H6'
+          : '');
+    </script>
+    <!-- End Google Tag Manager -->
     <meta name="theme-color" content="#15121f" />
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
