@@ -4,7 +4,7 @@
 
 ## index
 
-次回採番: bug=3 / feature=18 / refactoring=14
+次回採番: bug=3 / feature=19 / refactoring=14
 
 項目（バグ bug / 機能追加 feature / リファクタリング refactoring）を追加するときは、該当カテゴリの採番を +1 して ID を継ぐ。完了した項目は本書から削除し、番号は再利用しない（過去の使用済み番号は `git log -p -- docs/backlog.md | grep -oE '(feature|refactoring)-[0-9]+' | sort -u` で確認できる）。状態は「本書に載っていれば未完了／消えていれば完了」で表す（状態列は持たない）。優先度は各エントリ見出しに 高（設計の背骨に関わる）／中／低（飾り・潜在）で記す。
 
@@ -35,6 +35,28 @@
 - 対応：キャラごとにクロップ枠を確定（master を切る→透過→640×768 で既存 neutral と顔スケールを合わせる）→ `original/` の全表情を クロップ→透過→640×768→WebP 化し `src/assets/characters/<id>/` に配置（リアクション・ストーリー両方＝アセット管理は共通）。コードはソース上で区別：まおは `expressions[]` にリアクション5つ（happy/troubled/smile/thinking/insight）を追記、りんは宣言済みで画像配置により自動有効化。ストーリー表情（confused/determined/surprised/relieved/bashful/pained）は `expressions[]` に入れずパス参照（[character-guide](./characters/character-guide.md) §3）。検証は typecheck/build/test（vitest は OneDrive 対策で `--pool=threads`）。
 - 関連（別タスク）：ひすいのキャラ立ち上げ・第一話の NPC アート（漁師のおっちゃん／香辛料屋のおばちゃん）は本項の外（[story/episode-01.md](./story/episode-01.md)）。
 - 該当：`docs/characters/{mao,rin}/original/`・`src/assets/characters/{mao,rin}/`・`src/characters/mao/index.ts`（`expressions`）。加工手順は [character-guide](./characters/character-guide.md) §4 ステップ2。
+
+### feature-18
+
+**SPA 学習イベントの計測（GTM カスタムイベント）**（優先度：低）
+
+- 背景：GTM の土台（preview/本番の2コンテナ＋環境判定スニペットを LP `public/index.html`・アプリ `app.html` に設置）は導入済みで、オンラインのページビューは GA4（preview＝mahjo-preview／本番＝mahjo-prd）に流れている（[feature-17](#feature-17) のうち「素の導入」分が稼働）。一方、SPA 内の**学習行動**（モード開始・出題・回答・ヒント・解説）は仮想イベントを送らないと見えない。背骨（[product-concept](./product-concept.md) §3＝キャラ駆動・役→点数・答えを言わない段階ヒント）が実際にどう使われているかを測るため、学習イベントを設計して送る。**`character_id` を全イベント共通パラメータにする**のが核（キャラ駆動なので、どの指標もキャラ別に切れるようにする）。
+- 対応：発火は ui 層に閉じ（副作用＝[architecture](./design/architecture.md) §2。engine/session/hints は純 TS のまま）、薄い `track(event, params)` が `dataLayer.push` するだけにする。GTM 側で dataLayer イベント→GA4 イベントへマップし、両コンテナを公開（preview で DebugView 確認→本番へ昇格）。プライバシー：個人特定情報は送らない（`AppSettings.playerName` は**送らない**）。「ミスを数える」のは集計の話で、プレッシャーをかけない（提示の原則）と両立（[data-model](./design/data-model.md) §16）。フェーズで刻む：
+  - **フェーズ1（最小・効果大）**
+
+    | イベント | 発火 | パラメータ | 取得意図 |
+    |---|---|---|---|
+    | `mode_start` | セッション開始（1回） | `character_id`, `mode` | 開始数・キャラ別/モード別の内訳（役→点数の検証） |
+    | `question_view` | 各局の出題（最大8回） | `character_id`, (`target`) | 出題数・どこで離脱するか |
+    | `quiz_answer` | 4択を選択 | `character_id`, `correct`, (`target`) | 回答数・**正答率**（学習アプリの主指標） |
+    | `hint_open` | ヒント段を開く | `character_id`, `level` | ヒント使用数・**どこまで掘るか**（段階ヒントの検証） |
+    | `explain_view` | 回答後の解説に入る | `character_id` | 解説到達数 |
+    | `session_complete` | 8問終了 | `character_id`, `mode`, `correct_count` | **完走率**（`mode_start` の対） |
+
+  - **フェーズ2（任意・行動の質）**：`highlight_click`（`category`＝クリック内訳ハイライトの利用）・`character_select`（キャラ選択画面の探索）・`setting_change`（`key`/`value`＝どのルールで遊ぶか。`playerName` 除外）・画面遷移の仮想ページビュー・PWA インストール／`display-mode: standalone` 判定（リピーター把握、[feature-17](#feature-17) のオフライン論点の前段）・不正解時の `mistake_kind`（[refactoring-13](#refactoring-13) の精査後）。
+  - **GA4 側の設定**：イベントパラメータをレポートの軸にするには**カスタムディメンション登録**が要る（管理→カスタム定義、スコープ＝イベント）。フェーズ1は `character_id`・`mode`・`correct` を登録（`character_id` は1つ登録すれば全イベントで切れる）。
+  - **命名**：GA4 慣習の snake_case・低カーディナリティ。`character_id` はイベントパラメータ（ユーザープロパティにしない＝キャラはセッションごとに変わるため、その時のキャラを各イベントに載せる）。
+- 該当：`src/ui/`（`track()` ラッパ＋発火点の配線＝セッション開始・出題・回答・ヒント・解説・完走。発火点の場所は [session.md](./spec/session.md) §4 場面に対応）。GTM 2コンテナ（dataLayer→GA4 マップ＋公開）・GA4 2プロパティ（カスタムディメンション登録）。土台（コンテナ・スニペット）は [feature-17](#feature-17)。設計・配信は [architecture](./design/architecture.md) §2/§4・[development](./dev/development.md)。
 
 ### feature-8
 
