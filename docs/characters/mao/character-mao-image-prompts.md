@@ -113,6 +113,40 @@ gentle Chinese-witch mascot; a RICH royal-purple qipao (medium-deep saturated vi
 extra unspecified motifs, invented pattern elements, standalone star motifs, sparkle / twinkle stars, any star shapes on the dress or cape, star-shaped constellation points (points must be round dots); holding talisman cards, ofuda fan in hand, hands raised into frame; flat shadeless single-color dress, sticker-like flat fill; flat chest, boyish/androgynous, no bust; busty, large breasts, cleavage, exposed chest, open neckline, cutout; navy/blackish/too dark, too bright/neon/pale purple, washed-out; earrings, tassel, long cord, charm/moon on top of buns; cape merged into the dress; glossy/dewy skin, gradient or soft glowing shading; extreme close-up, cropped at the chest, zoomed-in face, off-center, looking away, full body, open big grin; chibi, big head, child, mature adult woman, realistic, 3d; any text, letters, words, captions or constellation-name labels anywhere on the image, kanji or text on clothing, watermark, logo; blurry, soft focus, sketchy lineart.
 ```
 
+## バストアップ → portrait クロップ手順（まお確定枠）
+
+汎用の考え方・基準は [character-guide.md](../character-guide.md) §4「バストアップ → portrait（640×768）」。本項は**まおで確定した具体値（枠・コマンド）**で、表情を増やすたびこれに従えば neutral と顔位置・スケールが揃う。
+
+**確定枠（2026-06-24・happy で検証し neutral と一致）**
+
+- 元画像：`docs/characters/mao/original/mao-portrait-<expr>-a.png`（同一/再構築セッションの t2i・白背景・944×1136 前後）。
+- クロップ枠：**`-crop 609x731+168+0 +repage`** を**全表情で固定**（中身ぴったりに合わせず neutral と同じ枠＝差し替えてもズレない）。
+  - 幅609・X=168 ＝ neutral master bustup の中身横幅・左端（`original/mao-master-bustup.png` の trim `609x1122+168+14` 由来）。
+  - 高さ731・Y=0 ＝ 5:6 になる高さ（609 × 6/5 ≈ 731）を上端 y=0 から採る（頭を切らない）。
+- **順序が肝**：① クロップ → ② 透過（Photopea・手作業）→ ③ リサイズ 640×768 → ④ WebP。⚠️ 白背景のままリサイズすると白フチ（フリンジ）が出るので**必ず透過してからリサイズ**。
+
+**手順**
+
+```
+# ① 確認（任意）：トリムが neutral と揃うか。±1px は許容し、枠は 609x731+168+0 のまま固定する
+magick original/mao-portrait-<expr>-a.png -fuzz 5% -format "trim: %@  canvas: %wx%h" info:
+#   neutral 基準 = trim 609x1122+168+14 / canvas 944x1136
+
+# ② クロップ（リサイズなし・native 609x731）
+magick original/mao-portrait-<expr>-a.png -crop 609x731+168+0 +repage mao-portrait-<expr>-a-cropped.png
+
+# ③ 透過：609x731 のまま Photopea で背景抜き（ここではリサイズしない）
+
+# ④ 透過 PNG を 640×768 にリサイズ → WebP（配布先 src/assets へ）
+magick <透過cropped>.png -resize 640x768 -background none -gravity center -extent 640x768 mao-portrait-<expr>-a.png
+magick mao-portrait-<expr>-a.png -strip -define webp:method=6 -quality 90 mao-portrait-<expr>-a.webp
+#   → src/assets/characters/mao/mao-portrait-<expr>-a.webp
+```
+
+**フレーミング確認**：透過前でも ④ の `-resize 640x768` をかけた確認用ファイルを neutral（`mao-portrait-neutral-a.png`）と並べ、頭頂・髪飾り（御札タグ）・肩ライン・顔スケールが揃うか見る（開口など**表情差による顔の大小はズレではない**）。
+
+**master 差し替え時**：枠 `+168` / 幅609 は neutral master bustup 由来。master を別画像に差し替えたら ① のトリム測定からやり直す（X/W が変わる）。並べて scale を合わせる基準キャラは りん `rin-portrait-neutral-a`（character-guide §4）。
+
 ## 使い魔ココの生成プロンプト（たたき台）
 
 ココ（使い魔）の master 生成プロンプト。**1:1 の白紙正方形を種**にする（おすわり全身が正方形に収まる＋ボタン／キャラ選択がほぼ正方形＝表示と一致）。配色・画風はまお本体に寄せる（夜紺＋琥珀の瞳、crisp lineart）。表情／ポーズ違いは master 確定後に同セッション t2i／i2i で派生（[character-guide.md](../character-guide.md) §4）。positive/negative が分かれるツールは `── AVOID ──` 以降を negative 欄へ。
