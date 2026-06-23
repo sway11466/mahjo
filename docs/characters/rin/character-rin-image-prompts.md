@@ -164,6 +164,39 @@ holding bells, cluster of bells in hand, bells on a cord in hand, hands holding 
 
 > **小悪魔感はベースでは弱くてよい。** バストアップの neutral は穏やかな含み笑いが土台。小悪魔の得意げさは表情差分（`insight`＝ひらめき／得意げ、`smug` 寄りの差分）で出す（[character-guide.md](../character-guide.md) §4 ステップ3）。差分は同一セッション t2i で neutral を基準に展開。
 
+## バストアップ → portrait クロップ手順（りん確定枠）
+
+汎用の考え方・基準は [character-guide.md](../character-guide.md) §4「バストアップ → portrait（640×768）」。本項は**りんで確定した具体値（枠・コマンド）**。りんは **640 幅のネイティブ窓を等倍で切る**（拡大しない＝5:6 の最終寸 640×768 を直接クロップ）。
+
+**確定枠（2026-06-24・neutral で検証）**
+
+- 元画像：`docs/characters/rin/original/rin-portrait-<expr>-a.png`（同一/再構築セッションの t2i・白背景・944×1136 前後）。
+- クロップ枠：**`-crop 640x768+155+16 +repage`** を全表情で固定。
+  - 幅640・X=155 ＝中身をほぼ水平中央に置き、外側のツインテールは枠で自然にカット（中身中央 ≈ x=480 に対し 155..795）。
+  - 高さ768・Y=16 ＝頭頂の少し上から。**640×768＝5:6 の最終寸そのものなのでリサイズ不要**（等倍＝線がネイティブの鮮明さのまま）。ツインテールが広く張るので窓を詰めず 640 幅で等倍に切る。
+- **順序**：① クロップ（640×768・等倍）→ ② 透過（Photopea・手作業）→ ③ そのまま WebP。リサイズが無いので白フチは出にくいが、透過は ① の後に行う。
+
+**手順**
+
+```
+# ① 確認（任意）：トリムが neutral と揃うか。枠は 640x768+155+16 のまま固定する
+magick original/rin-portrait-<expr>-a.png -fuzz 8% -format "trim: %@  canvas: %wx%h\n" info:
+#   neutral 基準（master-bustup）= trim 773x1093+93+43 / canvas 944x1136
+
+# ② クロップ（640×768・等倍・リサイズなし）
+magick original/rin-portrait-<expr>-a.png -crop 640x768+155+16 +repage rin-portrait-<expr>-a-cropped.png
+
+# ③ 透過：640×768 のまま Photopea で背景抜き
+
+# ④ そのまま WebP（配布先 src/assets へ。リサイズ不要）
+magick <透過cropped>.png -strip -define webp:method=6 -quality 90 rin-portrait-<expr>-a.webp
+#   → src/assets/characters/rin/rin-portrait-<expr>-a.webp
+```
+
+**フレーミング確認**：クロップ結果を既存 neutral（`docs/characters/rin/rin-portrait-neutral-a.png`）と並べ、頭頂・目元・胸元・下端が揃うか見る（表情差〔開口等〕での顔の大小はズレではない）。
+
+**master 差し替え時**：枠 `+155+16` / 幅640 は現 master-bustup 由来。master を別画像に差し替えたら ① のトリム測定からやり直す（X/Y が変わる）。
+
 ## 使い魔（銀猫）の生成プロンプト
 
 **未制作（現状は設定のみ・UI 未登場＝[character-rin.md](./character-rin.md) §3 使い魔）。** 制作時はまお（使い魔ココ）に倣う：**1:1 の白紙正方形を種**におすわり全身を master 生成 → 同セッション t2i／i2i で表情・ポーズ派生（[character-mao-image-prompts.md](../mao/character-mao-image-prompts.md) の「使い魔ココ」項が雛形）。配色・画風はりん本体に寄せる（**漆黒寄りの毛＋紅の瞳**＝まおのココとは別猫に。**首に銀の鈴**＝法具モチーフの銀鈴に呼応）。まおのココと**猫同士もライバル**の気配（[character-rin.md](./character-rin.md) §3 使い魔）。
