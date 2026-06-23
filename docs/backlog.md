@@ -4,7 +4,7 @@
 
 ## index
 
-次回採番: bug=3 / feature=18 / refactoring=14
+次回採番: bug=3 / feature=19 / refactoring=14
 
 項目（バグ bug / 機能追加 feature / リファクタリング refactoring）を追加するときは、該当カテゴリの採番を +1 して ID を継ぐ。完了した項目は本書から削除し、番号は再利用しない（過去の使用済み番号は `git log -p -- docs/backlog.md | grep -oE '(feature|refactoring)-[0-9]+' | sort -u` で確認できる）。状態は「本書に載っていれば未完了／消えていれば完了」で表す（状態列は持たない）。優先度は各エントリ見出しに 高（設計の背骨に関わる）／中／低（飾り・潜在）で記す。
 
@@ -27,14 +27,28 @@
   - **オフライン計測の論点**：オンライン起動はそのまま計上でき、`display-mode: standalone` 判定で「PWA 起動 vs ブラウザ閲覧」を分けられる。オフライン起動は素の GTM/GA だと送信できず落ちる（`gtm.js` 未キャッシュなら GTM 自体が起動しない）ため、取りこぼさないなら Service Worker 側の仕掛けが要る＝Workbox の offline-google-analytics（`workbox-google-analytics`）で収集リクエストを横取りし Background Sync でキュー→再接続時に元タイムスタンプで再送。ただし GA4 のタイムスタンプ補正ウィンドウ（概ね 72 時間）を超えた再送は破棄、再接続しない端末は原理的に不可。導入時にこの方式を採るか（precache 込み）を判断する。
 - 該当：`public/**/*.html`（LP・キャラ紹介の `<head>`）・`app.html`（アプリの `<head>`）・イベント発火点は `src/ui/`（セッション開始・回答・ヒント等）。設計・URL/PWA は [architecture](./design/architecture.md) §4・[development](./dev/development.md)。
 
-### feature-16
+### feature-18
 
-**キャラ表情差分の加工・配布・登録**（優先度：高）
+**SPA 学習イベントの計測（GTM カスタムイベント）**（優先度：低）
 
-- 背景：まお・りんの表情ソース（リアクション＋ストーリー）が `original/` に揃った（PR #19）が、WebP化・`src/assets` 配置・`expressions[]` 登録が未。アプリにはまだ neutral 系しか反映されていない。
-- 対応：キャラごとにクロップ枠を確定（master を切る→透過→640×768 で既存 neutral と顔スケールを合わせる）→ `original/` の全表情を クロップ→透過→640×768→WebP 化し `src/assets/characters/<id>/` に配置（リアクション・ストーリー両方＝アセット管理は共通）。コードはソース上で区別：まおは `expressions[]` にリアクション5つ（happy/troubled/smile/thinking/insight）を追記、りんは宣言済みで画像配置により自動有効化。ストーリー表情（confused/determined/surprised/relieved/bashful/pained）は `expressions[]` に入れずパス参照（[character-guide](./characters/character-guide.md) §3）。検証は typecheck/build/test（vitest は OneDrive 対策で `--pool=threads`）。
-- 関連（別タスク）：ひすいのキャラ立ち上げ・第一話の NPC アート（漁師のおっちゃん／香辛料屋のおばちゃん）は本項の外（[story/episode-01.md](./story/episode-01.md)）。
-- 該当：`docs/characters/{mao,rin}/original/`・`src/assets/characters/{mao,rin}/`・`src/characters/mao/index.ts`（`expressions`）。加工手順は [character-guide](./characters/character-guide.md) §4 ステップ2。
+- 状況：**フェーズ1のコード（dataLayer 送出）は実装済み**——`track()` ラッパ（`src/ui/analytics/track.ts`）＋6イベントの発火配線（`src/ui/main/MainScreen.tsx`、すべて操作ハンドラから送出）。イベント契約の正は [analytics.md](./spec/analytics.md)。**残りは管理画面作業**（GTM 2コンテナで dataLayer→GA4 マップ＋公開、GA4 2プロパティでカスタムディメンション登録、preview の DebugView 確認→本番昇格）と**フェーズ2**（下記・未実装）。
+- 背景：GTM の土台（preview/本番の2コンテナ＋環境判定スニペットを LP `public/index.html`・アプリ `app.html` に設置）は導入済みで、オンラインのページビューは GA4（preview＝mahjo-preview／本番＝mahjo-prd）に流れている（[feature-17](#feature-17) のうち「素の導入」分が稼働）。一方、SPA 内の**学習行動**（モード開始・出題・回答・ヒント・解説）は仮想イベントを送らないと見えない。背骨（[product-concept](./product-concept.md) §3＝キャラ駆動・役→点数・答えを言わない段階ヒント）が実際にどう使われているかを測るため、学習イベントを設計して送る。**`character_id` を全イベント共通パラメータにする**のが核（キャラ駆動なので、どの指標もキャラ別に切れるようにする）。
+- 対応：発火は ui 層に閉じ（副作用＝[architecture](./design/architecture.md) §2。engine/session/hints は純 TS のまま）、薄い `track(event, params)` が `dataLayer.push` するだけにする。GTM 側で dataLayer イベント→GA4 イベントへマップし、両コンテナを公開（preview で DebugView 確認→本番へ昇格）。プライバシー：個人特定情報は送らない（`AppSettings.playerName` は**送らない**）。「ミスを数える」のは集計の話で、プレッシャーをかけない（提示の原則）と両立（[data-model](./design/data-model.md) §16）。フェーズで刻む：
+  - **フェーズ1（最小・効果大）**
+
+    | イベント | 発火 | パラメータ | 取得意図 |
+    |---|---|---|---|
+    | `mode_start` | セッション開始（1回） | `character_id`, `mode` | 開始数・キャラ別/モード別の内訳（役→点数の検証） |
+    | `question_view` | 各局の出題（最大8回） | `character_id`, (`target`) | 出題数・どこで離脱するか |
+    | `quiz_answer` | 4択を選択 | `character_id`, `correct`, (`target`) | 回答数・**正答率**（学習アプリの主指標） |
+    | `hint_open` | ヒント段を開く | `character_id`, `level` | ヒント使用数・**どこまで掘るか**（段階ヒントの検証） |
+    | `explain_view` | 回答後の解説に入る | `character_id` | 解説到達数 |
+    | `session_complete` | 8問終了 | `character_id`, `mode`, `correct_count` | **完走率**（`mode_start` の対） |
+
+  - **フェーズ2（任意・行動の質）**：`highlight_click`（`category`＝クリック内訳ハイライトの利用）・`character_select`（キャラ選択画面の探索）・`setting_change`（`key`/`value`＝どのルールで遊ぶか。`playerName` 除外）・画面遷移の仮想ページビュー・PWA インストール／`display-mode: standalone` 判定（リピーター把握、[feature-17](#feature-17) のオフライン論点の前段）・不正解時の `mistake_kind`（[refactoring-13](#refactoring-13) の精査後）。
+  - **GA4 側の設定**：イベントパラメータをレポートの軸にするには**カスタムディメンション登録**が要る（管理→カスタム定義、スコープ＝イベント）。フェーズ1は `character_id`・`mode`・`correct` を登録（`character_id` は1つ登録すれば全イベントで切れる）。
+  - **命名**：GA4 慣習の snake_case・低カーディナリティ。`character_id` はイベントパラメータ（ユーザープロパティにしない＝キャラはセッションごとに変わるため、その時のキャラを各イベントに載せる）。
+- 該当：`src/ui/`（`track()` ラッパ＋発火点の配線＝セッション開始・出題・回答・ヒント・解説・完走。発火点の場所は [session.md](./spec/session.md) §4 場面に対応）。GTM 2コンテナ（dataLayer→GA4 マップ＋公開）・GA4 2プロパティ（カスタムディメンション登録）。土台（コンテナ・スニペット）は [feature-17](#feature-17)。設計・配信は [architecture](./design/architecture.md) §2/§4・[development](./dev/development.md)。
 
 ### feature-8
 
@@ -51,15 +65,6 @@
 - 背景：[sound](./design/sound.md) は SE の方針・効果音一覧を定めたが、素材ファイルが未収集。ライセンスは表記不要に統一する方針（CC0／自作 AI 生成。public リポ＋静的配信での再配布グレーを回避）。音の実装（再生配線・BGM）は parking lot「音（SE/BGM）の実装」だが、SE 素材はその前提として先に揃える必要がある。
 - 対応：[sound](./design/sound.md)「効果音一覧」の MVP 分（牌を置く・選択肢・正解・不正解・終了）から着手。Kenney（UI 系まとめ取り）・Pixabay（牌音・正解・不正解・ファンファーレ）等の表記不要ソースで候補を集めて選定 → 静的アセット化（[character-guide](./characters/character-guide.md) §3 の WebP/最適化に準じる）→ ライセンス台帳（ファイル名／出所URL／ライセンス種別）を作成（置き場は着手時に決定）。選定は人手の感性領域（[testing](./dev/testing.md) §6）。次・後の優先度分（ヒント・解説ハイライト・メニュー・あいさつ）は順次。
 - 該当：新規（資産。`src/assets/` 配下＋台帳）。方針の正は [sound](./design/sound.md)「制作」。再生実装は parking lot「音（SE/BGM）の実装」。
-
-### feature-11
-
-**画風のハウススタイル統一とまおの画風刷新**（優先度：中。v1 完成後に着手）
-
-- 背景：キャラが増える（りん制作中）と画風が分かれる——まお＝やわらかい moe（細線＋ツヤ/グラデ塗り）／りん＝くっきり太線＋フラットなセル塗り（王道アニメ調）。キャラ選択画面で並ぶと**一体感が崩れる**。さらに、まおの柔らかい縁は切り抜きで**フリンジ（白フチ）が出やすく加工しづらい**（旧 feature-10 の根因）。くっきり画風は境界が明確で**抜きやすくフリンジが出にくい**（[character-guide](./characters/character-guide.md) §4「抜きの綺麗さは元絵の品質が上限」）。
-- 対応：**共通ハウススタイルを定義**（例 `clean bold crisp anime lineart, sharp clean outlines, flat-ish cel shading, modest gloss`）し、[character-guide](./characters/character-guide.md) と各 `character-<id>.md` §3 に反映。**まおを新画風で t2i 再生成**（i2i 再塗りは線が眠くなるので不可＝新規 t2i で仕切り直し）し、master／立ち絵／バストアップ／表情差分を作り直して**同名上書き**（配線不変）。個性は色・モチーフ・表情で出し、レンダリングは統一。**v1（アプリ完成）後に着手**。
-- 内包：**旧 feature-10（ポートレートのフリンジ除去）を統合**。まおを新画風で作り直せばフリンジは根本解消するため、別途の脱マット作業は不要（v1 までは現行のソフト画像のまま運用）。
-- 該当：`docs/characters/character-guide.md`・`docs/characters/mao/character-mao.md` §3・`src/assets/characters/mao/*`（再生成・同名上書き）。今後の新キャラも共通ハウススタイルに従う。
 
 ### feature-12
 

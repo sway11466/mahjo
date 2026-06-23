@@ -17,6 +17,7 @@
 - 採点ルール定義: [@docs/spec/scoring-rules.md](docs/spec/scoring-rules.md)
 - 出題生成・難易度: [docs/spec/generation.md](docs/spec/generation.md)
 - セッション（提示・進行）: [docs/spec/session.md](docs/spec/session.md)
+- 計測（GTM/GA4 学習イベント）: [docs/spec/analytics.md](docs/spec/analytics.md)
 - ヒント設計／素: [docs/spec/hints.md](docs/spec/hints.md)・[docs/spec/hint-base.md](docs/spec/hint-base.md)
 - キャラクターガイド: [@docs/characters/character-guide.md](docs/characters/character-guide.md)
 - 世界観・人物相関: [docs/characters/world.md](docs/characters/world.md)（相関図 [world-relationships.svg](docs/characters/world-relationships.svg)）
