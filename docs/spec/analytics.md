@@ -1,6 +1,6 @@
 # 計測（GTM / GA4 学習イベント）
 
-SPA 内の学習行動を GTM 経由で GA4 へ送るための、イベント契約（名前・パラメータ・発火条件）の正。実装は `src/ui/analytics/track.ts`（`track()` ラッパ）＋発火配線（`src/ui/main/MainScreen.tsx`）。土台（GTM コンテナ・スニペット）は backlog feature-17、本書のイベントは feature-18。
+SPA 内の学習行動を GTM 経由で GA4 へ送るための、イベント契約（名前・パラメータ・発火条件）の正。実装は `src/ui/analytics/track.ts`（`track()` ラッパ）＋発火配線（`src/ui/main/MainScreen.tsx`）。土台（GTM コンテナ・スニペット）は backlog feature-17。本書のフェーズ1（6イベント）は実装・本番稼働済みで、本書が契約の正（旧 feature-18 フェーズ1）。フェーズ2は backlog parking lot「学習イベント計測のフェーズ2」。
 
 ## 1. 方針
 
@@ -43,4 +43,4 @@ SPA 内の学習行動を GTM 経由で GA4 へ送るための、イベント契
 
 ## 4. フェーズ2（任意・未実装）
 
-行動の質を測る拡張。今回は入れない。`highlight_click`・`character_select`・`setting_change`（`playerName` 除外）・画面遷移の仮想ページビュー・PWA インストール／`display-mode: standalone` 判定・不正解時の `mistake_kind`（[backlog](../backlog.md) refactoring-13 の `MistakeKind` 精査後）。詳細は backlog feature-18。
+行動の質を測る拡張。未実装。`highlight_click`・`character_select`・`setting_change`（`playerName` 除外）・画面遷移の仮想ページビュー・PWA インストール／`display-mode: standalone` 判定・不正解時の `mistake_kind`（[backlog](../backlog.md) refactoring-13 の `MistakeKind` 精査後）。詳細は [backlog](../backlog.md) parking lot「学習イベント計測のフェーズ2」。発火点（`track()` 呼び出し）を足すだけで取れる。
