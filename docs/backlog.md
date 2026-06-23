@@ -18,15 +18,6 @@
 
 実装済みコードに足す機能。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す。
 
-### feature-17
-
-**GTM（Google タグマネージャー）導入でユーザートラッキング**（優先度：低）
-
-- 背景：現状アプリは完全静的・バックエンドなし（[architecture](./design/architecture.md) §1）で、利用状況を計測する手段を持たない（どの画面・どのモードがどれだけ使われるか不明）。学習体験の改善判断の材料として、GTM を入れてアクセス／行動のトラッキングをしたい。
-- 対応：GTM コンテナを公開ページ（`public/` の素 HTML＝LP・キャラ紹介）とアプリ（`app.html`）に読み込み、計測タグ（GA4 等）を GTM 経由で配信する。SPA なので画面遷移は仮想ページビュー／カスタムイベントで送る（役モード・点数モード開始、クイズ回答、ヒント開封 等の学習イベントを設計）。PWA／オフラインとの整合、プライバシー（個人を特定しない＝[product-concept](./product-concept.md) の個人学習思想）と Consent／プライバシー表記の要否、計測 ID・コンテナ ID の管理方法（CI 変数か直書きか）を確認・決定する。
-  - **オフライン計測の論点**：オンライン起動はそのまま計上でき、`display-mode: standalone` 判定で「PWA 起動 vs ブラウザ閲覧」を分けられる。オフライン起動は素の GTM/GA だと送信できず落ちる（`gtm.js` 未キャッシュなら GTM 自体が起動しない）ため、取りこぼさないなら Service Worker 側の仕掛けが要る＝Workbox の offline-google-analytics（`workbox-google-analytics`）で収集リクエストを横取りし Background Sync でキュー→再接続時に元タイムスタンプで再送。ただし GA4 のタイムスタンプ補正ウィンドウ（概ね 72 時間）を超えた再送は破棄、再接続しない端末は原理的に不可。導入時にこの方式を採るか（precache 込み）を判断する。
-- 該当：`public/**/*.html`（LP・キャラ紹介の `<head>`）・`app.html`（アプリの `<head>`）・イベント発火点は `src/ui/`（セッション開始・回答・ヒント等）。設計・URL/PWA は [architecture](./design/architecture.md) §4・[development](./dev/development.md)。
-
 ### feature-8
 
 **ダブルリーチを出題に含める**（優先度：中）
@@ -103,11 +94,12 @@
 
 後回し・いつかやる候補の置き場（特定の作業に紐付かない将来アイデア）。着手が決まった段で機能追加・リファクタリングへ引き上げる。
 
-- 学習イベント計測のフェーズ2（行動の質）：旧 feature-18 フェーズ1（6イベント＝`track()` ラッパ＋GTM/GA4 配信）は実装・本番稼働済み（契約は [analytics.md](./spec/analytics.md)）。任意の追加計測＝`highlight_click`（クリック内訳ハイライトの利用・`category`）・`character_select`（キャラ選択画面の探索）・`setting_change`（どのルールで遊ぶか・`key`/`value`。`playerName` 除外）・画面遷移の仮想ページビュー・PWA インストール／`display-mode: standalone` 判定（リピーター把握、[feature-17](#feature-17) のオフライン論点の前段）・不正解時の `mistake_kind`（[refactoring-13](#refactoring-13) の MistakeKind 精査後）。発火点（`track()` 呼び出し）を足すだけで取れる（土台は不変）。
+- 学習イベント計測のフェーズ2（行動の質）：旧 feature-18 フェーズ1（6イベント＝`track()` ラッパ＋GTM/GA4 配信）は実装・本番稼働済み（契約は [analytics.md](./spec/analytics.md)）。任意の追加計測＝`highlight_click`（クリック内訳ハイライトの利用・`category`）・`character_select`（キャラ選択画面の探索）・`setting_change`（どのルールで遊ぶか・`key`/`value`。`playerName` 除外）・画面遷移の仮想ページビュー・PWA インストール／`display-mode: standalone` 判定（リピーター把握、下記「オフライン計測（GA4）」の前段）・不正解時の `mistake_kind`（[refactoring-13](#refactoring-13) の MistakeKind 精査後）。発火点（`track()` 呼び出し）を足すだけで取れる（土台は不変）。
 - 役満シード生成、手続き的な任意合法和了形の生成。
 - 間違い復習、出題範囲の細かな調整。
 - サポートキャラの追加（順次）。
 - LP／キャラ紹介ページからアプリへのキャラ指定ディープリンク（URL でキャラを選択状態にして起動）。ルーティング未整備（[screens.md](./design/screens.md) §6。旧 feature-1／feature-5 から引き継ぐ将来分）。
+- オフライン計測（GA4）：オフライン起動分は素の GTM/GA だと取りこぼす（`gtm.js` 未キャッシュで GTM 自体が起動しない）。取るなら Workbox の offline-google-analytics（`workbox-google-analytics`）で収集リクエストを横取りし Background Sync キュー→再接続時に元タイムスタンプで再送（GA4 のタイムスタンプ補正ウィンドウ〔約72h〕超過は破棄・再接続しない端末は不可）。precache 込みで導入するか判断。GTM の素の導入・オンライン計測は稼働済み。
 - 累計正答数による表情/衣装/特別セリフのアンロック・節目演出（好感度）。
 - 音（SE/BGM）の実装（[sound](./design/sound.md)）。収集済み SE の再生配線（`AppSettings.se`／autoplay 制限／precache）と BGM。SE 素材の収集は [feature-9](#feature-9) が先。
 - 連続正解などのゲーム要素。
