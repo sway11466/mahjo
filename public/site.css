@@ -512,6 +512,22 @@ img {
   color: var(--muted);
 }
 
+.foot-nav {
+  margin-top: 0.9rem;
+  display: flex;
+  gap: 1.2rem;
+  justify-content: center;
+}
+
+.foot-nav a {
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.foot-nav a:hover {
+  color: var(--text);
+}
+
 /* ── キャラ紹介ページ ── */
 .char-hero {
   display: grid;
@@ -614,6 +630,17 @@ img {
   margin-inline: auto;
 }
 
+.prose h1 {
+  font-size: clamp(1.7rem, 5vw, 2.2rem);
+  margin: 0 0 0.4rem;
+}
+
+.prose__meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0 0 1.6rem;
+}
+
 .prose h2 {
   font-size: 1.3rem;
   margin: 2rem 0 0.6rem;
@@ -621,6 +648,25 @@ img {
 
 .prose p {
   color: var(--muted);
+}
+
+.prose a {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.prose a:hover {
+  color: var(--text);
+}
+
+.prose a.backlink {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.prose a.backlink:hover {
+  color: var(--text);
 }
 
 .backlink {
