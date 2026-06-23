@@ -27,29 +27,6 @@
   - **オフライン計測の論点**：オンライン起動はそのまま計上でき、`display-mode: standalone` 判定で「PWA 起動 vs ブラウザ閲覧」を分けられる。オフライン起動は素の GTM/GA だと送信できず落ちる（`gtm.js` 未キャッシュなら GTM 自体が起動しない）ため、取りこぼさないなら Service Worker 側の仕掛けが要る＝Workbox の offline-google-analytics（`workbox-google-analytics`）で収集リクエストを横取りし Background Sync でキュー→再接続時に元タイムスタンプで再送。ただし GA4 のタイムスタンプ補正ウィンドウ（概ね 72 時間）を超えた再送は破棄、再接続しない端末は原理的に不可。導入時にこの方式を採るか（precache 込み）を判断する。
 - 該当：`public/**/*.html`（LP・キャラ紹介の `<head>`）・`app.html`（アプリの `<head>`）・イベント発火点は `src/ui/`（セッション開始・回答・ヒント等）。設計・URL/PWA は [architecture](./design/architecture.md) §4・[development](./dev/development.md)。
 
-### feature-18
-
-**SPA 学習イベントの計測（GTM カスタムイベント）**（優先度：低）
-
-- 状況：**フェーズ1のコード（dataLayer 送出）は実装済み**——`track()` ラッパ（`src/ui/analytics/track.ts`）＋6イベントの発火配線（`src/ui/main/MainScreen.tsx`、すべて操作ハンドラから送出）。イベント契約の正は [analytics.md](./spec/analytics.md)。**残りは管理画面作業**（GTM 2コンテナで dataLayer→GA4 マップ＋公開、GA4 2プロパティでカスタムディメンション登録、preview の DebugView 確認→本番昇格）と**フェーズ2**（下記・未実装）。
-- 背景：GTM の土台（preview/本番の2コンテナ＋環境判定スニペットを LP `public/index.html`・アプリ `app.html` に設置）は導入済みで、オンラインのページビューは GA4（preview＝mahjo-preview／本番＝mahjo-prd）に流れている（[feature-17](#feature-17) のうち「素の導入」分が稼働）。一方、SPA 内の**学習行動**（モード開始・出題・回答・ヒント・解説）は仮想イベントを送らないと見えない。背骨（[product-concept](./product-concept.md) §3＝キャラ駆動・役→点数・答えを言わない段階ヒント）が実際にどう使われているかを測るため、学習イベントを設計して送る。**`character_id` を全イベント共通パラメータにする**のが核（キャラ駆動なので、どの指標もキャラ別に切れるようにする）。
-- 対応：発火は ui 層に閉じ（副作用＝[architecture](./design/architecture.md) §2。engine/session/hints は純 TS のまま）、薄い `track(event, params)` が `dataLayer.push` するだけにする。GTM 側で dataLayer イベント→GA4 イベントへマップし、両コンテナを公開（preview で DebugView 確認→本番へ昇格）。プライバシー：個人特定情報は送らない（`AppSettings.playerName` は**送らない**）。「ミスを数える」のは集計の話で、プレッシャーをかけない（提示の原則）と両立（[data-model](./design/data-model.md) §16）。フェーズで刻む：
-  - **フェーズ1（最小・効果大）**
-
-    | イベント | 発火 | パラメータ | 取得意図 |
-    |---|---|---|---|
-    | `mode_start` | セッション開始（1回） | `character_id`, `mode` | 開始数・キャラ別/モード別の内訳（役→点数の検証） |
-    | `question_view` | 各局の出題（最大8回） | `character_id`, (`target`) | 出題数・どこで離脱するか |
-    | `quiz_answer` | 4択を選択 | `character_id`, `correct`, (`target`) | 回答数・**正答率**（学習アプリの主指標） |
-    | `hint_open` | ヒント段を開く | `character_id`, `level` | ヒント使用数・**どこまで掘るか**（段階ヒントの検証） |
-    | `explain_view` | 回答後の解説に入る | `character_id` | 解説到達数 |
-    | `session_complete` | 8問終了 | `character_id`, `mode`, `correct_count` | **完走率**（`mode_start` の対） |
-
-  - **フェーズ2（任意・行動の質）**：`highlight_click`（`category`＝クリック内訳ハイライトの利用）・`character_select`（キャラ選択画面の探索）・`setting_change`（`key`/`value`＝どのルールで遊ぶか。`playerName` 除外）・画面遷移の仮想ページビュー・PWA インストール／`display-mode: standalone` 判定（リピーター把握、[feature-17](#feature-17) のオフライン論点の前段）・不正解時の `mistake_kind`（[refactoring-13](#refactoring-13) の精査後）。
-  - **GA4 側の設定**：イベントパラメータをレポートの軸にするには**カスタムディメンション登録**が要る（管理→カスタム定義、スコープ＝イベント）。フェーズ1は `character_id`・`mode`・`correct` を登録（`character_id` は1つ登録すれば全イベントで切れる）。
-  - **命名**：GA4 慣習の snake_case・低カーディナリティ。`character_id` はイベントパラメータ（ユーザープロパティにしない＝キャラはセッションごとに変わるため、その時のキャラを各イベントに載せる）。
-- 該当：`src/ui/`（`track()` ラッパ＋発火点の配線＝セッション開始・出題・回答・ヒント・解説・完走。発火点の場所は [session.md](./spec/session.md) §4 場面に対応）。GTM 2コンテナ（dataLayer→GA4 マップ＋公開）・GA4 2プロパティ（カスタムディメンション登録）。土台（コンテナ・スニペット）は [feature-17](#feature-17)。設計・配信は [architecture](./design/architecture.md) §2/§4・[development](./dev/development.md)。
-
 ### feature-8
 
 **ダブルリーチを出題に含める**（優先度：中）
@@ -126,6 +103,7 @@
 
 後回し・いつかやる候補の置き場（特定の作業に紐付かない将来アイデア）。着手が決まった段で機能追加・リファクタリングへ引き上げる。
 
+- 学習イベント計測のフェーズ2（行動の質）：旧 feature-18 フェーズ1（6イベント＝`track()` ラッパ＋GTM/GA4 配信）は実装・本番稼働済み（契約は [analytics.md](./spec/analytics.md)）。任意の追加計測＝`highlight_click`（クリック内訳ハイライトの利用・`category`）・`character_select`（キャラ選択画面の探索）・`setting_change`（どのルールで遊ぶか・`key`/`value`。`playerName` 除外）・画面遷移の仮想ページビュー・PWA インストール／`display-mode: standalone` 判定（リピーター把握、[feature-17](#feature-17) のオフライン論点の前段）・不正解時の `mistake_kind`（[refactoring-13](#refactoring-13) の MistakeKind 精査後）。発火点（`track()` 呼び出し）を足すだけで取れる（土台は不変）。
 - 役満シード生成、手続き的な任意合法和了形の生成。
 - 間違い復習、出題範囲の細かな調整。
 - サポートキャラの追加（順次）。
