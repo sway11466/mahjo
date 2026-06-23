@@ -65,15 +65,6 @@
 - 対応：[sound](./design/sound.md)「効果音一覧」の MVP 分（牌を置く・選択肢・正解・不正解・終了）から着手。Kenney（UI 系まとめ取り）・Pixabay（牌音・正解・不正解・ファンファーレ）等の表記不要ソースで候補を集めて選定 → 静的アセット化（[character-guide](./characters/character-guide.md) §3 の WebP/最適化に準じる）→ ライセンス台帳（ファイル名／出所URL／ライセンス種別）を作成（置き場は着手時に決定）。選定は人手の感性領域（[testing](./dev/testing.md) §6）。次・後の優先度分（ヒント・解説ハイライト・メニュー・あいさつ）は順次。
 - 該当：新規（資産。`src/assets/` 配下＋台帳）。方針の正は [sound](./design/sound.md)「制作」。再生実装は parking lot「音（SE/BGM）の実装」。
 
-### feature-11
-
-**画風のハウススタイル統一とまおの画風刷新**（優先度：中。v1 完成後に着手）
-
-- 背景：キャラが増える（りん制作中）と画風が分かれる——まお＝やわらかい moe（細線＋ツヤ/グラデ塗り）／りん＝くっきり太線＋フラットなセル塗り（王道アニメ調）。キャラ選択画面で並ぶと**一体感が崩れる**。さらに、まおの柔らかい縁は切り抜きで**フリンジ（白フチ）が出やすく加工しづらい**（旧 feature-10 の根因）。くっきり画風は境界が明確で**抜きやすくフリンジが出にくい**（[character-guide](./characters/character-guide.md) §4「抜きの綺麗さは元絵の品質が上限」）。
-- 対応：**共通ハウススタイルを定義**（例 `clean bold crisp anime lineart, sharp clean outlines, flat-ish cel shading, modest gloss`）し、[character-guide](./characters/character-guide.md) と各 `character-<id>.md` §3 に反映。**まおを新画風で t2i 再生成**（i2i 再塗りは線が眠くなるので不可＝新規 t2i で仕切り直し）し、master／立ち絵／バストアップ／表情差分を作り直して**同名上書き**（配線不変）。個性は色・モチーフ・表情で出し、レンダリングは統一。**v1（アプリ完成）後に着手**。
-- 内包：**旧 feature-10（ポートレートのフリンジ除去）を統合**。まおを新画風で作り直せばフリンジは根本解消するため、別途の脱マット作業は不要（v1 までは現行のソフト画像のまま運用）。
-- 該当：`docs/characters/character-guide.md`・`docs/characters/mao/character-mao.md` §3・`src/assets/characters/mao/*`（再生成・同名上書き）。今後の新キャラも共通ハウススタイルに従う。
-
 ### feature-12
 
 **設定画面に並べただけで未実装の項目を、実際に動くよう配線する**（優先度：低）
