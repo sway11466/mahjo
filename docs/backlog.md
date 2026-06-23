@@ -31,6 +31,7 @@
 
 **SPA 学習イベントの計測（GTM カスタムイベント）**（優先度：低）
 
+- 状況：**フェーズ1のコード（dataLayer 送出）は実装済み**——`track()` ラッパ（`src/ui/analytics/track.ts`）＋6イベントの発火配線（`src/ui/main/MainScreen.tsx`、すべて操作ハンドラから送出）。イベント契約の正は [analytics.md](./spec/analytics.md)。**残りは管理画面作業**（GTM 2コンテナで dataLayer→GA4 マップ＋公開、GA4 2プロパティでカスタムディメンション登録、preview の DebugView 確認→本番昇格）と**フェーズ2**（下記・未実装）。
 - 背景：GTM の土台（preview/本番の2コンテナ＋環境判定スニペットを LP `public/index.html`・アプリ `app.html` に設置）は導入済みで、オンラインのページビューは GA4（preview＝mahjo-preview／本番＝mahjo-prd）に流れている（[feature-17](#feature-17) のうち「素の導入」分が稼働）。一方、SPA 内の**学習行動**（モード開始・出題・回答・ヒント・解説）は仮想イベントを送らないと見えない。背骨（[product-concept](./product-concept.md) §3＝キャラ駆動・役→点数・答えを言わない段階ヒント）が実際にどう使われているかを測るため、学習イベントを設計して送る。**`character_id` を全イベント共通パラメータにする**のが核（キャラ駆動なので、どの指標もキャラ別に切れるようにする）。
 - 対応：発火は ui 層に閉じ（副作用＝[architecture](./design/architecture.md) §2。engine/session/hints は純 TS のまま）、薄い `track(event, params)` が `dataLayer.push` するだけにする。GTM 側で dataLayer イベント→GA4 イベントへマップし、両コンテナを公開（preview で DebugView 確認→本番へ昇格）。プライバシー：個人特定情報は送らない（`AppSettings.playerName` は**送らない**）。「ミスを数える」のは集計の話で、プレッシャーをかけない（提示の原則）と両立（[data-model](./design/data-model.md) §16）。フェーズで刻む：
   - **フェーズ1（最小・効果大）**
