@@ -34,6 +34,7 @@ import { CharacterStage, type StageAction, type StageBadge } from '../character/
 import { assetUrl, portraitUrl } from '../character/avatarAssets.ts';
 import { selectionMarkFor } from '../character/selectionMark.tsx';
 import { themeColorOf } from '../../characters/index.ts';
+import { track } from '../analytics/track.ts';
 import './MainScreen.css';
 
 // 選択 → 答え合わせの溜め（ms）。御札を置いてから少し置いて正誤を開示（演出＝ui の担当）。
@@ -129,7 +130,16 @@ export function MainScreen({
     revealTimer.current = window.setTimeout(() => {
       revealTimer.current = null;
       setPendingIndex(null);
-      advanceTo(answerCurrent(session, i));
+      const next = answerCurrent(session, i);
+      // 回答（4択選択）の計測。正答率＝学習アプリの主指標（feature-18 フェーズ1）。
+      const answer = next.answers[next.index];
+      track({
+        event: 'quiz_answer',
+        character_id: character.id,
+        correct: answer?.correct ?? false,
+        target: next.question.target,
+      });
+      advanceTo(next);
     }, REVEAL_DELAY_MS);
   };
   const onNext = () => {
@@ -142,14 +152,40 @@ export function MainScreen({
       current.correct,
     );
     setProgress(p);
-    advanceTo(nextProblem(session, p, rng, rules));
+    const next = nextProblem(session, p, rng, rules);
+    // 8問終了＝完走（mode_start の対）。途中は次の出題。
+    if (next.status === 'finished') {
+      track({
+        event: 'session_complete',
+        character_id: character.id,
+        mode: next.mode,
+        correct_count: next.correctCount,
+      });
+    } else {
+      track({
+        event: 'question_view',
+        character_id: character.id,
+        target: next.question.target,
+      });
+    }
+    advanceTo(next);
   };
   const onRestart = () => {
     clearPending();
     advanceTo(startQuiz(mode, progress, rng, rules));
   };
   // あいさつ → 出題（1問目を表示）。盤面はここから出る。
-  const onBegin = () => advanceTo(beginQuiz(session));
+  const onBegin = () => {
+    const next = beginQuiz(session);
+    // セッション開始（はじめる押下＝実際に遊び始めた1回）＋1問目の出題を計測。
+    track({ event: 'mode_start', character_id: character.id, mode: next.mode });
+    track({
+      event: 'question_view',
+      character_id: character.id,
+      target: next.question.target,
+    });
+    advanceTo(next);
+  };
 
   // 1ターンの提示モデル（何を見せるか）は session が組み立てる。ui は「どう見せるか」だけ：
   // line/expression/highlights/選択 は view-state を読むだけ。表情→画像の解決・操作（onClick）・
@@ -170,14 +206,26 @@ export function MainScreen({
     !greeting &&
     pendingIndex === null &&
     hintOpenCount < hintSteps.length;
-  const onHint = () =>
+  const onHint = () => {
+    if (hintOpenCount >= hintSteps.length) return;
+    // ヒント段を開く計測：どこまで掘るか＝段階ヒントの検証（feature-18 フェーズ1）。
+    track({
+      event: 'hint_open',
+      character_id: character.id,
+      level: hintSteps[hintOpenCount]!.level,
+    });
     setHintOpenCount((c) => Math.min(c + 1, hintSteps.length));
+  };
 
   // 解説ウォークスルー（回答後）。進行位置は ui（explainIndex）。バッジ・操作の素に使う。
   const explainSteps = buildExplainSteps(session, character);
   const explaining = answered && explainIndex !== null;
   const onShowExplain = () => {
-    if (explainSteps.length > 0) setExplainIndex(0);
+    if (explainSteps.length > 0) {
+      // 回答後の解説に入った計測（解説到達数）。
+      track({ event: 'explain_view', character_id: character.id });
+      setExplainIndex(0);
+    }
   };
   const onExplainNext = () => {
     if (explainIndex === null) return;
