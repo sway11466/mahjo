@@ -27,15 +27,6 @@
   - **オフライン計測の論点**：オンライン起動はそのまま計上でき、`display-mode: standalone` 判定で「PWA 起動 vs ブラウザ閲覧」を分けられる。オフライン起動は素の GTM/GA だと送信できず落ちる（`gtm.js` 未キャッシュなら GTM 自体が起動しない）ため、取りこぼさないなら Service Worker 側の仕掛けが要る＝Workbox の offline-google-analytics（`workbox-google-analytics`）で収集リクエストを横取りし Background Sync でキュー→再接続時に元タイムスタンプで再送。ただし GA4 のタイムスタンプ補正ウィンドウ（概ね 72 時間）を超えた再送は破棄、再接続しない端末は原理的に不可。導入時にこの方式を採るか（precache 込み）を判断する。
 - 該当：`public/**/*.html`（LP・キャラ紹介の `<head>`）・`app.html`（アプリの `<head>`）・イベント発火点は `src/ui/`（セッション開始・回答・ヒント等）。設計・URL/PWA は [architecture](./design/architecture.md) §4・[development](./dev/development.md)。
 
-### feature-16
-
-**キャラ表情差分の加工・配布・登録**（優先度：高）
-
-- 背景：まお・りんの表情ソース（リアクション＋ストーリー）が `original/` に揃った（PR #19）が、WebP化・`src/assets` 配置・`expressions[]` 登録が未。アプリにはまだ neutral 系しか反映されていない。
-- 対応：キャラごとにクロップ枠を確定（master を切る→透過→640×768 で既存 neutral と顔スケールを合わせる）→ `original/` の全表情を クロップ→透過→640×768→WebP 化し `src/assets/characters/<id>/` に配置（リアクション・ストーリー両方＝アセット管理は共通）。コードはソース上で区別：まおは `expressions[]` にリアクション5つ（happy/troubled/smile/thinking/insight）を追記、りんは宣言済みで画像配置により自動有効化。ストーリー表情（confused/determined/surprised/relieved/bashful/pained）は `expressions[]` に入れずパス参照（[character-guide](./characters/character-guide.md) §3）。検証は typecheck/build/test（vitest は OneDrive 対策で `--pool=threads`）。
-- 関連（別タスク）：ひすいのキャラ立ち上げ・第一話の NPC アート（漁師のおっちゃん／香辛料屋のおばちゃん）は本項の外（[story/episode-01.md](./story/episode-01.md)）。
-- 該当：`docs/characters/{mao,rin}/original/`・`src/assets/characters/{mao,rin}/`・`src/characters/mao/index.ts`（`expressions`）。加工手順は [character-guide](./characters/character-guide.md) §4 ステップ2。
-
 ### feature-18
 
 **SPA 学習イベントの計測（GTM カスタムイベント）**（優先度：低）
