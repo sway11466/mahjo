@@ -41,8 +41,8 @@ Use the attached blank vertical (3:4) image only as canvas/aspect; plain white b
 
 [PATTERN — fixed zoned layout, LOW density, asymmetric, wide plain black space, crimson as thin line/edge accents only]
 - flame motif (緋の炎): a few stylized crimson flame-tongues (thin tapering licks with negative-space inner cut-outs) climbing low from the LEFT hem upward along one side only (asymmetric, not mirrored), small and sparse;
-- crow-feather motif: a single crimson crow feather mark at the RIGHT chest near the collar, and a couple of small scattered feather accents trailing off one sleeve cuff;
-- trigram yao-lines (卦の爻線, the broken/solid horizontal bars of the I-Ching): one short stacked trigram of thin crimson bars on the LEFT upper sleeve, fixed to that zone;
+- crow-feather motif: a single crimson crow-feather mark printed FLAT on the cloth at the RIGHT chest near the collar — a flat printed pattern on the fabric, NOT a real 3D feather sticking out; fixed to that ONE chest zone only (NO feathers anywhere on the sleeves);
+- trigram yao-lines (卦の爻線, the broken/solid horizontal bars of the I-Ching): one short stacked trigram of thin crimson bars printed FLAT on the LEFT sleeve CUFF, fixed to that zone (the cuff is the trigram zone);
 - all card-face / feather / glyph details are crimson UNREADABLE decorative glyphs (no real kanji, no legible text);
 - use ONLY the listed motifs (flame, crow feather, trigram bars) — do NOT add any unspecified pattern, NO clouds, NO butterflies, NO stars, NO dragons; keep large areas of plain black fabric (minimal, restrained, lots of negative space).
 
@@ -53,6 +53,7 @@ scary, intimidating, menacing, sinister, gloomy, evil villain aura, dark shadow 
 pale lifeless skin, grey or ashen skin, sickly pallor, cold-toned bluish skin, vampire pallor, corpse-like complexion, dull desaturated skin;
 tall adult proportions, 8-head tall, mature grown man, long adult face, old, lanky;
 girl, female, feminine figure, breasts, soft girlish makeup face, long flowing girl hair, twin-tails, odango buns;
+feathers physically sticking out of the sleeve, loose 3d feathers escaping the cuff, real protruding feathers, scattered feathers, feathers on the sleeves;
 clouds, cloud motif, butterflies, vines, stars, sparkles, dragon, phoenix bird printed on cloth;
 large red fabric area, fully red outfit, neon red, pink;
 holding object, arms crossed, hands raised in front of body, arms covering the robe, weapon, staff, fan, cards in hand;
@@ -90,7 +91,7 @@ Same character (around 15, black upswept spiky hair with a single crimson fringe
 
 [STYLE] clean crisp anime lineart, sharp clean outlines, proper anime cel shading with hard-edged fold shadows; flat cel style, restrained gloss; cool muted palette for the outfit, SKIN kept warm and healthy.
 
-[OUTFIT + PATTERN] same BLACK daoist changshan, high closed mandarin collar; crimson ONLY as thin edges/trim/cuffs/inner lining; same low-density asymmetric motifs — sparse crimson flame-tongues low on one side of the hem, one crimson crow feather at a chest, a short trigram-bar mark on one upper sleeve; wide plain black space; use ONLY these motifs, NO clouds, NO butterflies, NO stars, NO dragons.
+[OUTFIT + PATTERN] same BLACK daoist changshan, high closed mandarin collar; crimson ONLY as thin edges/trim/cuffs/inner lining; same low-density asymmetric motifs — sparse crimson flame-tongues low on one side of the hem, one crimson crow feather printed FLAT at a chest (NOT a 3d feather sticking out, NO feathers on the sleeves), a short trigram-bar mark printed flat on one sleeve CUFF; wide plain black space; use ONLY these motifs, NO clouds, NO butterflies, NO stars, NO dragons.
 
 ── AVOID ──
 stiff static direct front pose, T-pose, frozen lifeless stance, twisted pose;
@@ -101,6 +102,7 @@ small child, chibi, baby face, round chubby cheeks, oversized round childlike ey
 tall adult proportions, 8-head tall, grown man, old, lanky;
 girl, female, feminine, breasts, makeup, long girl hair, twin-tails;
 both hands hidden, arms crossed hiding the robe, card covering the robe;
+feathers physically sticking out of the sleeve, loose 3d feathers escaping the cuff, real protruding feathers, scattered feathers, feathers on the sleeves;
 clouds, butterflies, vines, stars, dragon, large red area, neon red, pink;
 hat, hood, weapon, staff;
 mahjong tiles, kanji or readable text on clothing or card, garbled characters, watermark, logo, text;
@@ -126,7 +128,7 @@ NO held cards / items — he is NOT holding anything. Hands relaxed and lowered,
 
 [HAIR] glossy jet-black hair (no hat), bold upswept spiky pointed tufts (cool, stylish), long fringe framing the face that does NOT shadow the eyes, one single vivid CRIMSON inner-color streak in the fringe (the only red in the hair).
 
-[OUTFIT — collar and chest show at this crop] black daoist changshan with a high closed mandarin collar, thin crimson collar trim and a glimpse of crimson inner lining at the front opening; a single crimson crow-feather mark at the chest near the collar; deep matte black dominant, crimson only as thin accents.
+[OUTFIT — collar and chest show at this crop] black daoist changshan with a high closed mandarin collar, thin crimson collar trim and a glimpse of crimson inner lining at the front opening; a single crimson crow-feather mark printed FLAT on the cloth at the chest near the collar (NOT a 3d feather sticking out); deep matte black dominant, crimson only as thin accents.
 
 ── AVOID ──
 holding cards, items in hand, hands raised into frame;
@@ -136,6 +138,7 @@ pale lifeless skin, grey or ashen skin, sickly pallor, cold-toned skin, vampire 
 small child, chibi, baby face, round chubby cheeks, oversized round childlike eyes, big head;
 tall adult, grown man, old, lanky;
 girl, female, feminine, breasts, makeup, long girl hair, twin-tails;
+feathers physically sticking out of the sleeve, loose 3d feathers escaping the cuff, real protruding feathers, scattered feathers, feathers on the sleeves;
 clouds, butterflies, stars, dragon, large red area, neon red, pink;
 hat, hood;
 extreme close-up, cropped at the chest, framed too tight, zoomed-in face, off-center, looking away, full body;
