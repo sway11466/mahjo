@@ -275,6 +275,18 @@ smile (greeting base face), plain solid white background, no watermark, no text.
 
 WebP 化は Squoosh の代わりに ImageMagick でもよい（透過を維持・コマンドで再現可能）。透過済み PNG から `magick in.png -strip -define webp:method=6 -quality 90 out.webp`。立ち絵 `<id>-full-stand-a.webp`（全身）は元の透過 PNG が既に 3:4 ならリサイズ不要でそのまま encode（まおの `mao-full-stand-a.webp` ＝ 896×1200・61KB／りん 165KB が目安）。`<id>-portrait-<expr>` はクロップ→透過→`-resize 640x768`（上の手順ノート）まで済ませてから encode。`<id>-avatar.webp` はポートレートを 1:1 にクロップ→透過→`-resize 192x192` で encode。リサイズは必ず透過後（白地でリサイズすると白フチが出る）。
 
+#### 表情差分の透過フロー（外周手作業 → 1px収縮 → 細部手作業）
+
+ポートレート表情差分の透過（背景除去）は、白背景を一括で自動キー（連結白フラッドフィル等）すると、**腕・手が写る絵で「腕と体の間の囲まれた白」を誤爆**して余計な所まで抜ける。表情差分は手が入る絵（指さし・頬杖・口元の指 等）が多いので、自動一括は不採用とし、次のフローで固定する（mao/rin で確立。手順を絵ごとに変えず全絵で統一）。〔手作業〕＝Photopea 等／〔コマンド〕＝ImageMagick：
+
+1. **クロップ（白背景のまま）**〔コマンド〕… 各キャラの確定枠で切る（枠の値は各 `character-<id>-image-prompts.md`「確定枠」）。ここでは透過しない。
+2. **外周のみ手作業透過**〔手作業〕… figure の外側の輪郭だけ抜く（背景の大部分＝一番フリンジ〔白フチ〕が出る所）。腕の隙間など細部はこの段では残す。
+3. **アルファ1px収縮**〔コマンド〕… 外周のフチを1px削ってフリンジ掃除：`magick in.png -channel A -morphology Erode Diamond:1 +channel out.png`。背景に触れず figure 輪郭を均一に1px内側へ削るだけ＝腕の囲まれた所を誤爆しない。線画なら1pxでほぼ足りる（削った先が濃い輪郭線）。足りなければ `Diamond:2` 等。
+4. **デフリンジ＋細部の手作業透過**〔手作業〕… 残ったフチの色を内側色へ補正（デフリンジ）し、腕と体の隙間など人の判断が要る細部を手で抜く。
+5. **リサイズ → WebP**〔コマンド〕… 配布寸へ（まお＝640×768 へ拡大／りん＝等倍で既に 640×768）→ WebP（上の encode）。⚠️ リサイズは必ず透過後。
+
+> 収縮（③）とデフリンジ（④）を分け、順は **収縮 → デフリンジ**（先に最外周の汚れリングを削ってから、残ったフチを色補正する。逆だと消す予定のリングを無駄に色補正し、汚れ色を内側へ引き込む）。自動の連結白フラッドフィル＋収縮は**腕なしの絵だけ**なら綺麗だが、腕入りで誤爆するため、絵ごとの出し分けはせず全絵をこの手作業フローに統一する（ユーザー決定）。
+
 #### ステップ3：マスターから表情差分を生成（i2i・Gemini）
 
 > 前提：**master を作った生成セッションがまだ生きているなら、まず「同一セッション t2i」を試す**（上記「画質と一貫性の知見」）。線がくっきりのまま一貫性も保てる。下記 i2i は、セッションをまたいだとき／小さな表情差分だけ変えたいときの手段。
@@ -336,14 +348,14 @@ plain solid white background.
 | 定義 doc | `docs/characters/<id>/character-<id>.md` | — | 基本情報・ペルソナ・ビジュアル（identity）・好きな役 | §2 |
 | セリフ doc | `docs/characters/<id>/character-<id>-script.md` | — | 場面別＋ヒント＋解説＋誤答の全セリフ（hint-base 全キー網羅） | §2「セリフ」 |
 | 画像プロンプト doc | `docs/characters/<id>/character-<id>-image-prompts.md` | — | master・派生・使い魔の生成プロンプト集 | §4 |
-| 制作ソース | `docs/characters/<id>/`（加工後 PNG）／`original/`（生t2i＋master のみ） | `<id>-portrait-<expr>-<variant>.png` 等。master は `<id>-master-bustup.png`・`<id>-master-full.png`（original 限定） | master・加工後 PNG（i2i の種。ビルド非搭載） | §3・§4 |
+| 制作ソース | `docs/characters/<id>/`（加工後 PNG）／`original/`（生t2i＋master のみ） | `<id>-portrait-<expr>-<variant>.png` 等。master は `<id>-master-bustup.png`・`<id>-master-full.png`（original 限定） | master・加工後 PNG（クロップ＋透過済み・リサイズ前。i2i の種。ビルド非搭載） | §3・§4 |
 | 配布アバター | `src/assets/characters/<id>/` | `<id>-portrait-<expr>-<variant>.webp`・`<id>-avatar.webp`・`<id>-full-<kind>-<variant>.webp`・`<id>-familiar.webp` | アプリで使う表情差分・サムネ・立ち絵・使い魔 | §3 |
 | 配布 看板牌 | `src/assets/characters/<id>/`（既定は `src/assets/tiles/`） | `<id>-tile-pin1.webp`・`<id>-tile-sou1.webp`（既定 `pin1.webp`・`sou1.webp`） | キャラ別/既定の看板牌（1筒/1索） | §3「看板牌」・architecture §5 |
 | キャラデータ | `src/characters/<id>/index.ts` | — | `Character` 定義（ペルソナ・`reactions`・script 等のデータ化） | data-model §13 |
 | 中立ヒント | `src/hints/` | — | ヒント素（hint-base・HintProvider）＝キャラ非依存・全キャラ共有 | hint-base・hints |
 | キャラ描画 | `src/ui/character/`（`selectionMark.tsx`・`items/`・`decor/`） | — | 法具/装飾モチーフの resolver・SVG（皮＝二層分離） | architecture §5 |
 
-**制作→配布の流れ（3段）**：① `docs/characters/<id>/original/`＝t2i の未加工（i2i・再生成の種）＋ master（`<id>-master-bustup.png`・`<id>-master-full.png`）。**master はここにだけ置く**（親や配布には置かない）→ ② `docs/characters/<id>/`＝加工後の最終 PNG（透過・クロップ・正規化済み＝配布の元。クロップ中間物は `...-cropped.png` で区別し、整理後に正式名へ）→ ③ `src/assets/characters/<id>/`＝配布 WebP（②から書き出し）。`docs/`（①②）はビルド非搭載＝配布物は太らない。加工手順は §4 ステップ2。
+**制作→配布の流れ（3段）**：① `docs/characters/<id>/original/`＝t2i の未加工（i2i・再生成の種）＋ master（`<id>-master-bustup.png`・`<id>-master-full.png`）。**master はここにだけ置く**（親や配布には置かない）→ ② `docs/characters/<id>/`＝表情画像から**クロップ＋背景透過まで済ませた状態**の PNG で管理する（**リサイズはしない＝ネイティブのクロップ寸のまま**。配布の元。クロップ途中の中間物は `...-cropped.png` で区別し、透過後に正式名へ）→ ③ `src/assets/characters/<id>/`＝②を **リサイズ（例 portrait は 640×768）＋ WebP 化**して書き出した配布物。`docs/`（①②）はビルド非搭載＝配布物は太らない。加工手順は §4 ステップ2（順序＝クロップ→透過→リサイズ→WebP。白背景のままリサイズすると白フチが出るため透過を先に行う）。
 
 中立の土台 hint-base（ヒント素・全着目ポイント網羅）はキャラ非共有で、上表の `src/hints/` に対応する仕様 doc。
 
