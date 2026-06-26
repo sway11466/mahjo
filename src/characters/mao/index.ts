@@ -23,11 +23,17 @@ export const mao: Character = {
   // モチーフ（character-mao.md §3）：金の差し色＋法具＝御札・装飾＝月/星。描画は ui（selectionMark／decor）。
   accentColor: '#f5c451',
   motif: { ritual: 'ofuda', decor: 'moon' },
-  // まおが持つ表情（character-guide §2）。新画風で作り直し中で、現状は neutral のみ確定。
-  // 他の表情（thinking/insight/smile/happy/troubled）は未配置で、ui が neutral にフォールバックする
-  // （MVP＝ベース顔1枚運用。character-guide §3）。順次追加予定。正は character-mao-script.md §1。
+  // まおが持つ表情（character-guide §2）。練習モードのリアクション6種を配置済み
+  // （greeting:neutral / dealing:thinking / hinting:insight / explaining:smile / correct,finished:happy / wrong:troubled）。
+  // 出番が増えたら variant 複数（b,c…）を先頭以外に足す。正は character-mao-script.md §1。
+  // ※ confused/determined 等はストーリー用トークン（Expression 型外）なので expressions[] には入れない。
   expressions: [
     { expression: 'neutral', srcs: PORTRAITS('neutral', 'a') },
+    { expression: 'thinking', srcs: PORTRAITS('thinking', 'a') },
+    { expression: 'insight', srcs: PORTRAITS('insight', 'a') },
+    { expression: 'smile', srcs: PORTRAITS('smile', 'a') },
+    { expression: 'happy', srcs: PORTRAITS('happy', 'a') },
+    { expression: 'troubled', srcs: PORTRAITS('troubled', 'a') },
   ],
   // 場面→表情は既定マップに従う（greeting:neutral 等）。まおは上書き無し（character-mao-script.md §1）。
   reactions: {},

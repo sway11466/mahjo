@@ -38,9 +38,9 @@ describe('mao persona data', () => {
   });
 
   it('places the neutral base face that other triggers fall back to', () => {
-    // 新画風で作り直し中＝実画像は neutral のみ配置（旧ソフト画風の表情差分は削除）。
-    // greeting は既定の neutral に解決され、他の場面の表情は未配置で ui が neutral ベース顔へ
-    // フォールバックする（avatarAssets ②・character-guide §3「MVP＝ベース顔1枚」）。
+    // 練習モードのリアクション6種を配置済み（neutral/thinking/insight/smile/happy/troubled）。
+    // 未配置の場面（飾り表情など）は ui が neutral ベース顔へフォールバックする
+    // （avatarAssets ②・character-guide §3）。neutral は必ず在ること＝フォールバック先。
     const provided = new Set(mao.expressions.map((e) => e.expression));
     expect(provided.has('neutral')).toBe(true);
     expect(expressionFor(mao, 'greeting')).toBe('neutral');
