@@ -4,15 +4,61 @@
 
 ## index
 
-次回採番: bug=3 / feature=19 / refactoring=14
+次回採番: bug=9 / feature=19 / refactoring=19
 
 項目（バグ bug / 機能追加 feature / リファクタリング refactoring）を追加するときは、該当カテゴリの採番を +1 して ID を継ぐ。完了した項目は本書から削除し、番号は再利用しない（過去の使用済み番号は `git log -p -- docs/backlog.md | grep -oE '(feature|refactoring)-[0-9]+' | sort -u` で確認できる）。状態は「本書に載っていれば未完了／消えていれば完了」で表す（状態列は持たない）。優先度は各エントリ見出しに 高（設計の背骨に関わる）／中／低（飾り・潜在）で記す。
 
 ## バグ
 
-判明済みの不具合。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す。
+判明済みの不具合。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す（優先度順）。以下 bug-3〜8 は 2026-07-02 のプロダクト全体レビュー（レイヤ準拠・エンジン正確性・docs乖離・コード品質の監査）で判明。
 
-（現在、判明済みの不具合はなし）
+### bug-3
+
+**役モードのクイズで役満手が出ると正解が「0翻」になる**（優先度：高）
+
+- 背景：生成後ガード（`src/engine/generate.ts:96-99`）は実現難易度が解放帯を超えたとき1回だけ振り直し、**2回目の結果は検査しない**。清一色シード等が高点法で四暗刻に再解釈される手（例：同色 234 234 234＋666＋88 → 222 333 444 666 の4暗刻＋雀頭）を作ると役満のまま出題される（実測：`generate()` 経由で20万問中26問≒1/7,700）。`summarize`（`src/engine/score.ts:59`）は役満時 `han: 0` を返し、`buildHanQuiz`（`src/engine/mistakes.ts:51-84`）に役満分岐が無いため、4択が「0翻/1翻/2翻/3翻」・**正解が0翻**という誤った学習内容になる（点数モード側 `buildScoreQuiz` には役満分岐があり無事）。「正しさを絶対に妥協しない」（[product-concept](./product-concept.md) §3）に反する。
+- 対応：両方やるのが堅い——(1) `buildHanQuiz` に役満分岐を足す（点数モード同様に「役満」を正解値として扱う等）、(2) 生成ガードを「役満は通さない（回数上限つきで成功するまで振り直す）」に強化。まず失敗する再現テストを追加してから直す（[testing](./dev/testing.md) §9）。
+- 該当：`src/engine/mistakes.ts:51-84`・`src/engine/generate.ts:96-99`・`src/engine/score.ts:59`（役満時 `han:0` という表現自体の見直しも検討）。
+
+### bug-4
+
+**ダブルリーチ和了で裏ドラが数えられない**（優先度：高。[feature-8](#feature-8) の前提）
+
+- 背景：裏ドラ計上（`src/engine/score.ts:302`）が `win.riichi` のみを見る。ダブルリーチはリーチと排他（[scoring-rules](./spec/scoring-rules.md) §1.1＝double 成立時 `riichi` は立てない）なので、`doubleRiichi: true` の手は裏ドラが常に0翻になる（例：平和形＋裏ドラ2 → 正は 5翻満貫のところ 3翻30符 3900点。失敗テストで確認済み）。生成器の裏ドラ付与（`src/engine/generate.ts:238`）も同じく `riichi` のみ参照で同型の芽。現状は生成器が `doubleRiichi` を立てないため休眠中だが、feature-8（ダブルリーチ出題）の実装で顕在化する。
+- 対応：「リーチ状態＝`riichi || doubleRiichi`」のヘルパを1つ設け、score と generate の両所で使う。回帰テスト（ダブルリーチ＋裏ドラ）を先に追加してから直す。
+- 該当：`src/engine/score.ts:302`・`src/engine/generate.ts:238`。feature-8 の着手前に必ず直す。
+
+### bug-5
+
+**`enabledYaku` で役満をオフにすると手全体が「役なし・0点」になる**（優先度：中）
+
+- 背景：`finalize`（`src/engine/yaku.ts:218-236`）が「①役満成立→通常役を全部落とす → ②enabledYaku フィルタ」の順のため、四暗刻をオフにした設定で四暗刻ツモ手を採点すると `hasYaku: false`・0点になる（実際は門前ツモ・対々和・三暗刻が客観的に成立。実挙動で確認済み）。`enabledYaku` は出題範囲の設定（[scoring-rules](./spec/scoring-rules.md) §5）であり、和了自体が消えるのは意図でない。実害は限定的（生成器は役満シードを持たない）だが、`score()` はエンジンの公開の正なので防御する。
+- 対応：②→①の順に入れ替える（フィルタ後に残った役満で抑制判定）＝オフ役満時は通常役へフォールバック。テスト追加。
+- 該当：`src/engine/yaku.ts:218-236`。
+
+### bug-6
+
+**生成器が「一発＋嶺上開花」という物理的に不可能な和了状況を作りうる**（優先度：中)
+
+- 背景：`applyContext`（`src/engine/generate.ts:143-176`）で「リーチ＋一発」の付与と「槓＋嶺上」の付与が独立に転がるため、約0.03%で `ippatsu && rinshan` が同時に立つ。嶺上開花＝直前に槓を宣言しているので一発は必ず消えるはずで、ありえない状況を＋1翻付きで学習者に見せてしまう（なお「リーチ＋暗槓」自体は合法で問題ない）。
+- 対応：嶺上を立てるとき `ippatsu` を false に落とす。WinContext の整合性を property テストで担保（[testing](./dev/testing.md) §7）。
+- 該当：`src/engine/generate.ts:143-176`。
+
+### bug-7
+
+**`enabledYaku` 全オフの保存データで起動するとクイズ開始時に白画面クラッシュ**（優先度：中）
+
+- 背景：防御的読込（`src/storage/validate.ts:33-43`）は「boolean なら採用」のため全役 false の localStorage が妥当データとして通り、シードプールが空になって `generate` が throw（`src/engine/generate.ts:91`。フォールバックも `enabledYaku` を尊重するため空のまま）。`MainScreen.tsx:68-70` の初回レンダーで throw し、Error Boundary が無いため画面が真っ白になる。設定UIは最後のシード役をロックしており通常操作では起きないが、localStorage の手編集・部分破損（エンベロープは妥当・中身だけ全 false）や将来のシード役構成変更で発生しうる。[storage](./design/storage.md) の「解釈できないデータで動くより既定で復旧」の思想に対し救済が無い。
+- 対応：generate の最終フォールバックで `enabledYaku` を無視する、または validate で「全オフなら既定へ戻す」等の救済を入れる。あわせて Error Boundary の導入も検討。
+- 該当：`src/engine/generate.ts:87-91`・`src/storage/validate.ts:33-43`・`src/ui/App.tsx`（Error Boundary）。
+
+### bug-8
+
+**回答済み・未送りの1問ぶんの進捗が途中退出で消える**（優先度：低）
+
+- 背景：進捗適用（`src/ui/main/MainScreen.tsx:145-155`）が「次へ／結果を見る」（`onNext`）でのみ実行されるため、回答直後に「メニューに戻る」とその1問が `Progress`（correctTotal/byTarget）に反映されない。一方 analytics の `quiz_answer` は回答時に発火するので、計測と進捗の数字がズレる。影響は小（アンロック閾値が数問遅れる程度）。
+- 対応：進捗適用を回答確定時へ移す（`onNext` との二重適用にならない形で）。
+- 該当：`src/ui/main/MainScreen.tsx:136-155`。
 
 ## 機能追加
 
@@ -23,7 +69,7 @@
 **ダブルリーチを出題に含める**（優先度：中）
 
 - 背景：ダブルリーチが現状クイズに出ない。生成器（`src/engine/generate.ts:164-168`）は門前時に `riichi`（＋確率で `ippatsu`）だけを立て、`doubleRiichi` をどこでも立てない（`makeCtx` で常に false）。役一覧（実装済み）には載るが出題されない役になっている。
-- 対応：生成器で一定確率で `doubleRiichi` を立てる（`riichi` とは排他＝double 成立時 `riichi` は付けない。[scoring-rules](./spec/scoring-rules.md) §1.1）。本アプリは和了形のみ扱い局進行を持たないので「第一巡」は状況設定として `winContext` フラグで表現する（`riichi` と同じ流儀）。出題・採点・解説・誤答変換（mistakes）への波及を確認。**あわせて役一覧のダブルリーチ表現を更新する**：現状はリーチ棒のみでリーチと見分けが付かないため、出題に出すなら見分けの付く表現（例：ダブルリーチ用バッジ等）を決め、`src/ui/main/yaku-list/`（`yakuReference.ts`・`YakuList.tsx`）に反映する。
+- 対応：生成器で一定確率で `doubleRiichi` を立てる（`riichi` とは排他＝double 成立時 `riichi` は付けない。[scoring-rules](./spec/scoring-rules.md) §1.1）。本アプリは和了形のみ扱い局進行を持たないので「第一巡」は状況設定として `winContext` フラグで表現する（`riichi` と同じ流儀）。出題・採点・解説・誤答変換（mistakes）への波及を確認。**あわせて役一覧のダブルリーチ表現を更新する**：現状はリーチ棒のみでリーチと見分けが付かないため、出題に出すなら見分けの付く表現（例：ダブルリーチ用バッジ等）を決め、`src/ui/main/yaku-list/`（`yakuReference.ts`・`YakuList.tsx`）に反映する。**着手前に [bug-4](#bug-4)（ダブルリーチ時の裏ドラ計上漏れ）を先に直す。**
 - 該当：`src/engine/generate.ts:164-168`・`makeCtx`・`src/ui/main/yaku-list/`（役一覧の表現反映）。
 
 ### feature-9
@@ -59,7 +105,39 @@
 
 ## リファクタリング
 
-メイン画面（役モード）実装後のレビューで挙がった改善項目。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す。
+メイン画面（役モード）実装後のレビューで挙がった改善項目。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す（優先度順）。refactoring-14〜18 は 2026-07-02 のプロダクト全体レビューで判明。
+
+### refactoring-14
+
+**採点テストの必須ケース補充（testing-scoring-rule.md の未カバー分）**（優先度：高）
+
+- 背景：[testing-scoring-rule](./dev/testing-scoring-rule.md) が要求する必須ケースに未カバーがある：(1) 待ち符——辺張＋2符の直接アサートが無い（`fu.test.ts:66` のタイトルは「嵌張・辺張・単騎」だが実アサートは嵌張＋2と両面0のみ。単騎＋2の直接アサート・双碰0の明示も無い）。(2) 満貫境界——3翻60符が通常計算・`kiriageMangan` トグルとも未テスト（4翻30符側のみ）。(3) 点数配分——跳満以上のツモ配分（例 子倍満 4000/8000）・親側の固定値（18000/24000/36000）・翻境界の上端（7・10・12翻）・非満貫の親ツモ100点切り上げが未テスト。(4) 役満——親の役満48000が `score()` 経由で未テスト。国士十三面・大四喜の `doubleYakuman` トグル（オフ32000/オン64000）が未テスト（検出はテスト済み・トグルは四暗刻単騎のみ）。エンジンの正確性は最優先で守る領域（[testing](./dev/testing.md) §3）。
+- 対応：`test.each` のデータ駆動スイートに追加（手計算の根拠コメント付き＝testing §9）。[bug-3](#bug-3)・[bug-4](#bug-4) の回帰ケースも恒久追加する。
+- 該当：`src/engine/fu.test.ts`・`src/engine/score.test.ts`（正は [testing-scoring-rule](./dev/testing-scoring-rule.md)）。
+
+### refactoring-15
+
+**キャラ整合テストを全キャラ対象にする（現状 mao のみ）**（優先度：中）
+
+- 背景：`src/characters/characters.test.ts` のキー突き合わせ（hint-base 全キー網羅）・persona 必須場面 最低2本・MistakeKind 網羅の検証が **mao についてのみ**で、りんはテストされていない（目視頼み）。[testing](./dev/testing.md) §8「**各キャラ** script …過不足なく一致」・[hints](./spec/hints.md) §2 の要求と乖離しており、キャラ追加のたびに手動で守る形になっている。
+- 対応：レジストリ（`src/characters/index.ts`）の全キャラを `test.each` で回す形に書き換える（キャラ追加で自動的に検証対象へ入る）。
+- 該当：`src/characters/characters.test.ts`。
+
+### refactoring-16
+
+**characters 層の解決ロジックを規約どおりの層へ移設**（優先度：中）
+
+- 背景：[architecture](./design/architecture.md) §2 は「characters はロジックを持たない（文言・参照データのみ）」だが、`src/characters/index.ts` に `expressionFor`（場面→表情の解決。`src/session/view-state.ts` が使用）・`themeColorOf`（既定色フォールバック）の解決ロジックがある。あわせて `src/hints/keys.ts:2` が engine の**値**（`YAKU_TABLE`）を import しており、「hints は engine の出力型のみ参照」の規約と緊張している。
+- 対応：`expressionFor` 等の解決ロジックを session（または ui）へ移す。hints の `YAKU_TABLE` 依存は「移す」か「規約側を実態に合わせて緩める（役テーブル＝データの参照は可、と明記）」かを決め、docs と実装を一致させる（`getCharacter` などレジストリ引きの扱いも同時に明記）。
+- 該当：`src/characters/index.ts:17,22,44`・`src/session/view-state.ts`・`src/hints/keys.ts:2`・[architecture](./design/architecture.md) §2。
+
+### refactoring-17
+
+**docs と実装の乖離是正（docs を正に保つ）**（優先度：中）
+
+- 背景：「docs を正として維持する」（CLAUDE.md）に対し、実装先行・記述陳腐化が複数ある：(1) [generation](./spec/generation.md) §2「嶺上・カンは当面オフ」「ドラ表示牌は常に1枚」——実装は `P_KAN`/`P_RINSHAN` で槓・嶺上・カンドラ（＋リーチ時同数の裏）を生成済みで、確率既定表にも両者が無い。(2) [screens](./design/screens.md) §3 に「符の数え方」オーバーレイ（`FuCountingOverlay`・MainMenu の項目）が未記載。(3) [data-model](./design/data-model.md) §8 の `YakuId` 一覧に `sankantsu`（三槓子）が欠落（[scoring-rules](./spec/scoring-rules.md) §1.1 とコードには存在）。(4) [architecture](./design/architecture.md) §4「ルート `index.html` は持たず」——実際は dev 専用リダイレクトとして存在（ビルド対象外で dist には出ない＝実害なしだが文言が誤り）。(5) [scoring-rules](./spec/scoring-rules.md) §1.3 人和「MVP は満貫扱いで実装」——実態はレア役3種とも未実装（parked）。(6) [decisions](./decisions.md) 2026-06-10 の未決 (b)（script の口調）は解消済みのまま残置。
+- 対応：各 doc を実態（または最新の決定）に合わせて更新する。実装側を直すべきものが見つかれば別エントリに切り出す。
+- 該当：`docs/spec/generation.md`・`docs/design/screens.md`・`docs/design/data-model.md`・`docs/design/architecture.md`・`docs/spec/scoring-rules.md`・`docs/decisions.md`。
 
 ### refactoring-13
 
@@ -89,6 +167,20 @@
 - 対応：(1) 繰り返し使われる装飾値を `index.css` の `:root` にセマンティックなトークンとして集約（例 `--panel-border`・`--text-muted`・`--card-bg`・`--badge-bg`/`--badge-text`・`--btn-border`/`--btn-border-hover`）し、各 CSS は直値をやめてトークン参照に置換する。(2) 同型の繰り返しパターン（カード／パネル枠・サブ画面のメニューボタン・くすみ見出し等）が複数画面で重複しているものは、`.subscreen` と同じ発想で共有クラス化できるか検討（ただし「無駄を消すだけのために公開クラス/抽象を増やして意図がぼやけるなら不採用」＝[architecture](./design/architecture.md) 冒頭の指針に従う。トークン集約を主、クラス共有は意図が明確になる範囲に留める）。スート色（`--color-man` 等の意味づけ＝§5）は壊さない。見た目は不変（リファクタなので回帰なし＝目視確認）。
   - **キャラクター固有のスタイル定義は、アプリ共通トークンに混ぜず、キャラクターごとに持つ**（キャラ追加＝データ＋そのキャラのアセット／スタイルで完結し、共通 `:root` の編集を要しない＝[character-guide](./characters/character-guide.md)「キャラを足してもロジック不変」の精神）。キャラの世界観に属する装飾値（御札の朱 `#c0392b`・墨 `#2a2320`＝`character/items/Ofuda.css`、月・装飾モチーフ＝`character/decor/`、法具ホバー＝`character/RitualHoverMark.css`、立ち絵ステージ＝`character/CharacterStage.css` のキャラ寄り装飾）は、共通トークンへ吸い上げず各キャラのスコープ（当面は当該 `ui/character/**` CSS、将来はキャラ別テーマ）に閉じる。テーマ色・差し色は既存どおり `--char-glow`/`--char-accent` 等の CSS 変数で App がキャラ値を流す（[architecture](./design/architecture.md) §5・[character-guide](./characters/character-guide.md) §2「テーマ色／差し色」）＝共通トークンは「中立な器」、具体色は「キャラが注ぐ」分担を保つ。
 - 該当：`src/ui/index.css`（中立トークン追加）・`src/ui/**/*.css` 全般（直値→トークン置換。とくに `main/score-table`・`main/yaku-list`・`main/fu-counting`・`common/ReferenceOverlay`・`common/BackButton`・`start`・`settings`・`main/quiz/ChoicePanel`）。キャラ固有スタイルは `src/ui/character/**`（`items/Ofuda.css`・`decor/`・`RitualHoverMark.css`・`CharacterStage.css`）にキャラ単位で保持（共通トークンへ移さない）。指針は [architecture](./design/architecture.md) §5・[character-guide](./characters/character-guide.md)。
+
+### refactoring-18
+
+**小粒の防御・整理（2026-07-02 レビューの残り）**（優先度：低）
+
+- 背景：全体レビューで挙がった小粒の懸念のまとめ。個別エントリにするほどではないが放置すると効いてくるもの：
+  1. `buildYakuQuiz`／`buildFuQuiz` はデッドコード——`targetFor`（`src/session/problem.ts:21-23`）が `'han' | 'score'` しか返さず、役あて・符あて出題はアプリから到達不能。帰結として `Progress.byTarget` の `yaku`/`fu` は永遠に0で、[feature-14](#feature-14)（苦手の把握）実装時に空スロットで混乱の元。符あて誤答の「±5符」（35符などありえない値を出す。`src/engine/mistakes.ts:156`）も同関数内。
+  2. `src/ui/usePersistence.ts:55-61`——setState の updater 内で `storage.saveProgress` を実行（updater は純粋であるべき。StrictMode で2重実行。冪等なので現状実害なし）。`saveRules` 等と同様に updater の外へ。
+  3. `src/session/view-state.ts:206`——ヒント段の参照が「UI 側が同じ関数を別計算してクランプしている」暗黙結合前提の `!` 参照。session 側でも `Math.min` でクランプすると堅い。
+  4. `src/storage/validate.ts:51`——`akaDoraCount` が負数・巨大値も通る（生成未実装のため現状無害。[feature-12](#feature-12) の赤ドラ配線時に範囲クランプ 0〜 が要る）。
+  5. `src/ui/main/score-table/scoreTable.ts:53`——点数早見表が実戦で発生しない「25符2翻ツモ」セルを表示（七対子ツモは門前ツモが必ず付くため最低3翻。一般の早見表は「—」）。
+  6. `src/ui/App.tsx:5`——`defaultProgress` を storage から直 import（[storage](./design/storage.md) §7 を厳密に読むとフック越しに寄せる余地。App を合成点とみなすなら許容＝解釈を明記して閉じてもよい）。
+- 対応：各項目を個別判断で対処。1 は役あて・符あて出題を活かすなら feature 化・使わないなら削除を決める。6 は規約解釈の明記だけでも可。
+- 該当：`src/session/problem.ts`・`src/engine/mistakes.ts`・`src/ui/usePersistence.ts`・`src/session/view-state.ts`・`src/storage/validate.ts`・`src/ui/main/score-table/scoreTable.ts`・`src/ui/App.tsx`・docs/design/storage.md §7。
 
 ## parking lot
 
