@@ -61,14 +61,6 @@
 
 メイン画面（役モード）実装後のレビューで挙がった改善項目。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す（優先度順）。refactoring-14〜18 は 2026-07-02 のプロダクト全体レビューで判明。
 
-### refactoring-15
-
-**キャラ整合テストを全キャラ対象にする（現状 mao のみ）**（優先度：中）
-
-- 背景：`src/characters/characters.test.ts` のキー突き合わせ（hint-base 全キー網羅）・persona 必須場面 最低2本・MistakeKind 網羅の検証が **mao についてのみ**で、りんはテストされていない（目視頼み）。[testing](./dev/testing.md) §8「**各キャラ** script …過不足なく一致」・[hints](./spec/hints.md) §2 の要求と乖離しており、キャラ追加のたびに手動で守る形になっている。
-- 対応：レジストリ（`src/characters/index.ts`）の全キャラを `test.each` で回す形に書き換える（キャラ追加で自動的に検証対象へ入る）。
-- 該当：`src/characters/characters.test.ts`。
-
 ### refactoring-16
 
 **characters 層の解決ロジックを規約どおりの層へ移設**（優先度：中）
