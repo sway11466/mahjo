@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { Character, Progress } from '../../types/index.ts';
-import { characters, themeColorOf } from '../../characters/index.ts';
+import { characters } from '../../characters/index.ts';
+import { themeColorOf } from '../character/themeColor.ts';
 import { avatarThumbUrl } from '../character/avatarAssets.ts';
 import { SettingsLayout } from './SettingsLayout.tsx';
 import './settings.css';

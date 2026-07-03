@@ -61,14 +61,6 @@
 
 メイン画面（役モード）実装後のレビューで挙がった改善項目。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す（優先度順）。refactoring-14〜18 は 2026-07-02 のプロダクト全体レビューで判明。
 
-### refactoring-16
-
-**characters 層の解決ロジックを規約どおりの層へ移設**（優先度：中）
-
-- 背景：[architecture](./design/architecture.md) §2 は「characters はロジックを持たない（文言・参照データのみ）」だが、`src/characters/index.ts` に `expressionFor`（場面→表情の解決。`src/session/view-state.ts` が使用）・`themeColorOf`（既定色フォールバック）の解決ロジックがある。あわせて `src/hints/keys.ts:2` が engine の**値**（`YAKU_TABLE`）を import しており、「hints は engine の出力型のみ参照」の規約と緊張している。
-- 対応：`expressionFor` 等の解決ロジックを session（または ui）へ移す。hints の `YAKU_TABLE` 依存は「移す」か「規約側を実態に合わせて緩める（役テーブル＝データの参照は可、と明記）」かを決め、docs と実装を一致させる（`getCharacter` などレジストリ引きの扱いも同時に明記）。
-- 該当：`src/characters/index.ts:17,22,44`・`src/session/view-state.ts`・`src/hints/keys.ts:2`・[architecture](./design/architecture.md) §2。
-
 ### refactoring-13
 
 **`MistakeKind` の精査（誤答分類の honest 化）**（優先度：中。byMistake 永続化の前提＝早めに）

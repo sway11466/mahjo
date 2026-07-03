@@ -34,7 +34,7 @@ import { ScoreTableOverlay } from './score-table/ScoreTableOverlay.tsx';
 import { CharacterStage, type StageAction, type StageBadge } from '../character/CharacterStage.tsx';
 import { assetUrl, portraitUrl } from '../character/avatarAssets.ts';
 import { selectionMarkFor } from '../character/selectionMark.tsx';
-import { themeColorOf } from '../../characters/index.ts';
+import { themeColorOf } from '../character/themeColor.ts';
 import { track } from '../analytics/track.ts';
 import './MainScreen.css';
 
