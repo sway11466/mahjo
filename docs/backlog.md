@@ -69,14 +69,6 @@
 - 対応：`expressionFor` 等の解決ロジックを session（または ui）へ移す。hints の `YAKU_TABLE` 依存は「移す」か「規約側を実態に合わせて緩める（役テーブル＝データの参照は可、と明記）」かを決め、docs と実装を一致させる（`getCharacter` などレジストリ引きの扱いも同時に明記）。
 - 該当：`src/characters/index.ts:17,22,44`・`src/session/view-state.ts`・`src/hints/keys.ts:2`・[architecture](./design/architecture.md) §2。
 
-### refactoring-17
-
-**docs と実装の乖離是正（docs を正に保つ）**（優先度：中）
-
-- 背景：「docs を正として維持する」（CLAUDE.md）に対し、実装先行・記述陳腐化が複数ある：(1) [generation](./spec/generation.md) §2「嶺上・カンは当面オフ」「ドラ表示牌は常に1枚」——実装は `P_KAN`/`P_RINSHAN` で槓・嶺上・カンドラ（＋リーチ時同数の裏）を生成済みで、確率既定表にも両者が無い。(2) [screens](./design/screens.md) §3 に「符の数え方」オーバーレイ（`FuCountingOverlay`・MainMenu の項目）が未記載。(3) [data-model](./design/data-model.md) §8 の `YakuId` 一覧に `sankantsu`（三槓子）が欠落（[scoring-rules](./spec/scoring-rules.md) §1.1 とコードには存在）。(4) [architecture](./design/architecture.md) §4「ルート `index.html` は持たず」——実際は dev 専用リダイレクトとして存在（ビルド対象外で dist には出ない＝実害なしだが文言が誤り）。(5) [scoring-rules](./spec/scoring-rules.md) §1.3 人和「MVP は満貫扱いで実装」——実態はレア役3種とも未実装（parked）。(6) [decisions](./decisions.md) 2026-06-10 の未決 (b)（script の口調）は解消済みのまま残置。
-- 対応：各 doc を実態（または最新の決定）に合わせて更新する。実装側を直すべきものが見つかれば別エントリに切り出す。
-- 該当：`docs/spec/generation.md`・`docs/design/screens.md`・`docs/design/data-model.md`・`docs/design/architecture.md`・`docs/spec/scoring-rules.md`・`docs/decisions.md`。
-
 ### refactoring-13
 
 **`MistakeKind` の精査（誤答分類の honest 化）**（優先度：中。byMistake 永続化の前提＝早めに）

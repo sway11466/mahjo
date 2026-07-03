@@ -157,7 +157,7 @@ export type YakuId =
   | 'yakuhai-haku' | 'yakuhai-hatsu' | 'yakuhai-chun'
   | 'yakuhai-round' | 'yakuhai-seat'   // 場風 / 自風（連風は両方成立で 2 翻）
   | 'sanshoku-doujun' | 'sanshoku-doukou' | 'ittsuu'
-  | 'chanta' | 'junchan' | 'chiitoitsu' | 'toitoi' | 'sanankou'
+  | 'chanta' | 'junchan' | 'chiitoitsu' | 'toitoi' | 'sanankou' | 'sankantsu'
   | 'honroutou' | 'shousangen' | 'honitsu' | 'ryanpeikou' | 'chinitsu'
   | 'haitei' | 'houtei' | 'rinshan' | 'chankan'
   // 役満
