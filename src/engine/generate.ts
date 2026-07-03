@@ -93,11 +93,24 @@ export function generate(
   const seed = pick(rng, pool);
   const cap = BAND_RANK[bands[bands.length - 1]!]; // 解放帯の最上位
 
-  // 生成後ガード（generation.md §3）：複合役で実現難易度が解放帯を超えたら1回だけ振り直す。
+  // 生成後ガード（generation.md §3）：複合役で実現難易度が解放帯を超えたら1回だけ振り直し、
   // それでも超えたら許容する（複合役は学習上むしろ歓迎・厳密保証はしない）。
+  // ただし役満は許容しない：役満シードは未対応（parking lot）で、通り抜けると翻あての正解値が
+  // 壊れる（summarize が han:0 を返す）ため、役満でなくなるまで振り直す。
   let q = generateForSeed(seed, rng, rules, roundWind);
-  if (realizedRank(q, rules) > cap) q = generateForSeed(seed, rng, rules, roundWind);
-  return q;
+  let bandRerolled = false;
+  for (let attempt = 0; attempt < 300; attempt++) {
+    const rank = realizedRank(q, rules);
+    if (rank >= YAKUMAN_RANK) {
+      q = generateForSeed(seed, rng, rules, roundWind);
+    } else if (rank > cap && !bandRerolled) {
+      bandRerolled = true;
+      q = generateForSeed(seed, rng, rules, roundWind);
+    } else {
+      return q;
+    }
+  }
+  return q; // 振り直し上限（実質到達しない）。役満は mistakes.ts の防御分岐が最終網
 }
 
 /** 生成した手が実際に内包する難易度ランク：検出役のうち構築器が持つ band の最大

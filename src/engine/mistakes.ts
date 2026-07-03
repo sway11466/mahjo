@@ -49,6 +49,7 @@ interface HanCand {
 }
 
 export function buildHanQuiz(s: ScoredSummary, rng: Rng): QuizQuestion {
+  if (s.yakuman) return buildYakumanHanQuiz(rng);
   const cands: HanCand[] = [];
 
   // ドラ見落とし
@@ -81,6 +82,19 @@ export function buildHanQuiz(s: ScoredSummary, rng: Rng): QuizQuestion {
     rng,
   );
   return { target: 'han', prompt: '翻数（ハンスウ）は？', choices };
+}
+
+/** 役満の翻あて：役満は翻を数えず固定点（scoring-rules §1.2）なので、正解は「役満」。
+ *  誤答は翻数との取り違え（役満手は summarize が han:0 を返すため通常経路では正解が壊れる＝防御分岐）。 */
+function buildYakumanHanQuiz(rng: Rng): QuizQuestion {
+  const wrongs: QuizChoice[] = [13, 11, 8].map((n) => ({
+    value: hanText(n),
+    correct: false,
+    mistakeKind: 'han-miscount' as const,
+    explanation: '役満は翻を数えず固定点（翻数と取り違えるとこの値）',
+  }));
+  const correct: QuizChoice = { value: '役満', correct: true, explanation: '役満（翻を数えず固定点）' };
+  return { target: 'han', prompt: '翻数（ハンスウ）は？', choices: assemble(correct, wrongs, rng) };
 }
 
 /** 有効（1翻以上）・正解と不一致・重複なしの誤答を優先順で抽出 */

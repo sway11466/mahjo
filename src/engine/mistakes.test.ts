@@ -80,6 +80,20 @@ describe('mistakes — 翻あての変換', () => {
     const q = buildHanQuiz(summary({ han: 3 }), mulberry32(6));
     expect(values(q)).toContain('2翻');
   });
+
+  // bug-3 回帰：役満手は summarize が han:0 を返す。通常経路に流すと正解が「0翻」になるため、
+  // 役満分岐で正解を「役満」にする（役満は翻を数えず固定点＝scoring-rules §1.2）。
+  it('役満は正解「役満」・誤答は翻数との取り違え（0翻は出ない）', () => {
+    const q = buildHanQuiz(summary({ yakuman: true, han: 0, yaku: ['suuankou'], points: 32000 }), mulberry32(7));
+    expect(q.choices).toHaveLength(4);
+    expect(q.choices.find((c) => c.correct)?.value).toBe('役満');
+    expect(new Set(values(q)).size).toBe(4);
+    expect(values(q)).not.toContain('0翻');
+    for (const c of q.choices.filter((c) => !c.correct)) {
+      expect(c.mistakeKind).toBe('han-miscount');
+      expect(c.value).toMatch(/^\d+翻$/);
+    }
+  });
 });
 
 describe('mistakes — 役あての変換', () => {

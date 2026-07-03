@@ -9,6 +9,7 @@ import {
 } from './generate.ts';
 import { parse } from './parse.ts';
 import { detectYaku } from './yaku.ts';
+import { summarize } from './score.ts';
 import { getYaku } from './yaku-table.ts';
 import { mulberry32, pick } from './rng.ts';
 import { tileKind } from './tiles.ts';
@@ -184,6 +185,22 @@ describe('generate — 生成後ガード（難易度の暴れ抑制）', () => 
       const kc = q.hand.calledMelds.filter((m) => m.type === 'kantsu').length;
       expect(allTiles(q)).toHaveLength(14 + kc);
       expect(parse(q.hand).length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('generate — 生成後ガード（役満は通さない）', () => {
+  // bug-3 回帰：清一色シードは高点法で四暗刻（例 234 234 234+666+88 → 222 333 444 666 の4刻子）
+  // に再解釈されうる（generateForSeed 単体で約0.8%）。役満が通ると summarize が han:0 を返し
+  // 翻あての正解が「0翻」に壊れる。易のみ解放＋清一色（中帯）は帯超えの振り直しを必ず消費する
+  // ため、「振り直しは1回だけ・2回目は未検査」だった旧ガードではここで役満がすり抜けた。
+  it('清一色プールで大量生成しても役満は1問も出ない', () => {
+    const only = (id: YakuId): Partial<Record<YakuId, boolean>> =>
+      Object.fromEntries(seedIds().filter((x) => x !== id).map((x) => [x, false]));
+    const r = rules({ enabledYaku: only('chinitsu') });
+    for (let i = 0; i < 1000; i++) {
+      const q = generate(progress(), 'yaku', mulberry32(i * 23 + 1), r); // 易のみ解放（フォールバックで清一色）
+      expect(summarize(q.hand, q.table, q.winContext, r).yakuman).toBe(false);
     }
   });
 });
