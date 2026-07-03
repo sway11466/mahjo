@@ -53,11 +53,10 @@ export function usePersistence(): Persistence {
     },
     progressByCharacter,
     setProgressForCharacter: (characterId, next) => {
-      setProgressState((prev) => {
-        const merged = { ...prev, [characterId]: next };
-        storage.saveProgress(merged); // 即時反映＋保存
-        return merged;
-      });
+      // updater は純粋に保つ（StrictMode は updater を2重実行する）＝保存は setState の外で。
+      const merged = { ...progressByCharacter, [characterId]: next };
+      setProgressState(merged);
+      storage.saveProgress(merged); // 即時反映＋保存
     },
   };
 }

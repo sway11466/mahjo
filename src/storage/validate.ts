@@ -26,6 +26,9 @@ function bool(v: unknown, d: boolean): boolean {
 function num(v: unknown, d: number): number {
   return typeof v === 'number' && Number.isFinite(v) ? v : d;
 }
+function intInRange(v: unknown, min: number, max: number, d: number): number {
+  return typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max ? v : d;
+}
 function str(v: unknown, d: string): string {
   return typeof v === 'string' ? v : d;
 }
@@ -48,7 +51,8 @@ export function validateRuleSettings(raw: unknown): RuleSettings {
   return {
     kuitan: bool(raw.kuitan, d.kuitan),
     atozuke: bool(raw.atozuke, d.atozuke),
-    akaDoraCount: num(raw.akaDoraCount, d.akaDoraCount),
+    // 0〜12 の整数（上限＝5の牌の物理枚数：各色4枚×3色）。範囲外は壊れた保存として既定へ。
+    akaDoraCount: intInRange(raw.akaDoraCount, 0, 12, d.akaDoraCount),
     kiriageMangan: bool(raw.kiriageMangan, d.kiriageMangan),
     kazoeYakuman: bool(raw.kazoeYakuman, d.kazoeYakuman),
     doubleYakuman: bool(raw.doubleYakuman, d.doubleYakuman),
