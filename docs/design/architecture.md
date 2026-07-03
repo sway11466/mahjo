@@ -82,7 +82,8 @@ mahjo/
     storage/                localStorage 永続化（キー・version・防御的読込。純TSのIO境界）
     ui/                     画面・React コンポーネント・牌SVG・永続化の配線
     assets/                 牌=SVG / 看板牌(1筒/1索)デフォルト=ラスター(tiles/) / キャラのアバター=ラスター画像
-  app.html                  React アプリの唯一のエントリ（/app.html）。ルート index.html は持たず vite input は app.html のみ
+  app.html                  React アプリの唯一のエントリ（/app.html）。vite input は app.html のみ
+  index.html                dev 専用リダイレクト（npm run dev の / 404 回避で app.html へ転送。ビルド対象外＝dist に出ない）
   vite.config.ts
   vitest.config.ts (または vite.config 内)
   tsconfig.json
@@ -91,7 +92,7 @@ mahjo/
 
 公開サイト（LP・キャラ紹介）は React アプリ（`app.html`）と分離した素 HTML で、`public/` に置き dist ルートへ素通しコピーする（ファイルパス＝URL）。SEO を狙うため・初見の入口を軽く保つための分離。組み立ての機構：
 
-- `vite.config.ts` の `build.rollupOptions.input` は **`app.html` のみ**（ルート `index.html` を持たない）。アプリの全画面はこの SPA 内（[screens.md](./screens.md) §1〜§5）。
+- `vite.config.ts` の `build.rollupOptions.input` は **`app.html` のみ**。アプリの全画面はこの SPA 内（[screens.md](./screens.md) §1〜§5）。リポジトリ直下の `index.html` は **dev 専用のリダイレクト**（`npm run dev` で `/` が 404 にならないよう `app.html` へ転送）で、ビルド対象外＝dist には出ない。本番の `/` は `public/index.html`（LP）が担う。
 - `public/` はバンドラを通さず dist ルートへ素通しコピー＝ファイルパスがそのまま URL（素 HTML の LP・キャラ紹介・`site.css`・`img/`・`robots.txt`/`sitemap.xml`・`favicon`/`pwa-*.png`）。
 - PWA `start_url` は **`app.html`**。インストール起動・リピーターはアプリへ直行し、`/` 直アクセスだけが LP になる（LP も workbox 既定 glob で precache）。
 
