@@ -181,9 +181,9 @@ function applyContext(plan: BuildPlan, seed: YakuId, rng: Rng, rules: RuleSettin
     winContext = { ...winContext, riichi: true, ippatsu: rng() < P_IPPATSU };
   }
 
-  // 嶺上開花：槓があってツモなら一定確率で
+  // 嶺上開花：槓があってツモなら一定確率で。直前に槓を宣言している＝一発は必ず消える（両立不可）
   if (melds.some((m) => m.type === 'kantsu') && winContext.win === 'tsumo' && rng() < P_RINSHAN) {
-    winContext = { ...winContext, rinshan: true };
+    winContext = { ...winContext, rinshan: true, ippatsu: false };
   }
 
   return { ...plan, melds, winContext };

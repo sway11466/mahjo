@@ -274,6 +274,18 @@ describe('generate — 和了状況の付与（副露・リーチ・ドラ）', 
   });
 });
 
+describe('generate — 和了状況の整合（不可能な組み合わせを作らない）', () => {
+  // bug-6 回帰：嶺上開花＝直前に槓を宣言しているので一発は必ず消える。リーチ＋一発の付与と
+  // 槓＋嶺上の付与が独立に転がると ippatsu && rinshan（物理的に不可能）が約0.04%で出ていた。
+  // 暗刻ベースの sanankou シードは槓を引きやすい＝この組み合わせが最も出やすい入力。
+  it('一発と嶺上開花は同時に立たない（多数回）', () => {
+    for (let i = 0; i < 20000; i++) {
+      const q = generateForSeed('sanankou', mulberry32(i * 31 + 11), rules());
+      expect(q.winContext.ippatsu && q.winContext.rinshan).toBe(false);
+    }
+  });
+});
+
 describe('generate — カン生成', () => {
   // 暗刻ベースの toitoi/sanankou は槓を引きうる
   it('副露可能シードは槓（明/暗）を生成しうる', () => {
