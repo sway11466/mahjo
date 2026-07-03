@@ -6,7 +6,7 @@
  */
 
 import type { Character, Expression } from '../../types/index.ts';
-import { expressionFor } from '../../characters/index.ts';
+import { expressionFor } from '../../session/index.ts';
 
 // src/assets 以下を一括取り込み（eager・url 取得）。キーは本ファイルからの相対パス。
 const modules = import.meta.glob('../../assets/characters/**/*.{webp,png}', {

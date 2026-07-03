@@ -1,14 +1,4 @@
-import {
-  characters,
-  defaultCharacterId,
-  getCharacter,
-  defaultReactions,
-  defaultThemeColor,
-  expressionFor,
-  themeColorOf,
-  mao,
-} from './index.ts';
-import type { ReactionTrigger } from '../types/index.ts';
+import { characters, defaultCharacterId, getCharacter } from './index.ts';
 import { HINT_KEYS, HINT_KEY_SET } from '../hints/keys.ts';
 
 describe('characters registry', () => {
@@ -86,52 +76,5 @@ describe.each(byId)('%s hint script — hint-base 突き合わせ', (_id, c) => 
         expect(text.trim().length, `blank step in: ${key}`).toBeGreaterThan(0);
       }
     }
-  });
-});
-
-describe('mao 固有の既定', () => {
-  it('mao greets with the default neutral (no reaction override)', () => {
-    // まおは reactions 上書き無し＝あいさつは既定 neutral（character-mao.md）。
-    expect(expressionFor(mao, 'greeting')).toBe('neutral');
-  });
-});
-
-describe('themeColorOf', () => {
-  it('returns the character color when set', () => {
-    expect(themeColorOf(mao)).toBe(mao.themeColor);
-  });
-
-  it('falls back to the default color when unset', () => {
-    const { themeColor: _omit, ...noColor } = mao;
-    expect(themeColorOf(noColor)).toBe(defaultThemeColor);
-  });
-});
-
-describe('expressionFor', () => {
-  const triggers: ReactionTrigger[] = [
-    'greeting',
-    'dealing',
-    'hinting',
-    'explaining',
-    'correct',
-    'wrong',
-    'finished',
-  ];
-
-  it('falls back to the default map for triggers without an override', () => {
-    const noOverride = { ...mao, reactions: {} };
-    for (const t of triggers) {
-      expect(expressionFor(noOverride, t)).toBe(defaultReactions[t]);
-    }
-  });
-
-  it('mao greets with the default neutral (no override)', () => {
-    expect(expressionFor(mao, 'greeting')).toBe('neutral');
-  });
-
-  it('prefers a character-specific override', () => {
-    const custom = { ...mao, reactions: { correct: 'mischievous' as const } };
-    expect(expressionFor(custom, 'correct')).toBe('mischievous');
-    expect(expressionFor(custom, 'wrong')).toBe(defaultReactions.wrong);
   });
 });

@@ -7,7 +7,8 @@ import {
   type CharacterView,
   type ViewUiState,
 } from './view-state.ts';
-import { mao, defaultReactions, expressionFor } from '../characters/index.ts';
+import { mao } from '../characters/index.ts';
+import { defaultReactions, expressionFor } from './reaction.ts';
 import { mulberry32 } from '../engine/rng.ts';
 import { score } from '../engine/score.ts';
 import { mk, hand, ctx, tbl, rules } from '../engine/__tests__/hands.ts';
