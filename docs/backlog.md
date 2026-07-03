@@ -12,14 +12,6 @@
 
 判明済みの不具合。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す（優先度順）。以下 bug-3〜8 は 2026-07-02 のプロダクト全体レビュー（レイヤ準拠・エンジン正確性・docs乖離・コード品質の監査）で判明。
 
-### bug-7
-
-**`enabledYaku` 全オフの保存データで起動するとクイズ開始時に白画面クラッシュ**（優先度：中）
-
-- 背景：防御的読込（`src/storage/validate.ts:33-43`）は「boolean なら採用」のため全役 false の localStorage が妥当データとして通り、シードプールが空になって `generate` が throw（`src/engine/generate.ts:91`。フォールバックも `enabledYaku` を尊重するため空のまま）。`MainScreen.tsx:68-70` の初回レンダーで throw し、Error Boundary が無いため画面が真っ白になる。設定UIは最後のシード役をロックしており通常操作では起きないが、localStorage の手編集・部分破損（エンベロープは妥当・中身だけ全 false）や将来のシード役構成変更で発生しうる。[storage](./design/storage.md) の「解釈できないデータで動くより既定で復旧」の思想に対し救済が無い。
-- 対応：generate の最終フォールバックで `enabledYaku` を無視する、または validate で「全オフなら既定へ戻す」等の救済を入れる。あわせて Error Boundary の導入も検討。
-- 該当：`src/engine/generate.ts:87-91`・`src/storage/validate.ts:33-43`・`src/ui/App.tsx`（Error Boundary）。
-
 ### bug-8
 
 **回答済み・未送りの1問ぶんの進捗が途中退出で消える**（優先度：低）
@@ -181,4 +173,5 @@
 - 頻出表情の差分バリアント（`<id>-portrait-<expr>-b.webp` 等）の用意（`srcs` ローテーションは配線済み＝旧 refactoring-8・素材待ちで休眠。各キャラ `expressions[].srcs` に追記すれば有効化。[character-guide](./characters/character-guide.md) §4）。
 - りんの「照れ隠し」表情：ストーリー用 `bashful` を作成済み（[story/episode-01.md](./story/episode-01.md)・素材は `original/`）。リアクション系でも 照れ隠し が要るかは rin 実装時に判断（既存 `flustered` 兼用か、専用キー追加か。[character-rin](./characters/rin/character-rin.md)）。
 - 実機での感性チェック（hinting=insight の強さ・ヒントの“気づきビート”（「…あ。」等）の単調さ・smile↔happy の見分け）。[testing](./dev/testing.md) §6 のチェックリストで回す。
+- Error Boundary の導入（`src/ui/App.tsx`）：予期しない throw で白画面にせず復旧導線を出す一般防御。既知のクラッシュ経路（enabledYaku 全オフ＝旧 bug-7）は出題入口の無害化（`sanitizeForGeneration`）で塞ぎ済みで、残りは未知の例外への保険。
 - decisions.md 2026-06-10 エントリの整理（内容は hints / character-guide / character-mao-script へ移行済み。使い魔素材が入って未決が無くなったらエントリを削除）。

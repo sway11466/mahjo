@@ -73,6 +73,17 @@ export function seedPool(rules: RuleSettings, bands: Difficulty[]): YakuId[] {
   );
 }
 
+/** 出題可能な RuleSettings に整える：enabledYaku が構築器のある役を全てオフにしているとき
+ *  （localStorage の手編集・部分破損。設定UIは最後のシード役をロックするので通常操作では
+ *  起きない）、enabledYaku を無視した rules を返す。解釈できないデータで止まる（generate が
+ *  throw → 白画面）より既定で動く（storage.md §5 の防御方針）。生成と採点は同じ rules を
+ *  見るので、出題の入口（session/problem）でこれを一度通し、「生成は通るが採点は全役オフ＝
+ *  役なし」のねじれも防ぐ。 */
+export function sanitizeForGeneration(rules: RuleSettings): RuleSettings {
+  if (seedIds().some((id) => rules.enabledYaku[id] !== false)) return rules;
+  return { ...rules, enabledYaku: {} };
+}
+
 /** 進捗・モードに応じて1問生成する（高レベルの入口）。
  *  roundWind を渡すとその場風で（セッションの局に整合させて）生成する。
  *  省略時は RuleSettings.round に従いランダム（単発生成）。generation.md §2。 */
