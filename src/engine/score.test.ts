@@ -147,6 +147,20 @@ describe('summarize — ドラ', () => {
     expect(summarize(make(), table, ctx({ riichi: false }), rules()).doraHan).toBe(0);
     expect(summarize(make(), table, ctx({ riichi: true }), rules()).doraHan).toBe(1);
   });
+
+  // bug-4 回帰：ダブルリーチはリーチと排他表現（double 成立時 riichi は立てない＝scoring-rules
+  // §1.1）だが、リーチ状態には変わりないので裏ドラは同様に計上する。
+  it('裏ドラはダブルリーチ和了でも計上する（riichi と排他表現でも）', () => {
+    const t = mk();
+    const h = hand(
+      [t.m(1), t.m(2), t.m(3), t.m(4), t.m(5), t.m(6), t.p(7), t.p(8), t.p(9), t.s(2), t.s(3), t.s(5), t.s(5)],
+      t.s(4),
+    );
+    const table = tbl({ uraDoraIndicators: [suited('man', 3)] }); // 裏ドラ＝4m
+    const s = summarize(h, table, ctx({ doubleRiichi: true }), rules());
+    expect(s.yaku).toContain('double-riichi');
+    expect(s.doraHan).toBe(1);
+  });
 });
 
 import { score, scorePoints } from './score.ts';

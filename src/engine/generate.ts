@@ -17,6 +17,7 @@ import { type Rng, randInt, pick, shuffle } from './rng.ts';
 import { parse } from './parse.ts';
 import { detectYaku } from './yaku.ts';
 import { getYaku } from './yaku-table.ts';
+import { riichiActive } from './score.ts';
 
 /**
  * 出題生成（役シード方式）。出題対象の役プールからシード役を1つ抽選し、それを必ず含む
@@ -72,6 +73,17 @@ export function seedPool(rules: RuleSettings, bands: Difficulty[]): YakuId[] {
   );
 }
 
+/** 出題可能な RuleSettings に整える：enabledYaku が構築器のある役を全てオフにしているとき
+ *  （localStorage の手編集・部分破損。設定UIは最後のシード役をロックするので通常操作では
+ *  起きない）、enabledYaku を無視した rules を返す。解釈できないデータで止まる（generate が
+ *  throw → 白画面）より既定で動く（storage.md §5 の防御方針）。生成と採点は同じ rules を
+ *  見るので、出題の入口（session/problem）でこれを一度通し、「生成は通るが採点は全役オフ＝
+ *  役なし」のねじれも防ぐ。 */
+export function sanitizeForGeneration(rules: RuleSettings): RuleSettings {
+  if (seedIds().some((id) => rules.enabledYaku[id] !== false)) return rules;
+  return { ...rules, enabledYaku: {} };
+}
+
 /** 進捗・モードに応じて1問生成する（高レベルの入口）。
  *  roundWind を渡すとその場風で（セッションの局に整合させて）生成する。
  *  省略時は RuleSettings.round に従いランダム（単発生成）。generation.md §2。 */
@@ -93,11 +105,24 @@ export function generate(
   const seed = pick(rng, pool);
   const cap = BAND_RANK[bands[bands.length - 1]!]; // 解放帯の最上位
 
-  // 生成後ガード（generation.md §3）：複合役で実現難易度が解放帯を超えたら1回だけ振り直す。
+  // 生成後ガード（generation.md §3）：複合役で実現難易度が解放帯を超えたら1回だけ振り直し、
   // それでも超えたら許容する（複合役は学習上むしろ歓迎・厳密保証はしない）。
+  // ただし役満は許容しない：役満シードは未対応（parking lot）で、通り抜けると翻あての正解値が
+  // 壊れる（summarize が han:0 を返す）ため、役満でなくなるまで振り直す。
   let q = generateForSeed(seed, rng, rules, roundWind);
-  if (realizedRank(q, rules) > cap) q = generateForSeed(seed, rng, rules, roundWind);
-  return q;
+  let bandRerolled = false;
+  for (let attempt = 0; attempt < 300; attempt++) {
+    const rank = realizedRank(q, rules);
+    if (rank >= YAKUMAN_RANK) {
+      q = generateForSeed(seed, rng, rules, roundWind);
+    } else if (rank > cap && !bandRerolled) {
+      bandRerolled = true;
+      q = generateForSeed(seed, rng, rules, roundWind);
+    } else {
+      return q;
+    }
+  }
+  return q; // 振り直し上限（実質到達しない）。役満は mistakes.ts の防御分岐が最終網
 }
 
 /** 生成した手が実際に内包する難易度ランク：検出役のうち構築器が持つ band の最大
@@ -167,9 +192,9 @@ function applyContext(plan: BuildPlan, seed: YakuId, rng: Rng, rules: RuleSettin
     winContext = { ...winContext, riichi: true, ippatsu: rng() < P_IPPATSU };
   }
 
-  // 嶺上開花：槓があってツモなら一定確率で
+  // 嶺上開花：槓があってツモなら一定確率で。直前に槓を宣言している＝一発は必ず消える（両立不可）
   if (melds.some((m) => m.type === 'kantsu') && winContext.win === 'tsumo' && rng() < P_RINSHAN) {
-    winContext = { ...winContext, rinshan: true };
+    winContext = { ...winContext, rinshan: true, ippatsu: false };
   }
 
   return { ...plan, melds, winContext };
@@ -235,7 +260,7 @@ function realize(plan: BuildPlan, rng: Rng): GeneratedQuestion {
   const indicators = 1 + built.filter((b) => b.spec.type === 'kantsu').length;
   const draw = (): Tile => drawIndicator(used, rng);
   const doraIndicators = Array.from({ length: indicators }, draw);
-  const table: Table = plan.winContext.riichi
+  const table: Table = riichiActive(plan.winContext)
     ? { ...plan.table, doraIndicators, uraDoraIndicators: Array.from({ length: indicators }, draw) }
     : { ...plan.table, doraIndicators };
 

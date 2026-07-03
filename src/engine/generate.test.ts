@@ -9,6 +9,7 @@ import {
 } from './generate.ts';
 import { parse } from './parse.ts';
 import { detectYaku } from './yaku.ts';
+import { summarize } from './score.ts';
 import { getYaku } from './yaku-table.ts';
 import { mulberry32, pick } from './rng.ts';
 import { tileKind } from './tiles.ts';
@@ -188,6 +189,22 @@ describe('generate — 生成後ガード（難易度の暴れ抑制）', () => 
   });
 });
 
+describe('generate — 生成後ガード（役満は通さない）', () => {
+  // bug-3 回帰：清一色シードは高点法で四暗刻（例 234 234 234+666+88 → 222 333 444 666 の4刻子）
+  // に再解釈されうる（generateForSeed 単体で約0.8%）。役満が通ると summarize が han:0 を返し
+  // 翻あての正解が「0翻」に壊れる。易のみ解放＋清一色（中帯）は帯超えの振り直しを必ず消費する
+  // ため、「振り直しは1回だけ・2回目は未検査」だった旧ガードではここで役満がすり抜けた。
+  it('清一色プールで大量生成しても役満は1問も出ない', () => {
+    const only = (id: YakuId): Partial<Record<YakuId, boolean>> =>
+      Object.fromEntries(seedIds().filter((x) => x !== id).map((x) => [x, false]));
+    const r = rules({ enabledYaku: only('chinitsu') });
+    for (let i = 0; i < 1000; i++) {
+      const q = generate(progress(), 'yaku', mulberry32(i * 23 + 1), r); // 易のみ解放（フォールバックで清一色）
+      expect(summarize(q.hand, q.table, q.winContext, r).yakuman).toBe(false);
+    }
+  });
+});
+
 describe('generate — 和了状況の付与（副露・リーチ・ドラ）', () => {
   function handIds(q: GeneratedQuestion): number[] {
     return allTiles(q).map((t) => t.id);
@@ -254,6 +271,18 @@ describe('generate — 和了状況の付与（副露・リーチ・ドラ）', 
     expect(riichi).toBeGreaterThan(0);
     expect(open).toBeGreaterThan(0);
     expect(ippatsu).toBeLessThan(riichi); // 一発はリーチの一部（5%）
+  });
+});
+
+describe('generate — 和了状況の整合（不可能な組み合わせを作らない）', () => {
+  // bug-6 回帰：嶺上開花＝直前に槓を宣言しているので一発は必ず消える。リーチ＋一発の付与と
+  // 槓＋嶺上の付与が独立に転がると ippatsu && rinshan（物理的に不可能）が約0.04%で出ていた。
+  // 暗刻ベースの sanankou シードは槓を引きやすい＝この組み合わせが最も出やすい入力。
+  it('一発と嶺上開花は同時に立たない（多数回）', () => {
+    for (let i = 0; i < 20000; i++) {
+      const q = generateForSeed('sanankou', mulberry32(i * 31 + 11), rules());
+      expect(q.winContext.ippatsu && q.winContext.rinshan).toBe(false);
+    }
   });
 });
 
