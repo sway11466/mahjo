@@ -17,6 +17,7 @@ import { type Rng, randInt, pick, shuffle } from './rng.ts';
 import { parse } from './parse.ts';
 import { detectYaku } from './yaku.ts';
 import { getYaku } from './yaku-table.ts';
+import { riichiActive } from './score.ts';
 
 /**
  * 出題生成（役シード方式）。出題対象の役プールからシード役を1つ抽選し、それを必ず含む
@@ -248,7 +249,7 @@ function realize(plan: BuildPlan, rng: Rng): GeneratedQuestion {
   const indicators = 1 + built.filter((b) => b.spec.type === 'kantsu').length;
   const draw = (): Tile => drawIndicator(used, rng);
   const doraIndicators = Array.from({ length: indicators }, draw);
-  const table: Table = plan.winContext.riichi
+  const table: Table = riichiActive(plan.winContext)
     ? { ...plan.table, doraIndicators, uraDoraIndicators: Array.from({ length: indicators }, draw) }
     : { ...plan.table, doraIndicators };
 

@@ -7,6 +7,7 @@ import type {
   HighlightTarget,
 } from '../../types/index.ts';
 import type { Rng } from '../../engine/rng.ts';
+import { riichiActive } from '../../engine/score.ts';
 import {
   startQuiz,
   beginQuiz,
@@ -101,7 +102,7 @@ export function MainScreen({
   const selectedIndex = answered ? current!.selectedIndex : pendingIndex;
 
   // 場の状況フラグ・ドラは session の実データから（engine が生成）。
-  const riichi = session.winContext.riichi;
+  const riichi = riichiActive(session.winContext); // リーチ棒はダブルリーチでも立つ
   const ippatsu = session.winContext.ippatsu;
   const doraIndicators = session.table.doraIndicators;
   const uraDoraIndicators = session.table.uraDoraIndicators ?? [];

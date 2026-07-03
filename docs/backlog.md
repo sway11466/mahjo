@@ -12,14 +12,6 @@
 
 判明済みの不具合。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す（優先度順）。以下 bug-3〜8 は 2026-07-02 のプロダクト全体レビュー（レイヤ準拠・エンジン正確性・docs乖離・コード品質の監査）で判明。
 
-### bug-4
-
-**ダブルリーチ和了で裏ドラが数えられない**（優先度：高。[feature-8](#feature-8) の前提）
-
-- 背景：裏ドラ計上（`src/engine/score.ts:302`）が `win.riichi` のみを見る。ダブルリーチはリーチと排他（[scoring-rules](./spec/scoring-rules.md) §1.1＝double 成立時 `riichi` は立てない）なので、`doubleRiichi: true` の手は裏ドラが常に0翻になる（例：平和形＋裏ドラ2 → 正は 5翻満貫のところ 3翻30符 3900点。失敗テストで確認済み）。生成器の裏ドラ付与（`src/engine/generate.ts:238`）も同じく `riichi` のみ参照で同型の芽。現状は生成器が `doubleRiichi` を立てないため休眠中だが、feature-8（ダブルリーチ出題）の実装で顕在化する。
-- 対応：「リーチ状態＝`riichi || doubleRiichi`」のヘルパを1つ設け、score と generate の両所で使う。回帰テスト（ダブルリーチ＋裏ドラ）を先に追加してから直す。
-- 該当：`src/engine/score.ts:302`・`src/engine/generate.ts:238`。feature-8 の着手前に必ず直す。
-
 ### bug-5
 
 **`enabledYaku` で役満をオフにすると手全体が「役なし・0点」になる**（優先度：中）
@@ -61,7 +53,7 @@
 **ダブルリーチを出題に含める**（優先度：中）
 
 - 背景：ダブルリーチが現状クイズに出ない。生成器（`src/engine/generate.ts:164-168`）は門前時に `riichi`（＋確率で `ippatsu`）だけを立て、`doubleRiichi` をどこでも立てない（`makeCtx` で常に false）。役一覧（実装済み）には載るが出題されない役になっている。
-- 対応：生成器で一定確率で `doubleRiichi` を立てる（`riichi` とは排他＝double 成立時 `riichi` は付けない。[scoring-rules](./spec/scoring-rules.md) §1.1）。本アプリは和了形のみ扱い局進行を持たないので「第一巡」は状況設定として `winContext` フラグで表現する（`riichi` と同じ流儀）。出題・採点・解説・誤答変換（mistakes）への波及を確認。**あわせて役一覧のダブルリーチ表現を更新する**：現状はリーチ棒のみでリーチと見分けが付かないため、出題に出すなら見分けの付く表現（例：ダブルリーチ用バッジ等）を決め、`src/ui/main/yaku-list/`（`yakuReference.ts`・`YakuList.tsx`）に反映する。**着手前に [bug-4](#bug-4)（ダブルリーチ時の裏ドラ計上漏れ）を先に直す。**
+- 対応：生成器で一定確率で `doubleRiichi` を立てる（`riichi` とは排他＝double 成立時 `riichi` は付けない。[scoring-rules](./spec/scoring-rules.md) §1.1）。本アプリは和了形のみ扱い局進行を持たないので「第一巡」は状況設定として `winContext` フラグで表現する（`riichi` と同じ流儀）。出題・採点・解説・誤答変換（mistakes）への波及を確認。**あわせて役一覧のダブルリーチ表現を更新する**：現状はリーチ棒のみでリーチと見分けが付かないため、出題に出すなら見分けの付く表現（例：ダブルリーチ用バッジ等）を決め、`src/ui/main/yaku-list/`（`yakuReference.ts`・`YakuList.tsx`）に反映する。リーチ状態の判定は `riichiActive`（`src/engine/score.ts`）を必ず通す（`win.riichi` 直接参照だと doubleRiichi が漏れる）。
 - 該当：`src/engine/generate.ts:164-168`・`makeCtx`・`src/ui/main/yaku-list/`（役一覧の表現反映）。
 
 ### feature-9
