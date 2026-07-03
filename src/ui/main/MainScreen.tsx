@@ -134,26 +134,24 @@ export function MainScreen({
       const next = answerCurrent(session, i);
       // 回答（4択選択）の計測。正答率＝学習アプリの主指標（feature-18 フェーズ1）。
       const answer = next.answers[next.index];
+      const correct = answer?.correct ?? false;
       track({
         event: 'quiz_answer',
         character_id: character.id,
-        correct: answer?.correct ?? false,
+        correct,
         target: next.question.target,
       });
+      // 進捗は回答確定と同時に反映する。「次へ」まで待つと、押さずにメニューへ戻った1問が
+      // 消えて計測（quiz_answer）ともズレる。
+      setProgress(applyProgress(progress, session.mode, session.question.target, correct));
       advanceTo(next);
     }, REVEAL_DELAY_MS);
   };
   const onNext = () => {
     if (!current) return;
     clearPending();
-    const p = applyProgress(
-      progress,
-      session.mode,
-      session.question.target,
-      current.correct,
-    );
-    setProgress(p);
-    const next = nextProblem(session, p, rng, rules);
+    // 進捗は回答時に反映済み（onSelect）。ここは次の出題／終了への遷移のみ。
+    const next = nextProblem(session, progress, rng, rules);
     // 8問終了＝完走（mode_start の対）。途中は次の出題。
     if (next.status === 'finished') {
       track({
