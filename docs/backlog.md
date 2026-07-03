@@ -94,15 +94,12 @@
 
 **小粒の防御・整理（2026-07-02 レビューの残り）**（優先度：低）
 
-- 背景：全体レビューで挙がった小粒の懸念のまとめ。個別エントリにするほどではないが放置すると効いてくるもの：
+- 背景：全体レビューで挙がった小粒の懸念のまとめ。個別エントリにするほどではないが放置すると効いてくるもの（防御3点＝保存タイミング・ヒント段クランプ・akaDoraCount 範囲検証は対処済みで削除済み）：
   1. `buildYakuQuiz`／`buildFuQuiz` はデッドコード——`targetFor`（`src/session/problem.ts:21-23`）が `'han' | 'score'` しか返さず、役あて・符あて出題はアプリから到達不能。帰結として `Progress.byTarget` の `yaku`/`fu` は永遠に0で、[feature-14](#feature-14)（苦手の把握）実装時に空スロットで混乱の元。符あて誤答の「±5符」（35符などありえない値を出す。`src/engine/mistakes.ts:156`）も同関数内。
-  2. `src/ui/usePersistence.ts:55-61`——setState の updater 内で `storage.saveProgress` を実行（updater は純粋であるべき。StrictMode で2重実行。冪等なので現状実害なし）。`saveRules` 等と同様に updater の外へ。
-  3. `src/session/view-state.ts:206`——ヒント段の参照が「UI 側が同じ関数を別計算してクランプしている」暗黙結合前提の `!` 参照。session 側でも `Math.min` でクランプすると堅い。
-  4. `src/storage/validate.ts:51`——`akaDoraCount` が負数・巨大値も通る（生成未実装のため現状無害。[feature-12](#feature-12) の赤ドラ配線時に範囲クランプ 0〜 が要る）。
-  5. `src/ui/main/score-table/scoreTable.ts:53`——点数早見表が実戦で発生しない「25符2翻ツモ」セルを表示（七対子ツモは門前ツモが必ず付くため最低3翻。一般の早見表は「—」）。
-  6. `src/ui/App.tsx:5`——`defaultProgress` を storage から直 import（[storage](./design/storage.md) §7 を厳密に読むとフック越しに寄せる余地。App を合成点とみなすなら許容＝解釈を明記して閉じてもよい）。
-- 対応：各項目を個別判断で対処。1 は役あて・符あて出題を活かすなら feature 化・使わないなら削除を決める。6 は規約解釈の明記だけでも可。
-- 該当：`src/session/problem.ts`・`src/engine/mistakes.ts`・`src/ui/usePersistence.ts`・`src/session/view-state.ts`・`src/storage/validate.ts`・`src/ui/main/score-table/scoreTable.ts`・`src/ui/App.tsx`・docs/design/storage.md §7。
+  2. `src/ui/main/score-table/scoreTable.ts:53`——点数早見表が実戦で発生しない「25符2翻ツモ」セルを表示（七対子ツモは門前ツモが必ず付くため最低3翻。一般の早見表は「—」）。
+  3. `src/ui/App.tsx:5`——`defaultProgress` を storage から直 import（[storage](./design/storage.md) §7 を厳密に読むとフック越しに寄せる余地。App を合成点とみなすなら許容＝解釈を明記して閉じてもよい）。
+- 対応：各項目を個別判断で対処。1 は役あて・符あて出題を活かすなら feature 化・使わないなら削除を決める。3 は規約解釈の明記だけでも可。
+- 該当：`src/session/problem.ts`・`src/engine/mistakes.ts`・`src/ui/main/score-table/scoreTable.ts`・`src/ui/App.tsx`・docs/design/storage.md §7。
 
 ## parking lot
 
