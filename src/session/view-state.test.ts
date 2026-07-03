@@ -390,6 +390,15 @@ describe('buildViewState — 最終合成の特性化（現挙動の凍結）', 
     expect(vs.highlights).toEqual([]); // 解説中ではない
   });
 
+  it('ヒント段数を超えた hintOpenCount でも落ちず、最後の段へクランプする', () => {
+    // UI 側が同じ段数計算でクランプしてくれる暗黙結合に頼らない（session 側でも守る）。
+    const s = session({});
+    const allHints = buildHintSteps(s, mao);
+    const vs = buildViewState(s, mao, charView, uiState({ hintOpenCount: 99 }));
+    expect(vs.character.line).toBe(allHints[allHints.length - 1]!.text);
+    expect(vs.hintSteps).toEqual(allHints); // 開けるのは実在する段まで
+  });
+
   it('解説中：解説ステップの文言＋解説表情＋そのハイライト、回答後として開示', () => {
     const s = session({ answers: [{ selectedIndex: 1, correct: true }] });
     const steps = buildExplainSteps(s, mao);

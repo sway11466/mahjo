@@ -130,6 +130,19 @@ describe('storage — 欠けたフィールドの補完', () => {
     expect(loaded.enabledYaku).toEqual({ pinfu: false });
   });
 
+  it('akaDoraCount の範囲外・非整数は既定へ（有効域は 0〜12 の整数）', () => {
+    // 上限12＝5の牌の物理枚数（各色4枚×3色）。負数・巨大値・小数は壊れた保存データとして既定に落とす。
+    const load = (v: unknown) =>
+      createStorage(
+        memoryBackend({ [STORAGE_KEYS.rules]: envelope({ akaDoraCount: v }) }),
+      ).loadRules().akaDoraCount;
+    expect(load(-1)).toBe(0);
+    expect(load(999)).toBe(0);
+    expect(load(1.5)).toBe(0);
+    expect(load(3)).toBe(3); // 有効値はそのまま
+    expect(load(12)).toBe(12); // 上限ちょうどは有効
+  });
+
   it('appSettings の空 selectedCharacterId は既定キャラへ', () => {
     const s = createStorage(
       memoryBackend({ [STORAGE_KEYS.app]: envelope({ selectedCharacterId: '' }) }),
