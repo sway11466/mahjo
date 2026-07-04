@@ -298,7 +298,10 @@ export type HintRenderer = (plan: HintStepPlan[], script: HintScript) => HintSte
 ## 12. クイズ QuizQuestion（§3.7）
 
 ```ts
-export type QuizTarget = 'yaku' | 'han' | 'fu' | 'score';
+// クイズが問う対象。役モードは複合役がありうるため役名でなく翻で答える＝'han'、
+// 点数モードは総合（X翻Y符ZZZZ点）で答える＝'score'（screens.md §3「選択肢の値の表示」）。
+// 役名そのものの確認はクイズでなく解説・ヒント側の役割。
+export type QuizTarget = 'han' | 'score';
 
 /** 誤答の由来（学習者がやりがちなミスの種類）*/
 export type MistakeKind =
@@ -309,7 +312,7 @@ export type MistakeKind =
   | 'han-miscount';    // 翻の数え違い（役見落とし・喰い下がり無視・満貫境界）
 
 export interface QuizChoice {
-  value: string;        // 表示値（"3翻", "40符", "5200点", "三色同順" 等）
+  value: string;        // 表示値（"3翻", "3翻 40符 5200点" 等）
   correct: boolean;
   mistakeKind?: MistakeKind; // 誤答のとき：どのミスか
   explanation: string;       // 「この値は◯◯と取り違えた場合」等の理由・解説
@@ -317,7 +320,7 @@ export interface QuizChoice {
 
 export interface QuizQuestion {
   target: QuizTarget;
-  prompt: string;        // 例 "この手の役は？" "翻数は？"
+  prompt: string;        // 例 "翻数（ハンスウ）は？" "点数は？"
   choices: QuizChoice[]; // 正解1＋誤答3（ミス変換で生成）
 }
 
@@ -451,7 +454,7 @@ export interface Progress {
   correctByMode: Partial<Record<StudyMode, number>>; // モード別（難易度アンロックの駆動）
   // 苦手の把握（寄り添いアドバイスの素。出口の活用は未対応＝backlog feature-14）。
   // 任意フィールド＝既存データと共存し、欠落は防御的読込が補完する（storage.md §5・マイグレ不要）。
-  byTarget?: Partial<Record<QuizTarget, SkillStat>>; // 何が弱いか（役/翻/符/点数の定着度＝率の真実）
+  byTarget?: Partial<Record<QuizTarget, SkillStat>>; // 何が弱いか（翻/点数の定着度＝率の真実）
   // byMistake（誤り方＝MistakeKind の積み上げ）は MistakeKind 精査（backlog refactoring-13）の後に追加する。
   // 精査前に貯めると古い分類のカウントが溜まり意味がズレるため（byTarget は分類が安定なので先行）。
 }

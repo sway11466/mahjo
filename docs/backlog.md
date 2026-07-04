@@ -59,7 +59,7 @@
 
 ## リファクタリング
 
-メイン画面（役モード）実装後のレビューで挙がった改善項目。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す（優先度順）。refactoring-14〜18 は 2026-07-02 のプロダクト全体レビューで判明。
+メイン画面（役モード）実装後のレビューで挙がった改善項目。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す（優先度順）。
 
 ### refactoring-13
 
@@ -90,17 +90,6 @@
   - **キャラクター固有のスタイル定義は、アプリ共通トークンに混ぜず、キャラクターごとに持つ**（キャラ追加＝データ＋そのキャラのアセット／スタイルで完結し、共通 `:root` の編集を要しない＝[character-guide](./characters/character-guide.md)「キャラを足してもロジック不変」の精神）。キャラの世界観に属する装飾値（御札の朱 `#c0392b`・墨 `#2a2320`＝`character/items/Ofuda.css`、月・装飾モチーフ＝`character/decor/`、法具ホバー＝`character/RitualHoverMark.css`、立ち絵ステージ＝`character/CharacterStage.css` のキャラ寄り装飾）は、共通トークンへ吸い上げず各キャラのスコープ（当面は当該 `ui/character/**` CSS、将来はキャラ別テーマ）に閉じる。テーマ色・差し色は既存どおり `--char-glow`/`--char-accent` 等の CSS 変数で App がキャラ値を流す（[architecture](./design/architecture.md) §5・[character-guide](./characters/character-guide.md) §2「テーマ色／差し色」）＝共通トークンは「中立な器」、具体色は「キャラが注ぐ」分担を保つ。
 - 該当：`src/ui/index.css`（中立トークン追加）・`src/ui/**/*.css` 全般（直値→トークン置換。とくに `main/score-table`・`main/yaku-list`・`main/fu-counting`・`common/ReferenceOverlay`・`common/BackButton`・`start`・`settings`・`main/quiz/ChoicePanel`）。キャラ固有スタイルは `src/ui/character/**`（`items/Ofuda.css`・`decor/`・`RitualHoverMark.css`・`CharacterStage.css`）にキャラ単位で保持（共通トークンへ移さない）。指針は [architecture](./design/architecture.md) §5・[character-guide](./characters/character-guide.md)。
 
-### refactoring-18
-
-**小粒の防御・整理（2026-07-02 レビューの残り）**（優先度：低）
-
-- 背景：全体レビューで挙がった小粒の懸念のまとめ。個別エントリにするほどではないが放置すると効いてくるもの（防御3点＝保存タイミング・ヒント段クランプ・akaDoraCount 範囲検証は対処済みで削除済み）：
-  1. `buildYakuQuiz`／`buildFuQuiz` はデッドコード——`targetFor`（`src/session/problem.ts:21-23`）が `'han' | 'score'` しか返さず、役あて・符あて出題はアプリから到達不能。帰結として `Progress.byTarget` の `yaku`/`fu` は永遠に0で、[feature-14](#feature-14)（苦手の把握）実装時に空スロットで混乱の元。符あて誤答の「±5符」（35符などありえない値を出す。`src/engine/mistakes.ts:156`）も同関数内。
-  2. `src/ui/main/score-table/scoreTable.ts:53`——点数早見表が実戦で発生しない「25符2翻ツモ」セルを表示（七対子ツモは門前ツモが必ず付くため最低3翻。一般の早見表は「—」）。
-  3. `src/ui/App.tsx:5`——`defaultProgress` を storage から直 import（[storage](./design/storage.md) §7 を厳密に読むとフック越しに寄せる余地。App を合成点とみなすなら許容＝解釈を明記して閉じてもよい）。
-- 対応：各項目を個別判断で対処。1 は役あて・符あて出題を活かすなら feature 化・使わないなら削除を決める。3 は規約解釈の明記だけでも可。
-- 該当：`src/session/problem.ts`・`src/engine/mistakes.ts`・`src/ui/main/score-table/scoreTable.ts`・`src/ui/App.tsx`・docs/design/storage.md §7。
-
 ## parking lot
 
 後回し・いつかやる候補の置き場（特定の作業に紐付かない将来アイデア）。着手が決まった段で機能追加・リファクタリングへ引き上げる。
@@ -117,7 +106,7 @@
 - **ストーリーモード（兼ハードモード｜将来・新ゲームモード）**：世界に厄災（＝人間の悪意を増幅する思念体。[characters/world.md](./characters/world.md) §3）が起こりかけるが、麻雀の和了を正しく読むと防げる物語モード。**通常の「プレッシャーをかけない」方針からの唯一の意図的な例外**＝ハードたるゆえん（[product-concept](./product-concept.md) §3 と緊張するが、下記の失敗演出で優しさを保つ）。舞台＝[characters/world.md](./characters/world.md)。
   - **システム（構想）**：練習と同じ手牌が出る→役/点数を当てる**タイムアタック**。**1ラン＝1ステージ**（タイマー全体一本・単位/閾値はステージ内固定）。
     - **得点**：正解＝その手の配点ぶん加点／誤答＝失点。**速く回すほど大量得点**＝習熟→速い判断→報酬の好循環。
-    - **当てる単位はステージで進化**（`QuizTarget`＝yaku/han/fu/score の段に対応＝[data-model](./design/data-model.md) §12）。序盤は易しい役のみ＝**役だけ当てればOK**、目標も点数でなく「XX役を目指せ」。後半（点数へ上がる先・ボス構成）は **TBD**。
+    - **当てる単位はステージで進化**。序盤は易しい役のみ＝**役だけ当てればOK**、目標も点数でなく「XX役を目指せ」。後半（点数へ上がる先・ボス構成）は **TBD**（練習モードの `QuizTarget` は翻/点数の2値＝[data-model](./design/data-model.md) §12。ステージ用の単位が要るならその設計時に別途定める）。
     - **ブタ（役無し手）**：正解しても0点・誤答は失点＝厄災の惑わし（「正しい読みが鎮め、誤り・悪意が太らせる」§3 と一致）。
     - **失点はストーリーで重くなる**：序盤ほぼ無害→最終＝厄災本体（ラスボス）で大量失点。緊張を段階的にしか出さない。
     - **好感度ボーナス**：そのストーリーに登場するキャラとの好感度が高いと得点にボーナス（好感度＝[data-model](./design/data-model.md) §16 Progress 由来。細部 **TBD**）。
