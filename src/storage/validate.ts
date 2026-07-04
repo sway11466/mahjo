@@ -76,7 +76,7 @@ export function validateAppSettings(raw: unknown): AppSettings {
 }
 
 const STUDY_MODES: StudyMode[] = ['yaku', 'score'];
-const QUIZ_TARGETS: QuizTarget[] = ['yaku', 'han', 'fu', 'score'];
+const QUIZ_TARGETS: QuizTarget[] = ['han', 'score'];
 
 // 苦手集計（byTarget）の防御的読込。型の合う種類だけ採用し、空なら undefined（既定と同じく持たない）。
 function validateByTarget(raw: unknown): Progress['byTarget'] | undefined {

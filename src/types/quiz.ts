@@ -1,4 +1,9 @@
-export type QuizTarget = 'yaku' | 'han' | 'fu' | 'score';
+/**
+ * クイズが問う対象。役モードは複合役がありうるため役名でなく翻で答える＝'han'、
+ * 点数モードは総合（X翻Y符ZZZZ点）で答える＝'score'（screens.md §3「選択肢の値の表示」）。
+ * 役名そのものの確認はクイズでなく解説・ヒント側の役割。
+ */
+export type QuizTarget = 'han' | 'score';
 
 /** 誤答の由来（学習者がやりがちなミスの種類） */
 export type MistakeKind =
@@ -17,7 +22,7 @@ export type MistakeKind =
 export type MistakeScript = Record<MistakeKind, string>;
 
 export interface QuizChoice {
-  value: string; // 表示値（"3翻", "40符", "5200点", "三色同順" 等）
+  value: string; // 表示値（"3翻", "3翻 40符 5200点" 等）
   correct: boolean;
   mistakeKind?: MistakeKind; // 誤答のとき：どのミスか
   explanation: string; // 「この値は◯◯と取り違えた場合」等の理由・解説
@@ -25,6 +30,6 @@ export interface QuizChoice {
 
 export interface QuizQuestion {
   target: QuizTarget;
-  prompt: string; // 例 "この手の役は？" "翻数は？"
+  prompt: string; // 例 "翻数（ハンスウ）は？" "点数は？"
   choices: QuizChoice[]; // 正解1＋誤答3（ミス変換で生成）
 }

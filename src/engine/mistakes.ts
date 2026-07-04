@@ -1,12 +1,10 @@
 import type {
-  YakuId,
   QuizQuestion,
   QuizChoice,
   QuizTarget,
   MistakeKind,
   RuleSettings,
 } from '../types/index.ts';
-import { getYaku, yakuDisplayName } from './yaku-table.ts';
 import { type Rng, shuffle } from './rng.ts';
 import { type ScoredSummary, scorePoints } from './score.ts';
 
@@ -18,8 +16,8 @@ export type { ScoredSummary };
  * 正解1＋誤答3の4択（QuizQuestion）に組む（data-model §12・screens.md §3、testing.md §8）。
  * 採点はしない純ロジック＝正解値（ScoredSummary）を受け取って変換するだけ。
  *
- * target='fu'/'score' は符・点数を扱うため rules が要る（親子取り違え等の再計算）。
- * 'yaku'/'han'（役モード）は rules 不要。
+ * target='score'（点数モード）は点数を扱うため rules が要る（親子取り違え等の再計算）。
+ * 'han'（役モード）は rules 不要。
  */
 export function buildQuiz(
   target: QuizTarget,
@@ -28,12 +26,8 @@ export function buildQuiz(
   rules?: RuleSettings,
 ): QuizQuestion {
   switch (target) {
-    case 'yaku':
-      return buildYakuQuiz(summary, rng);
     case 'han':
       return buildHanQuiz(summary, rng);
-    case 'fu':
-      return buildFuQuiz(summary, rng);
     case 'score':
       if (!rules) throw new Error('score quiz needs RuleSettings');
       return buildScoreQuiz(summary, rng, rules);
@@ -111,78 +105,6 @@ function pickWrongHan(cands: HanCand[], correctN: number): HanCand[] {
 
 function hanText(n: number): string {
   return `${n}翻`;
-}
-
-// ── 役あて ─────────────────────────────────────────────────
-
-/** 誤答に使う「ありがちな別の役」プール（成立していない役を引っかけに出す） */
-const DISTRACTOR_POOL: YakuId[] = [
-  'tanyao', 'pinfu', 'iipeikou',
-  'yakuhai-haku', 'yakuhai-hatsu', 'yakuhai-chun',
-  'sanshoku-doujun', 'sanshoku-doukou', 'ittsuu',
-  'chanta', 'junchan', 'chiitoitsu', 'toitoi', 'sanankou',
-  'honroutou', 'shousangen', 'honitsu', 'ryanpeikou', 'chinitsu',
-];
-
-export function buildYakuQuiz(s: ScoredSummary, rng: Rng): QuizQuestion {
-  const present = new Set(s.yaku);
-  const correct = primaryYaku(s.yaku);
-  const correctName = yakuDisplayName(getYaku(correct)!);
-
-  const distractors = shuffle(rng, DISTRACTOR_POOL.filter((id) => !present.has(id))).slice(0, 3);
-  const choices = assemble(
-    { value: correctName, correct: true, explanation: '成立している役' },
-    distractors.map((id) => {
-      const name = yakuDisplayName(getYaku(id)!);
-      return {
-        value: name,
-        correct: false,
-        mistakeKind: 'han-miscount' as const,
-        explanation: `${name}は成立していない（役の取り違え）`,
-      };
-    }),
-    rng,
-  );
-  return { target: 'yaku', prompt: '成立している役は？', choices };
-}
-
-/** 成立役から代表役（翻が高いもの／役満優先）を1つ選ぶ */
-function primaryYaku(yaku: YakuId[]): YakuId {
-  let best: YakuId | undefined;
-  let bestScore = -1;
-  for (const id of yaku) {
-    const y = getYaku(id);
-    if (!y) continue;
-    const score = y.yakuman ? 100 : y.hanClosed;
-    if (score > bestScore) {
-      bestScore = score;
-      best = id;
-    }
-  }
-  if (!best) throw new Error('no nameable yaku to quiz');
-  return best;
-}
-
-// ── 符あて ─────────────────────────────────────────────────
-
-export function buildFuQuiz(s: ScoredSummary, rng: Rng): QuizQuestion {
-  // 符は10刻み（七対子25のみ例外）。前後の符を「符の数え違い」として出す
-  const cands = [s.fu + 10, s.fu - 10, s.fu + 20, s.fu - 20, s.fu + 5, s.fu - 5];
-  const seen = new Set<number>([s.fu]);
-  const wrongs: QuizChoice[] = [];
-  for (const n of cands) {
-    if (n < 20 || seen.has(n)) continue;
-    seen.add(n);
-    wrongs.push({
-      value: `${n}符`,
-      correct: false,
-      mistakeKind: 'fu-miscount',
-      explanation: '符の数え違い（待ち符・明暗刻・切り上げ 等）',
-    });
-    if (wrongs.length === 3) break;
-  }
-  const correct: QuizChoice = { value: `${s.fu}符`, correct: true, explanation: '正しい符' };
-  return { target: 'fu', prompt: '符（フ）は？', choices: assemble(correct, wrongs, rng) };
 }
 
 // ── 点数あて ───────────────────────────────────────────────
