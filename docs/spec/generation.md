@@ -36,6 +36,8 @@
 
 ドラ表示牌は基本1枚＋槓1つにつき1枚（カンドラ）。表示牌は手牌と物理 id が衝突しない牌を使う。海底・河底・槍槓・天和・地和は当面オフ（高頻度だと不自然・レア状況）。
 
+**赤ドラ**：`RuleSettings.akaDoraCount`（生成時の上限＝[scoring-rules](./scoring-rules.md) §5）を萬→筒→索の順に均等配分し、各色の5のどのコピー（4枚中）を赤にするかを問題ごとに rng で決める（実装＝`engine/generate.ts` の `redCopyPlan`）。決めたコピーが手・表示牌に含まれたときだけ赤（`Tile.red`）で現れる＝**上限であって出現の保証ではない**（現物の雀牌セットと同じ確率感）。id・模様は不変で red だけ立てる（[data-model](../design/data-model.md) §1）。表示牌の赤は採点に数えない（score 側の仕様どおり・見た目だけ現実に寄せる）。
+
 確率の既定（仮・`engine/generate.ts` の `P_KAN` / `P_OPEN` / `P_RIICHI` / `P_DOUBLE_RIICHI` / `P_IPPATSU` / `P_RINSHAN`。プレイ感で再評価）：
 
 | 事象 | 確率 | 条件 |

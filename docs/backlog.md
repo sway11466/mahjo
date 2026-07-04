@@ -4,7 +4,7 @@
 
 ## index
 
-次回採番: bug=9 / feature=19 / refactoring=19
+次回採番: bug=9 / feature=20 / refactoring=19
 
 項目（バグ bug / 機能追加 feature / リファクタリング refactoring）を追加するときは、該当カテゴリの採番を +1 して ID を継ぐ。完了した項目は本書から削除し、番号は再利用しない（過去の使用済み番号は `git log -p -- docs/backlog.md | grep -oE '(feature|refactoring)-[0-9]+' | sort -u` で確認できる）。状態は「本書に載っていれば未完了／消えていれば完了」で表す（状態列は持たない）。優先度は各エントリ見出しに 高（設計の背骨に関わる）／中／低（飾り・潜在）で記す。
 
@@ -31,35 +31,35 @@
 **設定画面に並べただけで未実装の項目を、実際に動くよう配線する**（優先度：低）
 
 - 背景：設定画面とその保存（`src/storage/`）は実装済みで、設定項目は2種類ある。**すでに採点エンジンに効くもの**（`kuitan`・`kiriageMangan`・`kazoeYakuman`・`doubleYakuman`・`enabledYaku`）は動作する。一方**挙動が未実装のもの**は、設定画面に項目だけ並べて「機能追加予定」表示でグレーアウトし（コード上は `RuleSettingsScreen.tsx`・`AppSettingsScreen.tsx` の `soon` 行）、値の保存だけ通している＝操作しても何も起きない。この「保存はされるが挙動が無い」項目を1つずつ「設定 → 実際の挙動」に繋ぐのが本項。配線できた項目から `soon` を外して編集可へ昇格する。
-- 対応：項目ごとに独立して着手できる。
-  - 赤ドラ（`akaDoraCount`）：生成器が赤牌（`Tile.red`）を `akaDoraCount` 枚を上限に作って出題に混ぜる。採点側（赤を数える）は実装済み（`src/engine/score.ts`）なので、残りは生成と、盤面での赤ドラ区別表示（[screens.md](./design/screens.md) §3）。
+- 対応：項目ごとに独立して着手できる（赤ドラ〔`akaDoraCount`〕は対応済み＝生成・表示・設定UI とも稼働）。
   - 呼び方（`playerName`）：プレイヤーの呼び名を Persona のセリフに差し込む（[character-guide](./characters/character-guide.md) §2）。差し込みの仕組み（テンプレート）自体が未実装なので機構ごと用意する。
   - 牌のランダム並び（`randomTileOrder`）：手牌を正準順でなくシャッフルして描画する（Tile データは不変・表示側だけ＝[data-model](./design/data-model.md) §1）。
   - 後付け（`atozuke`）：生成・和了可否の判定に反映する（採点には影響しない。[scoring-rules](./spec/scoring-rules.md) §5）。
   - 場の固定/ランダム（`round`）：クイズは局が場風を決めるので効かない（[scoring-rules](./spec/scoring-rules.md) §5）。場風を渡さない解説単独モード（別途設計）でのみ有効化する。
   - 対象外（別項目で追跡）：効果音・音楽（`se`/`bgm`）＝parking lot「音（SE/BGM）の実装」＋[feature-9](#feature-9)／レア役（`rareYaku`）＝parking lot・[scoring-rules](./spec/scoring-rules.md) §1.3（未対応）。
-- 該当：`src/ui/settings/RuleSettingsScreen.tsx`・`src/ui/settings/AppSettingsScreen.tsx`（`soon` 行の解除）・`src/engine/generate.ts`（赤ドラ・後付け）・`src/characters/`＋`src/session/`（呼び方差し込み）・`src/ui/main/`（牌並び表示）。
+- 該当：`src/ui/settings/RuleSettingsScreen.tsx`・`src/ui/settings/AppSettingsScreen.tsx`（`soon` 行の解除）・`src/engine/generate.ts`（後付け）・`src/characters/`＋`src/session/`（呼び方差し込み）・`src/ui/main/`（牌並び表示）。
 
 ### feature-14
 
 **苦手データをキャラの寄り添いアドバイスに活かす**（優先度：低。だいぶ先）
 
-- 背景：`Progress` に苦手集計（`byTarget`＝出題種類ごとの `{seen, correct}`、後続で `byMistake`＝誤り方）を貯める土台ができた（[data-model.md §16](./design/data-model.md)・[session.md](./spec/session.md) §5）。これは「苦手な問題に寄り添ったアドバイスをする」ための素材で、貯めるところまでが実装済み・**活用は未着手**。本項は貯まったデータをキャラのセリフに反映する出口。
-- 対応：苦手（率が一定以下かつ `seen` が閾値以上の出題種類／偏った `MistakeKind`）を検出し、キャラがやわらかく寄り添う文言を出す。`プレッシャーをかけない`（[product-concept.md](./product-concept.md) §3・session.md §6）を厳守＝失敗の採点表として突きつけず、`byMistake` は真因の診断でなくヒント扱い（断定しない）。実現には characters に**新カテゴリ（苦手寄り添い script）**が要る見込み（型・authoring がキャラ人数分ファンアウト）。検出ロジックは session 寄りの純関数に置きテスト対象。
-- 関連（出口は2系統で別物・集計は共有）：もう一方の出口＝**苦手を多めに再出題**は parking lot「間違い復習、出題範囲の細かな調整」。好感度アンロック（parking lot）とも素材を共有しうる。前提＝苦手データが貯まっていること。`byMistake` を使う部分は [refactoring-13](#refactoring-13)（MistakeKind 精査）の後。
+- 背景：`Progress` に苦手集計（`byTarget`＝出題種類ごとの `{seen, correct}`）を貯める土台ができた（[data-model.md §16](./design/data-model.md)・[session.md](./spec/session.md) §5）。これは「苦手な問題に寄り添ったアドバイスをする」ための素材で、貯めるところまでが実装済み・**活用は未着手**。誤り方の素材は間違い履歴（[feature-19](#feature-19)）が担う。本項は貯まったデータをキャラのセリフに反映する出口。
+- 対応：苦手（率が一定以下かつ `seen` が閾値以上の出題種類／間違い履歴に見える傾向）を検出し、キャラがやわらかく寄り添う文言を出す。`プレッシャーをかけない`（[product-concept.md](./product-concept.md) §3・session.md §6）を厳守＝失敗の採点表として突きつけず、誤り方の推測は真因の診断でなくヒント扱い（断定しない。履歴＝事実から表示時に都度計算する）。実現には characters に**新カテゴリ（苦手寄り添い script）**が要る見込み（型・authoring がキャラ人数分ファンアウト）。検出ロジックは session 寄りの純関数に置きテスト対象。
+- 関連（出口は2系統で別物・素材は共有）：もう一方の出口＝**苦手を多めに再出題**は parking lot「間違い復習、出題範囲の細かな調整」。好感度アンロック（parking lot）とも素材を共有しうる。前提＝苦手データが貯まっていること。誤り方を使う部分は [feature-19](#feature-19)（間違い履歴）の後。
 - 該当：新規（`src/session/` の苦手検出＋`src/characters/`＋各 `character-<id>-script.md` の寄り添い文言）。型は data-model §16、思想は session.md §5/§6。
+
+### feature-19
+
+**間違い履歴の保存（失敗した出題の生データ・リングバッファ）**（優先度：中。苦手活用系の前提）
+
+- 背景：苦手の「誤り方」把握は当初 `byMistake`（誤答を `MistakeKind` で分類してカウント。旧 refactoring-13 が精査の前提整備）の予定だったが、分類は誤答値からの推測で決めつけが残る（1つの誤答値に複数の真因がありうる＝旧 refactoring-13 の指摘そのもの）うえ、分類を後から変えると貯めたカウントの意味がズレる。方針転換（2026-07-04）：**解釈（分類）を保存せず、失敗した出題そのもの（事実）を保存する**。事実を貯めれば集計・分類は表示時に何度でもやり直せ、分類ロジックを改良してもデータが腐らない。間違い復習（parking lot「間違い復習、出題範囲の細かな調整」）の必須素材にもなる（同じ手の再出題は配牌の保存がないと作れない）。
+- 対応：誤答時に `hand`＋`table`＋`winContext`＋`target`＋選んだ誤答値（＋正解値）をキャラ別に保存（`Progress` と同様＝[storage.md](./design/storage.md) の version／防御的読込に乗せる）。リングバッファで直近N件に上限（例：モード別50件。件数・保存フィールドの細部は着手時に確定）。`MistakeKind` は**永続化せず**、回答直後の諭し文選択だけに使う表示用語彙に格下げ（`byMistake` 案は廃止）。あわせて docs＝[data-model.md §16](./design/data-model.md)・[session.md §5](./spec/session.md) の byMistake 予約記述を本方針へ差し替える。
+- 該当：`src/types/`（履歴の型＝data-model §16）・`src/storage/`（新キー）・`src/session/`（誤答時の記録）。docs＝data-model §16・session.md §5。
+- 関連：出口は2系統＝キャラの寄り添いアドバイス（[feature-14](#feature-14)）／間違い復習（parking lot）。どちらも本履歴が前提。
 
 ## リファクタリング
 
 メイン画面（役モード）実装後のレビューで挙がった改善項目。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す（優先度順）。
-
-### refactoring-13
-
-**`MistakeKind` の精査（誤答分類の honest 化）**（優先度：中。byMistake 永続化の前提＝早めに）
-
-- 背景：誤答の分類 `MistakeKind`（[data-model.md §12](./design/data-model.md)）は荒く、**1つの誤答値に複数の真因がありうる**のに1 kind へ決め打ちしている（例：「1翻不足」を `tsumo-ron-swap` に固定するが、単純な `han-miscount` のこともある）。生成（`src/engine/mistakes.ts`）が値→kind を多対一で潰しているため、ラベルが「ユーザーの真因」ではなく「出題が仕込んだ罠」を表すに留まる。苦手の `byMistake` 集計（[data-model.md §16](./design/data-model.md)・[session.md](./spec/session.md) §5）を貯め始める前に分類を固めておかないと、古い分類のカウントが溜まり意味がズレる（分類の安定した `byTarget` は先行済み）。
-- 対応：値→kind の対応を honest に見直す（kind の分割・追加、あるいは「1誤答値が複数 kind を取りうる」ことの明示）。`byMistake` を「真因の診断でなくヒント」として扱う前提（断定しない＝プレッシャーをかけない）と整合させる。**波及に注意**：`MistakeKind` を変えると 型（data-model §12）＋ `engine/mistakes.ts`（生成・ラベル）＋ 各キャラの `MistakeScript`（諭し文・全 kind 網羅）＋ テスト（[testing.md](./dev/testing.md) §8）に及び、**kind 追加はまお／りん両方の諭し文の authoring を要する**（人数分ファンアウト）。
-- 該当：`src/types/`（`MistakeKind`）・`src/engine/mistakes.ts`・各 `docs/characters/<id>/character-<id>-script.md` §4＋`src/characters/`（`MistakeScript`）・テスト。完了後に `byMistake` 永続化（[feature-14](#feature-14) の前提）へ進む。
 
 ### refactoring-12
 
@@ -86,7 +86,7 @@
 
 後回し・いつかやる候補の置き場（特定の作業に紐付かない将来アイデア）。着手が決まった段で機能追加・リファクタリングへ引き上げる。
 
-- 学習イベント計測のフェーズ2（行動の質）：旧 feature-18 フェーズ1（6イベント＝`track()` ラッパ＋GTM/GA4 配信）は実装・本番稼働済み（契約は [analytics.md](./spec/analytics.md)）。任意の追加計測＝`highlight_click`（クリック内訳ハイライトの利用・`category`）・`character_select`（キャラ選択画面の探索）・`setting_change`（どのルールで遊ぶか・`key`/`value`。`playerName` 除外）・画面遷移の仮想ページビュー・PWA インストール／`display-mode: standalone` 判定（リピーター把握、下記「オフライン計測（GA4）」の前段）・不正解時の `mistake_kind`（[refactoring-13](#refactoring-13) の MistakeKind 精査後）。発火点（`track()` 呼び出し）を足すだけで取れる（土台は不変）。
+- 学習イベント計測のフェーズ2（行動の質）：旧 feature-18 フェーズ1（6イベント＝`track()` ラッパ＋GTM/GA4 配信）は実装・本番稼働済み（契約は [analytics.md](./spec/analytics.md)）。任意の追加計測＝`highlight_click`（クリック内訳ハイライトの利用・`category`）・`character_select`（キャラ選択画面の探索）・`setting_change`（どのルールで遊ぶか・`key`/`value`。`playerName` 除外）・画面遷移の仮想ページビュー・PWA インストール／`display-mode: standalone` 判定（リピーター把握、下記「オフライン計測（GA4）」の前段）・不正解時の `mistake_kind`（`MistakeKind` は諭し表示用の語彙に格下げ＝[feature-19](#feature-19)。罠ラベルとして計測に載せる意味があるかは同項の方針確定後に判断）。発火点（`track()` 呼び出し）を足すだけで取れる（土台は不変）。
 - 役満シード生成、手続き的な任意合法和了形の生成。
 - 間違い復習、出題範囲の細かな調整。
 - サポートキャラの追加（順次）。

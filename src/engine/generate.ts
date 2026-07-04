@@ -12,7 +12,7 @@ import type {
   StudyMode,
   Progress,
 } from '../types/index.ts';
-import { tileFromId, tileKind, kindOfSuited, kindOfHonor, HONORS, TILE_KINDS } from './tiles.ts';
+import { tileFromId, tileKind, kindOfSuited, kindOfHonor, HONORS, TILE_KINDS, TILE_COPIES } from './tiles.ts';
 import { type Rng, randInt, pick, shuffle } from './rng.ts';
 import { parse } from './parse.ts';
 import { detectYaku } from './yaku.ts';
@@ -152,7 +152,7 @@ export function generateForSeed(
   for (let attempt = 0; attempt < 300; attempt++) {
     try {
       const plan = applyContext(def.build(rng, rules, roundWind), seed, rng, rules);
-      return realize(plan, rng);
+      return realize(plan, rng, rules.akaDoraCount);
     } catch (e) {
       if (e instanceof CopyOverflow) continue; // 同種5枚目など。rng を進めて再試行
       throw e;
@@ -239,8 +239,9 @@ interface BuildPlan {
 class CopyOverflow extends Error {}
 
 /** 計画に実際の Tile を割り当て、契約どおり winningTile を concealed から分離する（data-model §4）。
- *  ドラ表示牌を1枚（リーチ時は裏ドラ表示牌も1枚）付与する。表示牌は手牌と id 衝突しない空きコピーを使う。 */
-function realize(plan: BuildPlan, rng: Rng): GeneratedQuestion {
+ *  ドラ表示牌を1枚（リーチ時は裏ドラ表示牌も1枚）付与する。表示牌は手牌と id 衝突しない空きコピーを使う。
+ *  akaDora（RuleSettings.akaDoraCount）を上限に赤5を混ぜる（scoring-rules §1.4・§5）。 */
+function realize(plan: BuildPlan, rng: Rng, akaDora: number): GeneratedQuestion {
   const used = new Map<number, number>();
   const take = (kind: number): Tile => {
     const c = used.get(kind) ?? 0;
@@ -272,12 +273,44 @@ function realize(plan: BuildPlan, rng: Rng): GeneratedQuestion {
     ? { ...plan.table, doraIndicators, uraDoraIndicators: Array.from({ length: indicators }, draw) }
     : { ...plan.table, doraIndicators };
 
+  // 赤ドラ：割当計画（各色の5のどのコピーが赤か）に載っている牌だけ red を立てる。
+  // 手・表示牌の全部に適用する（表示牌の赤は数えない＝score 側の仕様どおり、見た目だけ現実に寄せる）
+  const red = redCopyPlan(akaDora, rng);
+  const paint = (t: Tile): Tile =>
+    t.kind === 'suited' && t.rank === 5 && red.get(tileKind(t))?.has(t.id % TILE_COPIES)
+      ? { ...t, red: true }
+      : t;
+
   return {
     seed: plan.seed,
-    hand: { concealed, calledMelds, winningTile: wTile },
-    table,
+    hand: {
+      concealed: concealed.map(paint),
+      calledMelds: calledMelds.map((m) => ({ ...m, tiles: m.tiles.map(paint) })),
+      winningTile: paint(wTile),
+    },
+    table: {
+      ...table,
+      doraIndicators: table.doraIndicators.map(paint),
+      ...(table.uraDoraIndicators ? { uraDoraIndicators: table.uraDoraIndicators.map(paint) } : {}),
+    },
     winContext: plan.winContext,
   };
+}
+
+/** 赤ドラの割当計画：akaDoraCount（生成時の上限＝scoring-rules §5）を萬→筒→索の順に均等配分し、
+ *  各色の5のどのコピー（4枚中）を赤にするかを問題ごとに rng で選ぶ。選んだコピーが手・表示牌に
+ *  入らなければ赤は出ない＝上限であって出現の保証ではない。id・模様は不変で red だけ立てる
+ *  （data-model §1「赤ドラ(red)は設定から決まる」）。0枚（既定）は rng を消費しない。 */
+function redCopyPlan(count: number, rng: Rng): Map<number, Set<number>> {
+  const plan = new Map<number, Set<number>>();
+  const n = Math.max(0, Math.min(12, Math.floor(count))); // 上限12＝5の牌の物理枚数（storage/validate.ts と同じ）
+  (['man', 'pin', 'sou'] as const).forEach((suit, i) => {
+    const quota = Math.floor(n / 3) + (i < n % 3 ? 1 : 0);
+    if (quota > 0) {
+      plan.set(kindOfSuited(suit, 5), new Set(shuffle(rng, [0, 1, 2, 3]).slice(0, quota)));
+    }
+  });
+  return plan;
 }
 
 /** 手牌で未使用のコピーを使ってドラ表示牌を1枚引く（手牌との id 一意を保証）。used を更新。 */

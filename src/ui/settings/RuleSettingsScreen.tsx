@@ -16,10 +16,13 @@ interface RuleSettingsScreenProps {
 /**
  * ルール設定（screens.md §5・scoring-rules.md §5）。採点・出題に効く項目を編集（即時反映＋保存）。
  *
- * 現状エンジンに効いていない項目（赤ドラ生成・後付け・レア役・場の固定）は操作不可にし「機能追加予定」を
+ * 現状エンジンに効いていない項目（後付け・レア役・場の固定）は操作不可にし「機能追加予定」を
  * 添える（feature-2 の方針：UI は出すが現値固定、値は保存される）。round は generate に配線済みだが、
  * クイズは局が場風を決めるため出題に影響しない（scoring-rules.md §5）ので、未対応側に置く。
  */
+/** 赤ドラ枚数の選択肢：0〜12 の任意枚数（scoring-rules §5。上限12＝5の牌の物理枚数） */
+const AKA_DORA_OPTIONS = Array.from({ length: 13 }, (_, i) => i);
+
 export function RuleSettingsScreen({
   rules,
   onChange,
@@ -44,6 +47,24 @@ export function RuleSettingsScreen({
                   checked={rules.kuitan}
                   onChange={(v) => set('kuitan', v)}
                 />
+              }
+            />
+            <SettingRow
+              title="赤ドラ枚数"
+              description="赤牌（赤5）を出題に混ぜる上限。手にあれば1枚ごとに1翻。"
+              control={
+                <select
+                  className="setting-select"
+                  aria-label="赤ドラ枚数"
+                  value={rules.akaDoraCount}
+                  onChange={(e) => set('akaDoraCount', Number(e.target.value))}
+                >
+                  {AKA_DORA_OPTIONS.map((n) => (
+                    <option key={n} value={n}>
+                      {n} 枚
+                    </option>
+                  ))}
+                </select>
               }
             />
             <SettingRow
@@ -92,12 +113,6 @@ export function RuleSettingsScreen({
           <section className="settings__section">
             <h2 className="settings__section-title">機能追加予定</h2>
 
-            <SettingRow
-              soon
-              title="赤ドラ枚数"
-              description="赤牌を出題に混ぜる（現在は 0 枚固定）。"
-              control={<span className="setting-value">{rules.akaDoraCount} 枚</span>}
-            />
             <SettingRow
               soon
               title="後付け（片和了）"

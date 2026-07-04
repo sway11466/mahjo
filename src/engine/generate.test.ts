@@ -308,6 +308,66 @@ describe('generate — 和了状況の整合（不可能な組み合わせを作
   });
 });
 
+describe('generate — 赤ドラ（akaDoraCount。feature-12）', () => {
+  const isRed = (t: Tile): boolean => t.kind === 'suited' && t.red;
+  const fives = (ts: Tile[]): Tile[] => ts.filter((t) => t.kind === 'suited' && t.rank === 5);
+  /** 手牌＋表示牌（赤の適用対象すべて） */
+  function everyTile(q: GeneratedQuestion): Tile[] {
+    return [...allTiles(q), ...q.table.doraIndicators, ...(q.table.uraDoraIndicators ?? [])];
+  }
+
+  it('既定（0枚）では赤牌が出ない', () => {
+    for (let i = 0; i < 200; i++) {
+      const q = generate(progress(), 'yaku', mulberry32(i * 29 + 1), rules());
+      expect(everyTile(q).some(isRed)).toBe(false);
+    }
+  });
+
+  it('赤は5の数牌にのみ付き、3枚設定では各色1枚以内', () => {
+    for (let i = 0; i < 400; i++) {
+      const q = generateForSeed('tanyao', mulberry32(i * 37 + 5), rules({ akaDoraCount: 3 }));
+      const reds = everyTile(q).filter(isRed);
+      const bySuit = new Map<string, number>();
+      for (const t of reds) {
+        expect(t.kind === 'suited' && t.rank === 5).toBe(true);
+        if (t.kind === 'suited') bySuit.set(t.suit, (bySuit.get(t.suit) ?? 0) + 1);
+      }
+      for (const c of bySuit.values()) expect(c).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('12枚設定（全部赤）では手の5が全て赤になり、採点のドラに乗る', () => {
+    const r = rules({ akaDoraCount: 12 });
+    let redSeen = 0;
+    for (let i = 0; i < 200; i++) {
+      const q = generateForSeed('tanyao', mulberry32(i * 41 + 7), r);
+      const handFives = fives(allTiles(q));
+      expect(handFives.every(isRed)).toBe(true);
+      if (handFives.length > 0) {
+        redSeen++;
+        const s = summarize(q.hand, q.table, q.winContext, r);
+        expect(s.doraHan).toBeGreaterThanOrEqual(handFives.length);
+      }
+    }
+    expect(redSeen).toBeGreaterThan(0); // 断幺九は 2–8 のみ＝5を含む手が実際に出ている
+  });
+
+  it('3枚設定でも赤が実際に出題に現れる（上限であって0固定ではない）', () => {
+    let redSeen = 0;
+    for (let i = 0; i < 400; i++) {
+      const q = generateForSeed('tanyao', mulberry32(i * 43 + 11), rules({ akaDoraCount: 3 }));
+      if (allTiles(q).some(isRed)) redSeen++;
+    }
+    expect(redSeen).toBeGreaterThan(0);
+  });
+
+  it('赤ドラ設定でも決定的（同じ seed → 同じ問題）', () => {
+    const a = generate(progress(), 'yaku', mulberry32(777), rules({ akaDoraCount: 3 }));
+    const b = generate(progress(), 'yaku', mulberry32(777), rules({ akaDoraCount: 3 }));
+    expect(a).toEqual(b);
+  });
+});
+
 describe('generate — カン生成', () => {
   // 暗刻ベースの toitoi/sanankou は槓を引きうる
   it('副露可能シードは槓（明/暗）を生成しうる', () => {
