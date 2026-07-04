@@ -34,7 +34,7 @@ ui ──calls──→ session ──→ engine / hints / characters
 | 進捗・成績 | `ProgressByCharacter` | [data-model.md](./data-model.md) §16 | 空 `{}`（キャラ初出時に `{ correctTotal: 0, correctByMode: {} }`） |
 
 - 既定値は1箇所の既定値ファクトリから供給し、ここと読込フォールバック（§5）で共有する。値の出所は上表の「既定値の正」。
-- `Progress` は累計成績に加え**苦手集計**（`byTarget` ＝出題種類ごとの `{seen, correct}`。後続で `byMistake`）を持つ（[data-model.md §16](./data-model.md)）。いずれも**任意フィールド**で、欠落は §5 の防御的読込が既定（空マップ）で補完する＝**スキーマ version は上げずマイグレーション不要**（既存の保存データと共存し、未知フィールドは無視）。
+- `Progress` は累計成績に加え**苦手集計**（`byTarget` ＝出題種類ごとの `{seen, correct}`）を持つ（[data-model.md §16](./data-model.md)）。**任意フィールド**で、欠落は §5 の防御的読込が既定（空マップ）で補完する＝**スキーマ version は上げずマイグレーション不要**（既存の保存データと共存し、未知フィールドは無視）。誤り方は集計でなく**間違い履歴**（失敗した出題の生データ＝[backlog](../backlog.md) feature-19）として貯める方針で、着手時に保存対象（新キー）へ追加する。
 - セッションの途中保存（`QuizSession` の中断・再開）は当面スコープ外。やるなら、永続化する型は `src/types/` に置く（storage → session の逆流を避ける。現在 `QuizSession` は `src/session/` にあるため、永続化対象に格上げする時点で types/ へ移す）。
 
 ## 3. キー設計とエンベロープ
