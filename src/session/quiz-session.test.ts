@@ -125,10 +125,10 @@ describe('applyProgress', () => {
   const base: Progress = { correctTotal: 2, correctByMode: { yaku: 2 } };
 
   it('increments total, per-mode, and byTarget on a correct answer', () => {
-    const p = applyProgress(base, 'yaku', 'yaku', true);
+    const p = applyProgress(base, 'yaku', 'han', true);
     expect(p.correctTotal).toBe(3);
     expect(p.correctByMode.yaku).toBe(3);
-    expect(p.byTarget?.yaku).toEqual({ seen: 1, correct: 1 });
+    expect(p.byTarget?.han).toEqual({ seen: 1, correct: 1 });
   });
 
   it('on a wrong answer: total/per-mode unchanged but byTarget.seen still counts', () => {
@@ -146,9 +146,9 @@ describe('applyProgress', () => {
 
   it('accumulates byTarget across answers, tracking correct vs seen', () => {
     let p = base;
-    p = applyProgress(p, 'score', 'fu', true);
-    p = applyProgress(p, 'score', 'fu', false);
-    p = applyProgress(p, 'score', 'fu', true);
-    expect(p.byTarget?.fu).toEqual({ seen: 3, correct: 2 }); // 率 = 2/3
+    p = applyProgress(p, 'score', 'score', true);
+    p = applyProgress(p, 'score', 'score', false);
+    p = applyProgress(p, 'score', 'score', true);
+    expect(p.byTarget?.score).toEqual({ seen: 3, correct: 2 }); // 率 = 2/3
   });
 });

@@ -69,7 +69,7 @@ describe('storage — ラウンドトリップ', () => {
       mao: {
         correctTotal: 5,
         correctByMode: { yaku: 5 },
-        byTarget: { yaku: { seen: 8, correct: 5 }, fu: { seen: 3, correct: 1 } },
+        byTarget: { han: { seen: 8, correct: 5 }, score: { seen: 3, correct: 1 } },
       },
     };
     s.saveProgress(p);
@@ -173,9 +173,9 @@ describe('storage — 欠けたフィールドの補完', () => {
             correctTotal: 3,
             correctByMode: { yaku: 3 },
             byTarget: {
-              yaku: { seen: 4, correct: 3 }, // 正常＝採用
-              han: { seen: 'x' }, // 不正＝捨てる
-              bogus: { seen: 1, correct: 1 }, // 未知の種類＝無視
+              han: { seen: 4, correct: 3 }, // 正常＝採用
+              score: { seen: 'x' }, // 不正＝捨てる
+              yaku: { seen: 1, correct: 1 }, // 廃止した種類（旧4値時代の保存）＝無視
             },
           },
           rin: { correctTotal: 0, correctByMode: {}, byTarget: {} }, // 空 byTarget はキーを付けない
@@ -186,7 +186,7 @@ describe('storage — 欠けたフィールドの補完', () => {
       mao: {
         correctTotal: 3,
         correctByMode: { yaku: 3 },
-        byTarget: { yaku: { seen: 4, correct: 3 } },
+        byTarget: { han: { seen: 4, correct: 3 } },
       },
       rin: { correctTotal: 0, correctByMode: {} },
     });

@@ -94,6 +94,7 @@ export function createStorage(backend: StorageBackend = globalThis.localStorage)
 
 - `usePersistentState` 的なフック（または Context プロバイダ）を ui に置き、「起動時 load → state、変化で save」の橋渡しだけを担わせる。
 - 規約: 画面コンポーネントは storage を直接 import しない（このフック／プロバイダ越しに使う）。永続化の知識を ui 全体に散らさないため。
+- 規約の解釈: ルーター（App）は永続化の合成点そのものであって「画面コンポーネント」ではない。App がフックの返すキャラ別進捗から現在キャラのスライスを導出する際の既定値ヘルパ（`defaultProgress` 等）を storage から直接 import するのは配線の一部として可。
 - 即時反映（設定変更が即 state に反映され save される）は [screens.md](./screens.md) §5 のとおり。
 
 ## 8. テスト方針

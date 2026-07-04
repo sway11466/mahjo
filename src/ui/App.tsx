@@ -2,6 +2,8 @@ import { useRef, useState } from 'react';
 import type { Progress, StudyMode } from '../types/index.ts';
 import { mulberry32, type Rng } from '../engine/rng.ts';
 import { getCharacter } from '../characters/index.ts';
+// App は永続化の合成点＝「画面コンポーネントは storage を直接 import しない」規約の対象外
+// （既定値ヘルパの参照のみ可。storage.md §7）。
 import { defaultProgress } from '../storage/index.ts';
 import { usePersistence } from './usePersistence.ts';
 import { StartScreen } from './start/StartScreen.tsx';

@@ -18,7 +18,7 @@ export interface SkillStat {
 export interface Progress {
   correctTotal: number; // 累計正答数
   correctByMode: Partial<Record<StudyMode, number>>; // モード別（難易度アンロックの駆動）
-  /** 何が弱いか（役/翻/符/点数の定着度＝率の真実）。任意＝既存データと共存し欠落は防御的読込が補完。
+  /** 何が弱いか（翻/点数の定着度＝率の真実）。任意＝既存データと共存し欠落は防御的読込が補完。
    *  寄り添いアドバイスの素（出口の活用は backlog feature-14）。byMistake（誤り方）は MistakeKind
    *  精査（backlog refactoring-13）の後に追加する（分類が安定な byTarget を先行）。 */
   byTarget?: Partial<Record<QuizTarget, SkillStat>>;
