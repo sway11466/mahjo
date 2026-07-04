@@ -308,6 +308,50 @@ describe('generate — 和了状況の整合（不可能な組み合わせを作
   });
 });
 
+describe('generate — 追加の形役シード（純チャン・三色同刻・小三元・混老頭）', () => {
+  // シード役の成立・合法性は先頭の it.each(seedIds()) が自動で拾う。ここは各構築器の
+  // 「役満・上位役へ倒れない設計」の狙いを固定する（コメントは構築器側）。
+
+  it('junchan：字牌を含まない（純全帯幺九の条件）・役満（清老頭）に倒れない', () => {
+    for (let i = 0; i < 60; i++) {
+      const q = generateForSeed('junchan', mulberry32(i * 7 + 1), rules());
+      expect(allTiles(q).every((t) => t.kind === 'suited')).toBe(true);
+      expect(summarize(q.hand, q.table, q.winContext, rules()).yakuman).toBe(false);
+    }
+  });
+
+  it('honroutou：么九牌のみ・字牌と老頭牌が必ず混在（清老頭/字一色に倒れない）', () => {
+    for (let i = 0; i < 60; i++) {
+      const q = generateForSeed('honroutou', mulberry32(i * 11 + 3), rules());
+      const ts = allTiles(q);
+      expect(ts.every((t) => t.kind === 'honor' || t.rank === 1 || t.rank === 9)).toBe(true);
+      expect(ts.some((t) => t.kind === 'honor')).toBe(true);
+      expect(ts.some((t) => t.kind === 'suited')).toBe(true);
+      expect(summarize(q.hand, q.table, q.winContext, rules()).yakuman).toBe(false);
+      expect(detectedUnion(q)).toContain('toitoi'); // 対々和と必ず複合（scoring-rules §1.1）
+    }
+  });
+
+  it('shousangen：役牌2種とちょうど複合する（大三元には倒れない）', () => {
+    const dragons: YakuId[] = ['yakuhai-haku', 'yakuhai-hatsu', 'yakuhai-chun'];
+    for (let i = 0; i < 60; i++) {
+      const q = generateForSeed('shousangen', mulberry32(i * 13 + 5), rules());
+      const ids = detectedUnion(q);
+      expect(ids).toContain('shousangen');
+      expect(dragons.filter((d) => ids.has(d))).toHaveLength(2);
+      expect(summarize(q.hand, q.table, q.winContext, rules()).yakuman).toBe(false);
+    }
+  });
+
+  it('sanshoku-doukou：刻子1組を副露して三暗刻の常伴を避ける', () => {
+    for (let i = 0; i < 60; i++) {
+      const q = generateForSeed('sanshoku-doukou', mulberry32(i * 17 + 7), rules());
+      expect(q.hand.calledMelds.some((m) => m.open)).toBe(true);
+      expect(detectedUnion(q)).not.toContain('sanankou');
+    }
+  });
+});
+
 describe('generate — 赤ドラ（akaDoraCount。feature-12）', () => {
   const isRed = (t: Tile): boolean => t.kind === 'suited' && t.red;
   const fives = (ts: Tile[]): Tile[] => ts.filter((t) => t.kind === 'suited' && t.rank === 5);

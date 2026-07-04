@@ -491,6 +491,28 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
       };
     },
   },
+  'sanshoku-doukou': {
+    band: 'medium',
+    build: (rng, rules, roundWind) => {
+      // 同じ数の刻子を3色。1組を副露（明刻）にして三暗刻の常伴を避ける（toitoi と同じ手筋）。
+      // 上がりは4つ目の順子側＝刻子を崩さない
+      const r = 1 + randInt(rng, 9);
+      const openIdx = randInt(rng, 3);
+      const s4 = randShuntsu(rng);
+      const melds: SetSpec[] = [
+        ...SUITS3.map((s, i) => (i === openIdx ? { ...ko(num(s, r)), open: true } : ko(num(s, r)))),
+        s4,
+        pr(honKind(pick(rng, [...WINDS, ...DRAGONS]))),
+      ];
+      return {
+        seed: 'sanshoku-doukou',
+        melds,
+        winning: { meldIndex: 3, kind: s4.kinds[2]! },
+        table: makeTable(rng, rules, roundWind),
+        winContext: makeCtx(rng),
+      };
+    },
+  },
   ittsuu: {
     band: 'medium',
     build: (rng, rules, roundWind) => {
@@ -554,6 +576,50 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
     },
   },
 
+  shousangen: {
+    band: 'medium',
+    build: (rng, rules, roundWind) => {
+      // 三元牌のうち2種が刻子＋残り1種が雀頭。役牌2つと必ず複合（実質4翻）が学習ポイント。
+      // 自由部分は順子2つ（刻子を足すと三暗刻・対々和へ流れて主役がぼやける）
+      const [d1, d2, dp] = shuffle(rng, [...DRAGONS]);
+      const s3 = randShuntsu(rng);
+      const melds: SetSpec[] = [ko(honKind(d1!)), ko(honKind(d2!)), s3, randShuntsu(rng), pr(honKind(dp!))];
+      return {
+        seed: 'shousangen',
+        melds,
+        winning: { meldIndex: 2, kind: s3.kinds[2]! },
+        table: makeTable(rng, rules, roundWind),
+        winContext: makeCtx(rng),
+      };
+    },
+  },
+  honroutou: {
+    band: 'medium',
+    build: (rng, rules, roundWind) => {
+      // 么九牌のみの刻子4＋雀頭（対々和と必ず複合）。刻子は老頭2＋字2の固定比で混ぜる：
+      // 老頭のみ＝清老頭／字のみ＝字一色に加え、字刻子3つを許すと大三元（三元3刻子）や
+      // 小四喜（風3刻子＋風雀頭）の役満にも倒れるため、字刻子は2つまでに抑える。
+      // 1組副露で四暗刻化も避ける。上がりは雀頭（単騎）＝toitoi と同じ
+      const terms = shuffle(rng, SUITS3.flatMap((s) => [num(s, 1), num(s, 9)]));
+      const hons = shuffle(rng, HONORS.map(honKind));
+      const pairKind = pick(rng, [...terms.slice(2), ...hons.slice(2)]);
+      const melds: SetSpec[] = [
+        { ...ko(terms[0]!), open: true },
+        ko(terms[1]!),
+        ko(hons[0]!),
+        ko(hons[1]!),
+        pr(pairKind),
+      ];
+      return {
+        seed: 'honroutou',
+        melds,
+        winning: { meldIndex: 4, kind: pairKind },
+        table: makeTable(rng, rules, roundWind),
+        winContext: makeCtx(rng),
+      };
+    },
+  },
+
   // ── 難 ──
   pinfu: {
     band: 'hard',
@@ -586,6 +652,29 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
         seed: 'chanta',
         melds,
         winning: { meldIndex: 0, kind: m0.kinds[1]! }, // 嵌張でも端牌は手に残る
+        table: makeTable(rng, rules, roundWind),
+        winContext: makeCtx(rng),
+      };
+    },
+  },
+  junchan: {
+    band: 'hard',
+    build: (rng, rules, roundWind) => {
+      // チャンタの字牌なし版＝全面子・雀頭が老頭牌（1/9）を含む。順子3つで清老頭（刻子のみ＝役満）に倒さない
+      const term = () => pick(rng, [1, 7] as const); // 123 or 789（端を含む順子）
+      const one9 = () => pick(rng, [1, 9] as const);
+      const melds: SetSpec[] = [
+        sh(pick(rng, SUITS3), term()),
+        sh(pick(rng, SUITS3), term()),
+        sh(pick(rng, SUITS3), term()),
+        ko(num(pick(rng, SUITS3), one9())),
+        pr(num(pick(rng, SUITS3), one9())),
+      ];
+      const m0 = melds[0]!;
+      return {
+        seed: 'junchan',
+        melds,
+        winning: { meldIndex: 0, kind: m0.kinds[1]! }, // 嵌張でも端牌は手に残る（chanta と同じ）
         table: makeTable(rng, rules, roundWind),
         winContext: makeCtx(rng),
       };
