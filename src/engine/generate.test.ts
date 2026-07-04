@@ -9,7 +9,7 @@ import {
 } from './generate.ts';
 import { parse } from './parse.ts';
 import { detectYaku } from './yaku.ts';
-import { summarize } from './score.ts';
+import { summarize, riichiActive } from './score.ts';
 import { getYaku } from './yaku-table.ts';
 import { mulberry32, pick } from './rng.ts';
 import { tileKind } from './tiles.ts';
@@ -224,7 +224,7 @@ describe('generate — 和了状況の付与（副露・リーチ・ドラ）', 
   it('裏ドラ表示牌はリーチ時のみ、ドラと同数（カンドラぶん）', () => {
     for (let i = 0; i < 200; i++) {
       const q = generate(progress(), 'yaku', mulberry32(i * 11 + 5), rules());
-      if (q.winContext.riichi) {
+      if (riichiActive(q.winContext)) {
         expect(q.table.uraDoraIndicators).toHaveLength(1 + kanCount(q));
       } else {
         expect(q.table.uraDoraIndicators).toBeUndefined();
@@ -236,7 +236,7 @@ describe('generate — 和了状況の付与（副露・リーチ・ドラ）', 
     for (let i = 0; i < 400; i++) {
       const q = generate(progress({ correctByMode: { yaku: 30 } }), 'yaku', mulberry32(i * 13 + 2), rules());
       const open = q.hand.calledMelds.some((m) => m.open); // 明い面子（暗槓は門前なので除く）
-      if (open) expect(q.winContext.riichi).toBe(false);
+      if (open) expect(riichiActive(q.winContext)).toBe(false);
     }
   });
 
@@ -271,6 +271,28 @@ describe('generate — 和了状況の付与（副露・リーチ・ドラ）', 
     expect(riichi).toBeGreaterThan(0);
     expect(open).toBeGreaterThan(0);
     expect(ippatsu).toBeLessThan(riichi); // 一発はリーチの一部（5%）
+  });
+
+  it('ダブルリーチが確率で出る（riichi と排他・門前のみ。feature-8）', () => {
+    let double = 0;
+    let riichi = 0;
+    for (let i = 0; i < 2000; i++) {
+      const q = generate(progress({ correctByMode: { yaku: 30 } }), 'yaku', mulberry32(i * 19 + 7), rules());
+      if (q.winContext.riichi) riichi++;
+      if (q.winContext.doubleRiichi) {
+        double++;
+        // 排他表現：doubleRiichi 成立時 riichi は立てない（scoring-rules §1.1）
+        expect(q.winContext.riichi).toBe(false);
+        // 門前のみ（明い面子があればリーチ系は付かない）
+        expect(q.hand.calledMelds.some((m) => m.open)).toBe(false);
+        // エンジンの検出が double-riichi を返す（riichi でなく）
+        const ids = detectedUnion(q);
+        expect(ids).toContain('double-riichi');
+        expect(ids).not.toContain('riichi');
+      }
+    }
+    expect(double).toBeGreaterThan(0);
+    expect(double).toBeLessThan(riichi); // ダブルリーチはリーチより十分まれ（10%）
   });
 });
 

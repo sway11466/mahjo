@@ -51,7 +51,7 @@ export const YAKU_REFERENCE: Record<ScoredYakuId, YakuReference> = {
   },
 
   // ── 中級（中） ──
-  'double-riichi': { difficulty: '中級', condition: '第一巡（最初の捨て牌）でリーチをかける。' },
+  'double-riichi': { difficulty: '中級', condition: '第一打（ダイイチダ＝最初の捨て牌）でリーチをかける。' },
   iipeikou: {
     difficulty: '中級',
     condition: '同じ種類・同じ並びの順子（ジュンツ）を2組そろえる。門前（メンゼン）のみ。',
@@ -488,11 +488,15 @@ function displayNameOf(name: string, reading: string): string {
 /**
  * リーチ系（リーチ・ダブルリーチ・一発）。和了形を持たないので参考手牌は付けないが、
  * 象徴的なリーチ棒（千点棒）を例示エリアに置く（形でなく「リーチしている状態」を視覚で示す）。
- *
- * TODO(feature-8)：ダブルリーチは現状リーチ棒のみでリーチと見分けが付かない。出題に含める
- * （backlog feature-8）際に見分けの付く表現を決め、ここ（riichiBadge 等）と YakuList に反映する。
+ * ダブルリーチ・一発は棒の横に小バッジを添える（盤面のリーチ脇表記の鏡写し＝RIICHI_BADGE）。
  */
 const RIICHI_STICK_IDS = new Set<ScoredYakuId>(['riichi', 'double-riichi', 'ippatsu']);
+
+/** リーチ棒の横の小バッジ。盤面（MainScreen のリーチ脇）と同じ文字列で対応を取る。 */
+const RIICHI_BADGE: Partial<Record<ScoredYakuId, string>> = {
+  'double-riichi': '第一打',
+  ippatsu: '一発',
+};
 
 /** 一覧の1行（表示用に正規化）。通常役＝YAKU_TABLE＋YAKU_REFERENCE、レア役＝RARE_YAKU から作る。 */
 export interface YakuRow {
@@ -504,7 +508,7 @@ export interface YakuRow {
   example?: Tile[];
   /** 参考手牌の代わりにリーチ棒を出す（リーチ系）。 */
   riichiStick?: boolean;
-  /** リーチ棒の横に出す小バッジ（アプリのリーチ脇表記に合わせる。一発のみ）。 */
+  /** リーチ棒の横に出す小バッジ（アプリのリーチ脇表記に合わせる。ダブルリーチ・一発）。 */
   riichiBadge?: string;
 }
 
@@ -524,7 +528,7 @@ export function buildYakuRows(): YakuRow[] {
       condition: ref.condition,
       ...(example ? { example } : {}),
       ...(RIICHI_STICK_IDS.has(id) ? { riichiStick: true } : {}),
-      ...(id === 'ippatsu' ? { riichiBadge: '一発' } : {}),
+      ...(RIICHI_BADGE[id] ? { riichiBadge: RIICHI_BADGE[id] } : {}),
     };
   });
   const rare: YakuRow[] = RARE_YAKU.map((r) => ({
