@@ -43,6 +43,7 @@ const YAKUMAN_RANK = 3;
 /** 和了状況を付与する確率（仮）。副露可能シードを副露に / 門前手をリーチに / リーチ手を一発に。 */
 const P_OPEN = 0.4;
 const P_RIICHI = 0.3;
+const P_DOUBLE_RIICHI = 0.1; // リーチのうち第一巡宣言＝ダブルリーチにする割合（riichi と排他）
 const P_IPPATSU = 0.05;
 const P_KAN = 0.15; // 暗刻を槓子化する確率
 const P_RINSHAN = 0.3; // 槓ツモ手を嶺上開花にする確率
@@ -161,8 +162,8 @@ export function generateForSeed(
 }
 
 /**
- * 和了状況（槓・副露・リーチ・一発・嶺上）を確率で付与する。順序が大事：
- * 槓（暗槓は門前維持／明槓は門前を崩す）→ 副露（ポン/チー）→ リーチ（門前のときだけ）→ 一発。
+ * 和了状況（槓・副露・リーチ・ダブルリーチ・一発・嶺上）を確率で付与する。順序が大事：
+ * 槓（暗槓は門前維持／明槓は門前を崩す）→ 副露（ポン/チー）→ リーチ（門前のときだけ。低確率でダブルリーチ）→ 一発。
  * 明い面子（ポン/チー/明槓）があると門前でなくなり、リーチ・門前ツモは付かない（session.md・generation.md）。
  */
 function applyContext(plan: BuildPlan, seed: YakuId, rng: Rng, rules: RuleSettings): BuildPlan {
@@ -186,10 +187,17 @@ function applyContext(plan: BuildPlan, seed: YakuId, rng: Rng, rules: RuleSettin
     if (idx >= 0) melds = melds.map((m, i) => (i === idx ? { ...m, open: true } : m));
   }
 
-  // リーチ：門前のときだけ（明い面子なし。暗槓は門前を崩さない）。リーチ時のみ一発をロール
+  // リーチ：門前のときだけ（明い面子なし。暗槓は門前を崩さない）。低確率で第一巡宣言＝
+  // ダブルリーチ（riichi とは排他＝scoring-rules §1.1）。リーチ時のみ一発をロール
   let winContext = plan.winContext;
   if (!melds.some((m) => m.open) && rng() < P_RIICHI) {
-    winContext = { ...winContext, riichi: true, ippatsu: rng() < P_IPPATSU };
+    const double = rng() < P_DOUBLE_RIICHI;
+    winContext = {
+      ...winContext,
+      riichi: !double,
+      doubleRiichi: double,
+      ippatsu: rng() < P_IPPATSU,
+    };
   }
 
   // 嶺上開花：槓があってツモなら一定確率で。直前に槓を宣言している＝一発は必ず消える（両立不可）

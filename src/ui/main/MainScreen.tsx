@@ -103,6 +103,7 @@ export function MainScreen({
 
   // 場の状況フラグ・ドラは session の実データから（engine が生成）。
   const riichi = riichiActive(session.winContext); // リーチ棒はダブルリーチでも立つ
+  const doubleRiichi = session.winContext.doubleRiichi; // 「第一打」バッジで状況を示す
   const ippatsu = session.winContext.ippatsu;
   const doraIndicators = session.table.doraIndicators;
   const uraDoraIndicators = session.table.uraDoraIndicators ?? [];
@@ -325,7 +326,9 @@ export function MainScreen({
                 >
                   <div className="riichi__labels">
                     <span className="riichi__label">リーチ</span>
-                    {ippatsu && <span className="riichi__ippatsu">一発</span>}
+                    {/* 状況バッジ（時系列順）：第一打＝ダブルリーチの条件（役名は答え側が出す）／一発 */}
+                    {doubleRiichi && <span className="riichi__badge">第一打</span>}
+                    {ippatsu && <span className="riichi__badge">一発</span>}
                   </div>
                   <div className="riichi__stick">
                     <RiichiStick />

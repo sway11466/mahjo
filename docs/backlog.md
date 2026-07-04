@@ -18,14 +18,6 @@
 
 実装済みコードに足す機能。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す。
 
-### feature-8
-
-**ダブルリーチを出題に含める**（優先度：中）
-
-- 背景：ダブルリーチが現状クイズに出ない。生成器（`src/engine/generate.ts:164-168`）は門前時に `riichi`（＋確率で `ippatsu`）だけを立て、`doubleRiichi` をどこでも立てない（`makeCtx` で常に false）。役一覧（実装済み）には載るが出題されない役になっている。
-- 対応：生成器で一定確率で `doubleRiichi` を立てる（`riichi` とは排他＝double 成立時 `riichi` は付けない。[scoring-rules](./spec/scoring-rules.md) §1.1）。本アプリは和了形のみ扱い局進行を持たないので「第一巡」は状況設定として `winContext` フラグで表現する（`riichi` と同じ流儀）。出題・採点・解説・誤答変換（mistakes）への波及を確認。**あわせて役一覧のダブルリーチ表現を更新する**：現状はリーチ棒のみでリーチと見分けが付かないため、出題に出すなら見分けの付く表現（例：ダブルリーチ用バッジ等）を決め、`src/ui/main/yaku-list/`（`yakuReference.ts`・`YakuList.tsx`）に反映する。リーチ状態の判定は `riichiActive`（`src/engine/score.ts`）を必ず通す（`win.riichi` 直接参照だと doubleRiichi が漏れる）。
-- 該当：`src/engine/generate.ts:164-168`・`makeCtx`・`src/ui/main/yaku-list/`（役一覧の表現反映）。
-
 ### feature-9
 
 **効果音（SE）素材の収集・整備**（優先度：低）

@@ -112,8 +112,8 @@
   letter-spacing: 0.08em;
 }
 
-/* 一発：リーチ脇の小バッジ（リーチ前提の条件） */
-.riichi__ippatsu {
+/* リーチ脇の小バッジ（リーチ前提の状況）：第一打＝ダブルリーチ／一発 */
+.riichi__badge {
   padding: 0.1rem 0.5rem;
   font-size: clamp(0.65rem, 1.1vw, 0.85rem);
   font-weight: 700;
