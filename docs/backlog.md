@@ -31,14 +31,13 @@
 **設定画面に並べただけで未実装の項目を、実際に動くよう配線する**（優先度：低）
 
 - 背景：設定画面とその保存（`src/storage/`）は実装済みで、設定項目は2種類ある。**すでに採点エンジンに効くもの**（`kuitan`・`kiriageMangan`・`kazoeYakuman`・`doubleYakuman`・`enabledYaku`）は動作する。一方**挙動が未実装のもの**は、設定画面に項目だけ並べて「機能追加予定」表示でグレーアウトし（コード上は `RuleSettingsScreen.tsx`・`AppSettingsScreen.tsx` の `soon` 行）、値の保存だけ通している＝操作しても何も起きない。この「保存はされるが挙動が無い」項目を1つずつ「設定 → 実際の挙動」に繋ぐのが本項。配線できた項目から `soon` を外して編集可へ昇格する。
-- 対応：項目ごとに独立して着手できる。
-  - 赤ドラ（`akaDoraCount`）：生成器が赤牌（`Tile.red`）を `akaDoraCount` 枚を上限に作って出題に混ぜる。採点側（赤を数える）は実装済み（`src/engine/score.ts`）なので、残りは生成と、盤面での赤ドラ区別表示（[screens.md](./design/screens.md) §3）。
+- 対応：項目ごとに独立して着手できる（赤ドラ〔`akaDoraCount`〕は対応済み＝生成・表示・設定UI とも稼働）。
   - 呼び方（`playerName`）：プレイヤーの呼び名を Persona のセリフに差し込む（[character-guide](./characters/character-guide.md) §2）。差し込みの仕組み（テンプレート）自体が未実装なので機構ごと用意する。
   - 牌のランダム並び（`randomTileOrder`）：手牌を正準順でなくシャッフルして描画する（Tile データは不変・表示側だけ＝[data-model](./design/data-model.md) §1）。
   - 後付け（`atozuke`）：生成・和了可否の判定に反映する（採点には影響しない。[scoring-rules](./spec/scoring-rules.md) §5）。
   - 場の固定/ランダム（`round`）：クイズは局が場風を決めるので効かない（[scoring-rules](./spec/scoring-rules.md) §5）。場風を渡さない解説単独モード（別途設計）でのみ有効化する。
   - 対象外（別項目で追跡）：効果音・音楽（`se`/`bgm`）＝parking lot「音（SE/BGM）の実装」＋[feature-9](#feature-9)／レア役（`rareYaku`）＝parking lot・[scoring-rules](./spec/scoring-rules.md) §1.3（未対応）。
-- 該当：`src/ui/settings/RuleSettingsScreen.tsx`・`src/ui/settings/AppSettingsScreen.tsx`（`soon` 行の解除）・`src/engine/generate.ts`（赤ドラ・後付け）・`src/characters/`＋`src/session/`（呼び方差し込み）・`src/ui/main/`（牌並び表示）。
+- 該当：`src/ui/settings/RuleSettingsScreen.tsx`・`src/ui/settings/AppSettingsScreen.tsx`（`soon` 行の解除）・`src/engine/generate.ts`（後付け）・`src/characters/`＋`src/session/`（呼び方差し込み）・`src/ui/main/`（牌並び表示）。
 
 ### feature-14
 
