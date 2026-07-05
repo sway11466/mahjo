@@ -51,3 +51,5 @@ export type {
 // 設定
 export type { RuleSettings, AppSettings } from './settings.ts';
 export type { SkillStat, Progress, ProgressByCharacter } from './progress.ts';
+export type { MissRecord, MissHistory } from './miss.ts';
+export { MISS_HISTORY_CAP } from './miss.ts';

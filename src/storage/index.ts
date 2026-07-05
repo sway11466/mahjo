@@ -2,17 +2,20 @@ import type {
   RuleSettings,
   AppSettings,
   ProgressByCharacter,
+  MissHistory,
 } from '../types/index.ts';
 import { read, write, type StorageBackend } from './envelope.ts';
 import {
   defaultRuleSettings,
   defaultAppSettings,
   defaultProgressByCharacter,
+  defaultMissHistory,
 } from './defaults.ts';
 import {
   validateRuleSettings,
   validateAppSettings,
   validateProgressByCharacter,
+  validateMissHistory,
 } from './validate.ts';
 
 /**
@@ -25,6 +28,7 @@ export const STORAGE_KEYS = {
   rules: 'mahjo:rules',
   app: 'mahjo:app',
   progress: 'mahjo:progress',
+  misses: 'mahjo:misses',
 } as const;
 
 export function createStorage(backend: StorageBackend = globalThis.localStorage) {
@@ -41,6 +45,10 @@ export function createStorage(backend: StorageBackend = globalThis.localStorage)
       read(backend, STORAGE_KEYS.progress, validateProgressByCharacter, defaultProgressByCharacter),
     saveProgress: (p: ProgressByCharacter): void =>
       write(backend, STORAGE_KEYS.progress, p),
+
+    loadMisses: (): MissHistory =>
+      read(backend, STORAGE_KEYS.misses, validateMissHistory, defaultMissHistory),
+    saveMisses: (m: MissHistory): void => write(backend, STORAGE_KEYS.misses, m),
   };
 }
 
@@ -53,4 +61,5 @@ export {
   defaultAppSettings,
   defaultProgress,
   defaultProgressByCharacter,
+  defaultMissHistory,
 } from './defaults.ts';

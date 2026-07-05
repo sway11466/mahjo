@@ -3,6 +3,7 @@ import type {
   AppSettings,
   Progress,
   ProgressByCharacter,
+  MissHistory,
 } from '../types/index.ts';
 
 /**
@@ -43,5 +44,9 @@ export function defaultProgress(): Progress {
 }
 
 export function defaultProgressByCharacter(): ProgressByCharacter {
+  return {};
+}
+
+export function defaultMissHistory(): MissHistory {
   return {};
 }

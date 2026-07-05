@@ -22,7 +22,11 @@ import {
   answerCurrent,
   advance,
   applyProgress,
+  buildMissRecord,
+  appendMiss,
 } from './quiz-session.ts';
+import type { MissHistory } from '../types/index.ts';
+import { MISS_HISTORY_CAP } from '../types/index.ts';
 
 // 開始＝あいさつ（greeting）→ beginQuiz で出題（playing）。回答系テストは playing から始める。
 const started = (p: SessionProblem) => beginQuiz(startSession('yaku', p));
@@ -118,6 +122,54 @@ describe('quiz session state machine', () => {
     }
     const after = answerCurrent(s, 0);
     expect(after).toBe(s); // 終了後は変化しない
+  });
+});
+
+describe('miss history（間違い履歴。data-model §16）', () => {
+  const at = '2026-07-05T00:00:00.000Z';
+
+  it('buildMissRecord: 誤答なら盤面と選択値・正解値を写す（解釈は保存しない）', () => {
+    // problem(1)＝正解 index 1（'2翻'）。index 2（'3翻'）を選んで誤答にする。
+    const s = answerCurrent(started(problem(1)), 2);
+    const rec = buildMissRecord(s, at);
+    expect(rec).not.toBeNull();
+    expect(rec!.at).toBe(at);
+    expect(rec!.selectedValue).toBe('3翻');
+    expect(rec!.correctValue).toBe('2翻');
+    // 生データ（盤面）はそのまま参照を写す
+    expect(rec!.hand).toBe(s.hand);
+    expect(rec!.table).toBe(s.table);
+    expect(rec!.winContext).toBe(s.winContext);
+  });
+
+  it('buildMissRecord: 正解・未回答は null', () => {
+    const before = started(problem(1));
+    expect(buildMissRecord(before, at)).toBeNull(); // 未回答
+    expect(buildMissRecord(answerCurrent(before, 1), at)).toBeNull(); // 正解
+  });
+
+  it('appendMiss: キャラ別×モード別に末尾へ追記する（他バケットに影響しない）', () => {
+    const rec = buildMissRecord(answerCurrent(started(problem(1)), 0), at)!;
+    let h: MissHistory = {};
+    h = appendMiss(h, 'mao', 'yaku', rec);
+    h = appendMiss(h, 'mao', 'score', rec);
+    h = appendMiss(h, 'rin', 'yaku', rec);
+    expect(h.mao?.yaku).toHaveLength(1);
+    expect(h.mao?.score).toHaveLength(1);
+    expect(h.rin?.yaku).toHaveLength(1);
+    expect(h.rin?.score).toBeUndefined();
+  });
+
+  it('appendMiss: 上限（MISS_HISTORY_CAP）を超えたら古いものから捨てる（新しいものが末尾）', () => {
+    const base = buildMissRecord(answerCurrent(started(problem(1)), 0), at)!;
+    let h: MissHistory = {};
+    for (let i = 0; i < MISS_HISTORY_CAP + 5; i++) {
+      h = appendMiss(h, 'mao', 'yaku', { ...base, at: `t${i}` });
+    }
+    const buf = h.mao!.yaku!;
+    expect(buf).toHaveLength(MISS_HISTORY_CAP);
+    expect(buf[0]!.at).toBe('t5'); // 古い5件（t0–t4）が押し出されている
+    expect(buf[buf.length - 1]!.at).toBe(`t${MISS_HISTORY_CAP + 4}`);
   });
 });
 

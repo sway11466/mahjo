@@ -43,19 +43,10 @@
 
 **苦手データをキャラの寄り添いアドバイスに活かす**（優先度：低。だいぶ先）
 
-- 背景：`Progress` に苦手集計（`byTarget`＝出題種類ごとの `{seen, correct}`）を貯める土台ができた（[data-model.md §16](./design/data-model.md)・[session.md](./spec/session.md) §5）。これは「苦手な問題に寄り添ったアドバイスをする」ための素材で、貯めるところまでが実装済み・**活用は未着手**。誤り方の素材は間違い履歴（[feature-19](#feature-19)）が担う。本項は貯まったデータをキャラのセリフに反映する出口。
+- 背景：`Progress` に苦手集計（`byTarget`＝出題種類ごとの `{seen, correct}`）を貯める土台ができた（[data-model.md §16](./design/data-model.md)・[session.md](./spec/session.md) §5）。これは「苦手な問題に寄り添ったアドバイスをする」ための素材で、貯めるところまでが実装済み・**活用は未着手**。誤り方の素材は間違い履歴（実装済み＝[data-model.md §16](./design/data-model.md) `MissHistory`）が担う。本項は貯まったデータをキャラのセリフに反映する出口。
 - 対応：苦手（率が一定以下かつ `seen` が閾値以上の出題種類／間違い履歴に見える傾向）を検出し、キャラがやわらかく寄り添う文言を出す。`プレッシャーをかけない`（[product-concept.md](./product-concept.md) §3・session.md §6）を厳守＝失敗の採点表として突きつけず、誤り方の推測は真因の診断でなくヒント扱い（断定しない。履歴＝事実から表示時に都度計算する）。実現には characters に**新カテゴリ（苦手寄り添い script）**が要る見込み（型・authoring がキャラ人数分ファンアウト）。検出ロジックは session 寄りの純関数に置きテスト対象。
-- 関連（出口は2系統で別物・素材は共有）：もう一方の出口＝**苦手を多めに再出題**は parking lot「間違い復習、出題範囲の細かな調整」。好感度アンロック（parking lot）とも素材を共有しうる。前提＝苦手データが貯まっていること。誤り方を使う部分は [feature-19](#feature-19)（間違い履歴）の後。
+- 関連（出口は2系統で別物・素材は共有）：もう一方の出口＝**苦手を多めに再出題**は parking lot「間違い復習、出題範囲の細かな調整」。好感度アンロック（parking lot）とも素材を共有しうる。前提＝苦手データが貯まっていること（`byTarget`・間違い履歴とも保存は稼働済み＝出口はいつでも作れる）。
 - 該当：新規（`src/session/` の苦手検出＋`src/characters/`＋各 `character-<id>-script.md` の寄り添い文言）。型は data-model §16、思想は session.md §5/§6。
-
-### feature-19
-
-**間違い履歴の保存（失敗した出題の生データ・リングバッファ）**（優先度：中。苦手活用系の前提）
-
-- 背景：苦手の「誤り方」把握は当初 `byMistake`（誤答を `MistakeKind` で分類してカウント。旧 refactoring-13 が精査の前提整備）の予定だったが、分類は誤答値からの推測で決めつけが残る（1つの誤答値に複数の真因がありうる＝旧 refactoring-13 の指摘そのもの）うえ、分類を後から変えると貯めたカウントの意味がズレる。方針転換（2026-07-04）：**解釈（分類）を保存せず、失敗した出題そのもの（事実）を保存する**。事実を貯めれば集計・分類は表示時に何度でもやり直せ、分類ロジックを改良してもデータが腐らない。間違い復習（parking lot「間違い復習、出題範囲の細かな調整」）の必須素材にもなる（同じ手の再出題は配牌の保存がないと作れない）。
-- 対応：誤答時に `hand`＋`table`＋`winContext`＋`target`＋選んだ誤答値（＋正解値）をキャラ別に保存（`Progress` と同様＝[storage.md](./design/storage.md) の version／防御的読込に乗せる）。リングバッファで直近N件に上限（例：モード別50件。件数・保存フィールドの細部は着手時に確定）。`MistakeKind` は**永続化せず**、回答直後の諭し文選択だけに使う表示用語彙に格下げ（`byMistake` 案は廃止）。あわせて docs＝[data-model.md §16](./design/data-model.md)・[session.md §5](./spec/session.md) の byMistake 予約記述を本方針へ差し替える。
-- 該当：`src/types/`（履歴の型＝data-model §16）・`src/storage/`（新キー）・`src/session/`（誤答時の記録）。docs＝data-model §16・session.md §5。
-- 関連：出口は2系統＝キャラの寄り添いアドバイス（[feature-14](#feature-14)）／間違い復習（parking lot）。どちらも本履歴が前提。
 
 ## リファクタリング
 
@@ -86,7 +77,7 @@
 
 後回し・いつかやる候補の置き場（特定の作業に紐付かない将来アイデア）。着手が決まった段で機能追加・リファクタリングへ引き上げる。
 
-- 学習イベント計測のフェーズ2（行動の質）：旧 feature-18 フェーズ1（6イベント＝`track()` ラッパ＋GTM/GA4 配信）は実装・本番稼働済み（契約は [analytics.md](./spec/analytics.md)）。任意の追加計測＝`highlight_click`（クリック内訳ハイライトの利用・`category`）・`character_select`（キャラ選択画面の探索）・`setting_change`（どのルールで遊ぶか・`key`/`value`。`playerName` 除外）・画面遷移の仮想ページビュー・PWA インストール／`display-mode: standalone` 判定（リピーター把握、下記「オフライン計測（GA4）」の前段）・不正解時の `mistake_kind`（`MistakeKind` は諭し表示用の語彙に格下げ＝[feature-19](#feature-19)。罠ラベルとして計測に載せる意味があるかは同項の方針確定後に判断）。発火点（`track()` 呼び出し）を足すだけで取れる（土台は不変）。
+- 学習イベント計測のフェーズ2（行動の質）：旧 feature-18 フェーズ1（6イベント＝`track()` ラッパ＋GTM/GA4 配信）は実装・本番稼働済み（契約は [analytics.md](./spec/analytics.md)）。任意の追加計測＝`highlight_click`（クリック内訳ハイライトの利用・`category`）・`character_select`（キャラ選択画面の探索）・`setting_change`（どのルールで遊ぶか・`key`/`value`。`playerName` 除外）・画面遷移の仮想ページビュー・PWA インストール／`display-mode: standalone` 判定（リピーター把握、下記「オフライン計測（GA4）」の前段）・不正解時の `mistake_kind`（`MistakeKind` は諭し表示専用の語彙＝永続化しない〔[data-model.md §16](./design/data-model.md)〕。罠ラベルとして計測に載せる意味があるかは要判断）。発火点（`track()` 呼び出し）を足すだけで取れる（土台は不変）。
 - 役満シード生成、手続き的な任意合法和了形の生成。
 - 間違い復習、出題範囲の細かな調整。
 - サポートキャラの追加（順次）。
