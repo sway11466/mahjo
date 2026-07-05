@@ -4,7 +4,11 @@ import type {
   AppSettings,
   Progress,
   ProgressByCharacter,
+  StudyMode,
+  MissRecord,
+  MissHistory,
 } from '../types/index.ts';
+import { appendMiss } from '../session/index.ts';
 import { createStorage, type AppStorage } from '../storage/index.ts';
 
 /**
@@ -23,6 +27,10 @@ export interface Persistence {
   progressByCharacter: ProgressByCharacter;
   /** 指定キャラの進捗を更新して保存する（正解加算後の Progress を書き戻す）。 */
   setProgressForCharacter: (characterId: string, next: Progress) => void;
+  /** キャラ別×モード別の間違い履歴（data-model §16）。出口（寄り添い・復習）は未実装＝当面書くだけ。 */
+  missHistory: MissHistory;
+  /** 誤答1件を指定キャラ・モードの履歴へ追記して保存する（直近 MISS_HISTORY_CAP 件のリングバッファ）。 */
+  recordMissForCharacter: (characterId: string, mode: StudyMode, record: MissRecord) => void;
 }
 
 export function usePersistence(): Persistence {
@@ -39,6 +47,7 @@ export function usePersistence(): Persistence {
   const [progressByCharacter, setProgressState] = useState<ProgressByCharacter>(
     () => storage.loadProgress(),
   );
+  const [missHistory, setMissState] = useState<MissHistory>(() => storage.loadMisses());
 
   return {
     rules,
@@ -57,6 +66,13 @@ export function usePersistence(): Persistence {
       const merged = { ...progressByCharacter, [characterId]: next };
       setProgressState(merged);
       storage.saveProgress(merged); // 即時反映＋保存
+    },
+    missHistory,
+    recordMissForCharacter: (characterId, mode, record) => {
+      // 追記ロジック（リングバッファ）は session の純ヘルパ、ここは state＋保存の橋渡しのみ。
+      const merged = appendMiss(missHistory, characterId, mode, record);
+      setMissState(merged);
+      storage.saveMisses(merged);
     },
   };
 }

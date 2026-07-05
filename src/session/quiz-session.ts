@@ -1,4 +1,12 @@
-import type { Wind, Progress, StudyMode, QuizTarget } from '../types/index.ts';
+import type {
+  Wind,
+  Progress,
+  StudyMode,
+  QuizTarget,
+  MissRecord,
+  MissHistory,
+} from '../types/index.ts';
+import { MISS_HISTORY_CAP } from '../types/index.ts';
 import type { QuizSession, SessionAnswer, SessionProblem } from './types.ts';
 
 /**
@@ -74,6 +82,42 @@ export function advance(session: QuizSession, next: SessionProblem | null): Quiz
 /** 1問の回答を進捗へ反映する純ヘルパ（session.md §5）。
  *  - 累計・モード別（correctTotal / correctByMode）は正解のみ加算（難易度アンロックを駆動：generation.md §3）。
  *  - 苦手集計 byTarget[target] は正誤問わず seen を +1、正解なら correct も +1（率＝苦手を測る素）。 */
+/** 現在局が誤答のとき、その出題の生データを間違い履歴レコードにする（正解・未回答は null）。
+ *  事実だけを写し、解釈（MistakeKind）は保存しない（data-model §16）。時刻 at は呼び出し側
+ *  （ui）が渡す＝ここは Date を呼ばず純粋に保つ。 */
+export function buildMissRecord(session: QuizSession, at: string): MissRecord | null {
+  const answer = session.answers[session.index];
+  if (!answer || answer.correct) return null;
+  const selected = session.question.choices[answer.selectedIndex];
+  const correct = session.question.choices.find((c) => c.correct);
+  return {
+    at,
+    hand: session.hand,
+    table: session.table,
+    winContext: session.winContext,
+    selectedValue: selected?.value ?? '',
+    correctValue: correct?.value ?? '',
+  };
+}
+
+/** 間違い履歴へ1件追記する純ヘルパ。キャラ別×モード別に直近 MISS_HISTORY_CAP 件へ
+ *  切り詰めるリングバッファ（新しいものが末尾）。保存の IO は storage（ui が配線）。 */
+export function appendMiss(
+  history: MissHistory,
+  characterId: string,
+  mode: StudyMode,
+  record: MissRecord,
+): MissHistory {
+  const buf = history[characterId]?.[mode] ?? [];
+  return {
+    ...history,
+    [characterId]: {
+      ...history[characterId],
+      [mode]: [...buf, record].slice(-MISS_HISTORY_CAP),
+    },
+  };
+}
+
 export function applyProgress(
   progress: Progress,
   mode: StudyMode,

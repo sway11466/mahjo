@@ -22,7 +22,7 @@
 | 13 | キャラ | `Character`（`Persona` / `Expression` / `ReactionTrigger`） | サポートキャラ |
 | 14 | 設定 | `RuleSettings` | ルール設定（採点に影響） |
 | 15 | 設定 | `AppSettings` | アプリ/UX 設定（音・呼び方・キャラ選択 等） |
-| 16 | 設定 | `Progress`（`ProgressByCharacter`） | 進捗・成績（キャラ別。難易度の駆動要素） |
+| 16 | 設定 | `Progress`（`ProgressByCharacter`）／`MissRecord`（`MissHistory`） | 進捗・成績と間違い履歴（キャラ別。難易度・寄り添いの駆動要素） |
 | 17 | セッション | `QuizSession`（`SessionAnswer` / `SessionStatus`）／`SessionViewState` | セッションの進行状態と、ui が描く提示モデル |
 
 ## 1. 牌 Tile
@@ -455,19 +455,35 @@ export interface Progress {
   // 苦手の把握（寄り添いアドバイスの素。出口の活用は未対応＝backlog feature-14）。
   // 任意フィールド＝既存データと共存し、欠落は防御的読込が補完する（storage.md §5・マイグレ不要）。
   byTarget?: Partial<Record<QuizTarget, SkillStat>>; // 何が弱いか（翻/点数の定着度＝率の真実）
-  // 誤り方は byMistake（MistakeKind のカウント）でなく、間違い履歴＝失敗した出題の生データを貯める方針
-  // （backlog feature-19。解釈でなく事実を保存し、分類は表示時に都度行う）。履歴の型は同項の着手時に定める。
+  // 誤り方は byMistake（MistakeKind のカウント）でなく、間違い履歴＝失敗した出題の生データを貯める
+  // （下の MissRecord。解釈でなく事実を保存し、分類は表示時に都度行う）。
 }
 
 // 成績はキャラごとに別管理（characterId → 成績）。キャラを切り替えると、そのキャラの
 // 進捗・難易度帯で続く。localStorage 保存（永続化の詳細は design/storage.md）。
 export type ProgressByCharacter = Record<string /* characterId */, Progress>;
+
+// 間違い履歴の1件＝失敗した出題の生データ。事実だけを保存し、解釈（MistakeKind）は保存しない
+// （分類は表示時に都度行う＝真因の診断でなくヒント）。誤答の確定と同時に session が組み立て
+// （buildMissRecord）、ui が保存を配線する。target はモード（下のバケット）から一意なので持たない。
+export interface MissRecord {
+  at: string;            // 保存時刻（ISO 8601。直近重視の集計・表示用）
+  hand: Hand;
+  table: Table;
+  winContext: WinContext;
+  selectedValue: string; // 選んだ誤答の表示値（QuizChoice.value）
+  correctValue: string;  // 正解の表示値
+}
+
+// キャラ別×モード別のリングバッファ（新しいものが末尾。各バッファ直近 MISS_HISTORY_CAP=50 件）。
+// Progress とは別の localStorage キーで保存する（storage.md §2,3）。
+export type MissHistory = Record<string /* characterId */, Partial<Record<StudyMode, MissRecord[]>>>;
 ```
 
 苦手モデルの設計メモ（思想は [session.md](../spec/session.md) §5）：
 
 - `seen/correct`（byTarget）＝**率（定着度）の真実**。分母 `seen` が必須（正解数だけでは露出不足と苦手が混同する）。
-- 誤り方＝**間違い履歴**（失敗した出題の生データ：手・場・和了状況・選んだ誤答値。backlog feature-19）。当初案の `byMistake`（不正解を `MistakeKind` で割ったカウント）は**廃止**——分類は誤答値からの推測で決めつけが残り（1つの誤答値に複数の真因がありうる）、分類を後から変えると貯めたカウントの意味がズレる。解釈でなく事実を保存すれば、集計・分類は表示時に何度でもやり直せる。誤り方の推測は真因の**診断ではなくヒント**として扱う（断定しない＝プレッシャーをかけない）。`MistakeKind` は永続化せず、回答直後の諭し文選択だけに使う表示用語彙。
+- 誤り方＝**間違い履歴**（失敗した出題の生データ：手・場・和了状況・選んだ誤答値＝上の `MissRecord`）。当初案の `byMistake`（不正解を `MistakeKind` で割ったカウント）は**廃止**——分類は誤答値からの推測で決めつけが残り（1つの誤答値に複数の真因がありうる）、分類を後から変えると貯めたカウントの意味がズレる。解釈でなく事実を保存すれば、集計・分類は表示時に何度でもやり直せる。誤り方の推測は真因の**診断ではなくヒント**として扱う（断定しない＝プレッシャーをかけない）。`MistakeKind` は永続化せず、回答直後の諭し文選択だけに使う表示用語彙。
 - v1 は**通算**で集計（直近重視・ユーザー横断プロファイルは効果を見て格上げ）。「失敗を内部で数える」ことと「プレッシャーをかけない」は両立する（後者は**提示**の原則であって保存の制約ではない）。
 
 ## 17. セッション QuizSession / SessionViewState

@@ -43,4 +43,4 @@ SPA 内の学習行動を GTM 経由で GA4 へ送るための、イベント契
 
 ## 4. フェーズ2（任意・未実装）
 
-行動の質を測る拡張。未実装。`highlight_click`・`character_select`・`setting_change`（`playerName` 除外）・画面遷移の仮想ページビュー・PWA インストール／`display-mode: standalone` 判定・不正解時の `mistake_kind`（`MistakeKind` は諭し表示用の語彙＝罠ラベルに格下げ。計測に載せる意味があるかは [backlog](../backlog.md) feature-19 の方針確定後に判断）。詳細は [backlog](../backlog.md) parking lot「学習イベント計測のフェーズ2」。発火点（`track()` 呼び出し）を足すだけで取れる。
+行動の質を測る拡張。未実装。`highlight_click`・`character_select`・`setting_change`（`playerName` 除外）・画面遷移の仮想ページビュー・PWA インストール／`display-mode: standalone` 判定・不正解時の `mistake_kind`（`MistakeKind` は諭し表示専用の語彙＝永続化しない〔[data-model](../design/data-model.md) §16〕。罠ラベルとして計測に載せる意味があるかは要判断）。詳細は [backlog](../backlog.md) parking lot「学習イベント計測のフェーズ2」。発火点（`track()` 呼び出し）を足すだけで取れる。

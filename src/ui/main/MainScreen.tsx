@@ -5,6 +5,7 @@ import type {
   RuleSettings,
   StudyMode,
   HighlightTarget,
+  MissRecord,
 } from '../../types/index.ts';
 import type { Rng } from '../../engine/rng.ts';
 import { riichiActive } from '../../engine/score.ts';
@@ -14,6 +15,7 @@ import {
   answerCurrent,
   nextProblem,
   applyProgress,
+  buildMissRecord,
   buildCharacterView,
   buildHintSteps,
   buildExplainSteps,
@@ -47,6 +49,8 @@ interface MainScreenProps {
   character: Character;
   progress: Progress;
   setProgress: (p: Progress) => void;
+  /** 誤答1件を間違い履歴へ保存する（現在キャラ・モードへの紐付けは App。data-model §16） */
+  recordMiss: (record: MissRecord) => void;
   rng: Rng;
   rules: RuleSettings;
   /** スタート画面へ戻る */
@@ -62,6 +66,7 @@ export function MainScreen({
   character,
   progress,
   setProgress,
+  recordMiss,
   rng,
   rules,
   onExit,
@@ -145,6 +150,9 @@ export function MainScreen({
       // 進捗は回答確定と同時に反映する。「次へ」まで待つと、押さずにメニューへ戻った1問が
       // 消えて計測（quiz_answer）ともズレる。
       setProgress(applyProgress(progress, session.mode, session.question.target, correct));
+      // 誤答は間違い履歴へ（失敗した出題の生データ＝data-model §16。進捗と同時に保存）。
+      const miss = buildMissRecord(next, new Date().toISOString());
+      if (miss) recordMiss(miss);
       advanceTo(next);
     }, REVEAL_DELAY_MS);
   };

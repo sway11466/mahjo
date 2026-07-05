@@ -20,7 +20,7 @@ export interface Progress {
   correctByMode: Partial<Record<StudyMode, number>>; // モード別（難易度アンロックの駆動）
   /** 何が弱いか（翻/点数の定着度＝率の真実）。任意＝既存データと共存し欠落は防御的読込が補完。
    *  寄り添いアドバイスの素（出口の活用は backlog feature-14）。誤り方は集計（byMistake）でなく
-   *  間違い履歴＝失敗した出題の生データを貯める方針（backlog feature-19。解釈でなく事実を保存）。 */
+   *  間違い履歴＝失敗した出題の生データを貯める（./miss.ts の MissHistory。解釈でなく事実を保存）。 */
   byTarget?: Partial<Record<QuizTarget, SkillStat>>;
 }
 

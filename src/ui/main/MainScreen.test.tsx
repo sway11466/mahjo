@@ -3,7 +3,8 @@ import { MainScreen } from './MainScreen.tsx';
 import { mulberry32 } from '../../engine/rng.ts';
 import { getCharacter } from '../../characters/index.ts';
 import { rules } from '../../engine/__tests__/hands.ts';
-import type { Progress } from '../../types/index.ts';
+import { startQuiz } from '../../session/index.ts';
+import type { Progress, MissRecord } from '../../types/index.ts';
 
 describe('MainScreen — 進捗の反映タイミング', () => {
   afterEach(() => {
@@ -21,6 +22,7 @@ describe('MainScreen — 進捗の反映タイミング', () => {
         character={getCharacter('mao')}
         progress={{ correctTotal: 0, correctByMode: {} }}
         setProgress={(p) => saved.push(p)}
+        recordMiss={() => {}}
         rng={mulberry32(1)}
         rules={rules()}
         onExit={() => {}}
@@ -41,6 +43,65 @@ describe('MainScreen — 進捗の反映タイミング', () => {
   });
 });
 
+describe('MainScreen — 間違い履歴（data-model §16）', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  // 同じシードで startQuiz を再現して正解/誤答の選択肢を特定する（下のバッジテストと同じ手筋）。
+  const probeSession = () =>
+    startQuiz('yaku', { correctTotal: 0, correctByMode: {} }, mulberry32(1), rules());
+
+  const renderWithRecorder = (misses: MissRecord[]) =>
+    render(
+      <MainScreen
+        mode="yaku"
+        character={getCharacter('mao')}
+        progress={{ correctTotal: 0, correctByMode: {} }}
+        setProgress={() => {}}
+        recordMiss={(r) => misses.push(r)}
+        rng={mulberry32(1)}
+        rules={rules()}
+        onExit={() => {}}
+      />,
+    );
+
+  it('誤答の答え合わせで recordMiss が呼ばれる（盤面・選択値・正解値を写す）', () => {
+    vi.useFakeTimers();
+    const probe = probeSession();
+    const wrong = probe.question.choices.find((c) => !c.correct)!;
+    const correct = probe.question.choices.find((c) => c.correct)!;
+    const misses: MissRecord[] = [];
+    renderWithRecorder(misses);
+    fireEvent.click(screen.getByRole('button', { name: 'はじめる' }));
+
+    fireEvent.click(screen.getByRole('button', { name: wrong.value }));
+    expect(misses).toHaveLength(0); // 御札を置いた直後（答え合わせ前）はまだ記録しない
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(misses).toHaveLength(1);
+    expect(misses[0]!.selectedValue).toBe(wrong.value);
+    expect(misses[0]!.correctValue).toBe(correct.value);
+    expect(misses[0]!.hand).toEqual(probe.hand); // 出題の生データ（盤面）を写している
+  });
+
+  it('正解の答え合わせでは recordMiss を呼ばない', () => {
+    vi.useFakeTimers();
+    const probe = probeSession();
+    const correct = probe.question.choices.find((c) => c.correct)!;
+    const misses: MissRecord[] = [];
+    renderWithRecorder(misses);
+    fireEvent.click(screen.getByRole('button', { name: 'はじめる' }));
+
+    fireEvent.click(screen.getByRole('button', { name: correct.value }));
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(misses).toHaveLength(0);
+  });
+});
+
 describe('MainScreen — リーチ脇の状況バッジ（feature-8）', () => {
   // シードは startQuiz の1問目の winContext を走査して確定（15＝ダブルリーチ／10＝素のリーチ）。
   // startQuiz が rng を最初に消費するので、MainScreen に同じシードを渡せば同じ出題になる。
@@ -51,6 +112,7 @@ describe('MainScreen — リーチ脇の状況バッジ（feature-8）', () => {
         character={getCharacter('mao')}
         progress={{ correctTotal: 0, correctByMode: {} }}
         setProgress={() => {}}
+        recordMiss={() => {}}
         rng={mulberry32(seed)}
         rules={rules()}
         onExit={() => {}}
