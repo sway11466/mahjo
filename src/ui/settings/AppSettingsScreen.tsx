@@ -15,25 +15,34 @@ interface AppSettingsScreenProps {
 /**
  * アプリ設定（screens.md §5・AppSettings）。採点に効かない UX 設定。
  *
- * 当面は全項目が未配線（音の再生＝parking lot、呼び方の差し込み・牌のランダム並びも未実装）なので
- * 操作不可にし「機能追加予定」を添える（値は保存・復元される＝feature-2 の方針）。配線が入った項目から
- * 順に編集可へ昇格する。キャラ選択（selectedCharacterId）はキャラクター選択画面が持つ（§4・feature-1）。
+ * 配線が入った項目から編集可へ昇格する（値は保存・復元される＝feature-2 の方針）。
+ * 現状：BGM は配線済み（再生＝src/ui/audio・sound.md「BGM の実現方式」）＝編集可。
+ * 効果音・呼び方・牌のランダム並びは未実装なので操作不可にし「機能追加予定」を添える。
+ * キャラ選択（selectedCharacterId）はキャラクター選択画面が持つ（§4・feature-1）。
  */
 export function AppSettingsScreen({
   appSettings,
-  onChange: _onChange,
+  onChange,
   character,
   onBack,
 }: AppSettingsScreenProps) {
-  // 全項目 disabled の間は onChange を呼ばない（配線済み項目を足すときに使う）。
-  void _onChange;
-
   return (
     <SettingsLayout title="アプリ設定" character={character} onBack={onBack}>
       <div className="settings">
         <section className="settings__section">
-          <h2 className="settings__section-title">機能追加予定</h2>
+          <h2 className="settings__section-title">サウンド</h2>
 
+          <SettingRow
+            title="音楽（BGM）"
+            description="学習中に、選択中のキャラクターの BGM を流します（既定オフ）。"
+            control={
+              <ToggleSwitch
+                label="音楽"
+                checked={appSettings.bgm}
+                onChange={(v) => onChange({ ...appSettings, bgm: v })}
+              />
+            }
+          />
           <SettingRow
             soon
             title="効果音"
@@ -42,14 +51,11 @@ export function AppSettingsScreen({
               <ToggleSwitch label="効果音" checked={appSettings.se} disabled onChange={() => {}} />
             }
           />
-          <SettingRow
-            soon
-            title="音楽（BGM）"
-            description="学習中の BGM（再生実装後に有効化予定）。"
-            control={
-              <ToggleSwitch label="音楽" checked={appSettings.bgm} disabled onChange={() => {}} />
-            }
-          />
+        </section>
+
+        <section className="settings__section">
+          <h2 className="settings__section-title">機能追加予定</h2>
+
           <SettingRow
             soon
             title="呼び方"
