@@ -63,8 +63,8 @@
 
 **キャラクターガイドの見直し**（優先度：中）
 
-- 背景：[character-guide.md](./characters/character-guide.md) は キャラの位置づけ・アセット・作り方（AI 生成の知見含む）・データ管理を一手に抱えて肥大化しており、まお／りんの実制作で得た知見（同一セッション t2i・セッション再構築・画質と一貫性のトレードオフ等）が §4 に積み増しで足されてきた。記述の重複・粒度のばらつき・他 doc（[data-model](./design/data-model.md) §13・[architecture](./design/architecture.md) §5・[hints](./spec/hints.md)・各 `character-<id>.md`）との境界の曖昧さがあり、新キャラ追加時に「どこを読めば作れるか」が辿りにくい。あわせて**記述が決定事項（[decisions.md](./decisions.md)）や実装・実態と乖離している箇所**が疑われる。とくにガイド冒頭の概要説明が不正確：
-  - 「各キャラ固有の中身は 1キャラ＝1doc」とあるが、実際は §2 のとおり 1キャラ＝2ファイル（定義 `character-<id>.md` ＋ セリフ `character-<id>-script.md`）で、冒頭と本文が食い違う。
+- 背景：[character-guide.md](./characters/character-guide.md) は キャラの位置づけ・アセット・作り方（AI 生成の知見含む）・データ管理を一手に抱えて肥大化しており、まお／りんの実制作で得た知見（同一セッション t2i・セッション再構築・画質と一貫性のトレードオフ等）が §4 に積み増しで足されてきた。記述の重複・粒度のばらつき・他 doc（[data-model](./design/data-model.md) §13・[architecture](./design/architecture.md) §5・[hints](./spec/hints.md)・各 `character-<id>.md`）との境界の曖昧さがあり、新キャラ追加時に「どこを読めば作れるか」が辿りにくい。あわせて**記述が決定事項（[decisions.md](./decisions.md)）や実装・実態と乖離している箇所**が疑われる。概要説明と実態のズレの例（旧例「1キャラ＝1doc」は解消済み。冒頭は「doc＋配布アセット」、§2 は「1キャラ＝4ファイル」に更新されている）：
+  - §2 冒頭の「定義 doc は 基本情報・ペルソナ・ビジュアル・セリフ の**4章**」が実態と食い違う——サウンド doc の追加で定義 doc には §5 音楽（BGM）が増えており（`character-mao.md`）、§5 ファイル構成表のサウンド doc 行自身も「定義 doc §5 はここへのポインタ」と書いていて、同一 doc 内で矛盾する。
   - 「キャラを追加してもヒント内容（教える中身）は書き換え不要」も誤解を招く——書き換え不要なのは中立の教える中身（hint-base・HintProvider）だけで、各キャラは全ヒントキー分の **script（キャラの声のヒント文）を新規に authoring** する必要がある（§2・`character-<id>-script.md` §2、hint-base 全キー網羅）。「ヒントの authoring が不要」とは読めない言い回しに直す。
 
   この種の先頭サマリと本文・実態のズレを洗い出して直す。
