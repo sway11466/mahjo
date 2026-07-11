@@ -84,7 +84,7 @@
 - LP／キャラ紹介ページからアプリへのキャラ指定ディープリンク（URL でキャラを選択状態にして起動）。ルーティング未整備（[screens.md](./design/screens.md) §6。旧 feature-1／feature-5 から引き継ぐ将来分）。
 - オフライン計測（GA4）：オフライン起動分は素の GTM/GA だと取りこぼす（`gtm.js` 未キャッシュで GTM 自体が起動しない）。取るなら Workbox の offline-google-analytics（`workbox-google-analytics`）で収集リクエストを横取りし Background Sync キュー→再接続時に元タイムスタンプで再送（GA4 のタイムスタンプ補正ウィンドウ〔約72h〕超過は破棄・再接続しない端末は不可）。precache 込みで導入するか判断。GTM の素の導入・オンライン計測は稼働済み。
 - 累計正答数による表情/衣装/特別セリフのアンロック・節目演出（好感度）。
-- 音（SE/BGM）の実装（[sound](./design/sound.md)）。収集済み SE の再生配線（`AppSettings.se`／autoplay 制限／precache）と BGM。SE 素材の収集は [feature-9](#feature-9) が先。
+- 音の実装（[sound](./design/sound.md)）。**BGM は実装済み**＝コード生成（Web Audio・2層）を App ルートの1本のコントローラ（`src/ui/audio`：notation/improv/synth/player/useBgm）で鳴らす（`AppSettings.bgm`＋選択キャラの `Character.bgm` を見る／autoplay 解禁は初回操作／キャラ切替でクロスフェード）。まおの曲は投入済み。**残り**：(1) SE の再生配線（`AppSettings.se`／autoplay／precache。SE 素材の収集は [feature-9](#feature-9) が先）、(2) 他キャラの `bgm` データ（りん等＝各 `character-<id>-sound.md` 作成後）、(3) 音量スライダー等の拡張（任意）。
 - 連続正解などのゲーム要素。
 - **ストーリーモード（兼ハードモード｜将来・新ゲームモード）**：世界に厄災（＝人間の悪意を増幅する思念体。[characters/world.md](./characters/world.md) §3）が起こりかけるが、麻雀の和了を正しく読むと防げる物語モード。**通常の「プレッシャーをかけない」方針からの唯一の意図的な例外**＝ハードたるゆえん（[product-concept](./product-concept.md) §3 と緊張するが、下記の失敗演出で優しさを保つ）。舞台＝[characters/world.md](./characters/world.md)。
   - **システム（構想）**：練習と同じ手牌が出る→役/点数を当てる**タイムアタック**。**1ラン＝1ステージ**（タイマー全体一本・単位/閾値はステージ内固定）。

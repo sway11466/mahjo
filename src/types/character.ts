@@ -1,5 +1,6 @@
 import type { HintScript, ExplainScript } from './hint.ts';
 import type { MistakeScript } from './quiz.ts';
+import type { BgmData } from './bgm.ts';
 
 /**
  * 顔の全パレット（全キャラ合算。各キャラは持つ分だけ ExpressionAsset を用意する）。
@@ -86,5 +87,10 @@ export interface Character {
    * 中立の基準は hint-base.md「誤答の諭し素」、文言は character-<id>-script.md §4 が正。
    */
   mistakes: MistakeScript;
+  /**
+   * BGM の楽譜データ（主旋律＋即興音）。任意＝未指定キャラは無音（中立曲は持たない）。
+   * データのみ（合成・再生は ui 層 src/ui/audio）。正は character-<id>-sound.md・sound.md「BGM の実現方式」。
+   */
+  bgm?: BgmData;
   unlock?: { kind: 'correctCount'; threshold: number }; // 任意・未対応
 }
