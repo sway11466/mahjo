@@ -20,8 +20,9 @@ import { getYaku } from './yaku-table.ts';
  * - 門前/副露で喰い下がり・門前限定を切り替える（翻は yaku-table が持つ）。
  * - 排他：double-riichi 成立時 riichi を出さない／ryanpeikou 成立時 iipeikou を出さない／
  *   上位役満（十三面・四暗刻単騎・純正九蓮・大四喜）は下位の代わりに出す。
+ * - 仕上げの順は enabledYaku 除外 → 上位役の置換 → 役満抑制（finalize）。オフ除外を先に
+ *   行うことで、オフの上位役が下位役・通常役を消して手全体が役なしになるのを防ぐ。
  * - 役満が1つでも成立したら通常役は落とす（点数は役満固定 → scoring-rules §6）。
- * - enabledYaku でオフの役は最後に除外する。
  *
  * 高点法（複数 Decomposition からの最大選択）は score() の仕事。ここは1解釈の判定に徹する。
  */
@@ -160,9 +161,15 @@ function detectStandard(
   if (triplets.length === 4) out.push('toitoi');
 
   // 暗刻数（形の出所は concealedTriplets。ロン完成の刻子は明刻＝除外。ハイライトと共有）。
+  // 暗刻4は上位から順に全部積む（四暗刻単騎→四暗刻→三暗刻）。上位が enabledYaku でオフでも
+  // 下位へ格下げできるように候補を出し切る（余分は finalize の置換・役満抑制が畳む）。
   const ankou = concealedTriplets(triplets, hand, win, d.wait).length;
-  if (ankou === 4) out.push(d.wait === 'tanki' ? 'suuankou-tanki' : 'suuankou');
-  else if (ankou === 3) out.push('sanankou');
+  if (ankou === 4) {
+    if (d.wait === 'tanki') out.push('suuankou-tanki');
+    out.push('suuankou', 'sanankou');
+  } else if (ankou === 3) {
+    out.push('sanankou');
+  }
 
   // 三槓子 / 四槓子
   const kantsuCount = sets.filter((m) => m.type === 'kantsu').length;
@@ -218,7 +225,12 @@ function detectChuuren(
 function finalize(detected: YakuId[], rules: RuleSettings): YakuId[] {
   let ids = unique(detected);
 
-  // 上位役で下位を置換
+  // enabledYaku でオフの役を除外（未指定＝オン）。置換・役満抑制より先に行う：後だとオフの
+  // 上位役が下位役を消した後に自分も消え、手全体が「役なし・0点」になりうる（enabledYaku は
+  // 出題・判定範囲の設定＝scoring-rules §5 であって、和了自体を消す設定ではない）
+  ids = ids.filter((id) => rules.enabledYaku[id] !== false);
+
+  // 上位役で下位を置換（オフで上位が消えていれば下位が生きる＝格下げ）
   if (ids.includes('ryanpeikou')) ids = ids.filter((id) => id !== 'iipeikou');
   if (ids.includes('kokushi-13')) ids = ids.filter((id) => id !== 'kokushi');
   if (ids.includes('suuankou-tanki')) ids = ids.filter((id) => id !== 'suuankou');
@@ -229,9 +241,6 @@ function finalize(detected: YakuId[], rules: RuleSettings): YakuId[] {
   // 役満が成立したら通常役は落とす（役満は固定点）
   const yakuman = ids.filter((id) => getYaku(id)?.yakuman);
   if (yakuman.length > 0) ids = yakuman;
-
-  // enabledYaku でオフの役を除外（未指定＝オン）
-  ids = ids.filter((id) => rules.enabledYaku[id] !== false);
 
   return ids;
 }

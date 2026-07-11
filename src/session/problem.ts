@@ -6,7 +6,7 @@ import type {
   QuizTarget,
 } from '../types/index.ts';
 import type { Rng } from '../engine/rng.ts';
-import { generate } from '../engine/generate.ts';
+import { generate, sanitizeForGeneration } from '../engine/generate.ts';
 import { summarize, score } from '../engine/score.ts';
 import { buildQuiz } from '../engine/mistakes.ts';
 import type { QuizSession, SessionProblem } from './types.ts';
@@ -30,13 +30,15 @@ export function buildProblem(
   rng: Rng,
   rules: RuleSettings,
 ): SessionProblem {
-  // クイズは常に局の場風を渡す（東南戦）。よって rules.round はクイズでは効かない
-  // ＝場風を渡さない単発/解説向け生成にのみ効く（scoring-rules.md §5・generation.md §2）。
-  const q = generate(progress, mode, rng, rules, roundWind);
-  const summary = summarize(q.hand, q.table, q.winContext, rules);
-  const question = buildQuiz(targetFor(mode), summary, rng, rules); // 点数モード(score)は rules 必須
+  // 壊れた保存データ（enabledYaku 全オフ等）でも止まらないよう、出題の入口で無害化する（bug-7）。
+  // 生成・採点・4択が同じ rules を見るため、ここで一度だけ畳む。
+  const r = sanitizeForGeneration(rules);
+  // クイズは常に局の場風を渡す（東南戦＝局が場風を決める。generation.md §2）。
+  const q = generate(progress, mode, rng, r, roundWind);
+  const summary = summarize(q.hand, q.table, q.winContext, r);
+  const question = buildQuiz(targetFor(mode), summary, rng, r); // 点数モード(score)は rules 必須
   // 完全な採点結果（items 付き）。ヒント（HintProvider の入力）・解説シーンで使う。
-  const result = score(q.hand, q.table, q.winContext, rules);
+  const result = score(q.hand, q.table, q.winContext, r);
   return { hand: q.hand, table: q.table, winContext: q.winContext, question, result };
 }
 

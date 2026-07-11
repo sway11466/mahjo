@@ -231,4 +231,24 @@ export const mao: Character = {
     'han-miscount':
       '翻（ハン）の数え、ひとつ抜けたかもしれませんね。役をもう一度、かぞえてみましょう。',
   },
+  // BGM（主旋律＋即興音）。正は character-mao-sound.md。方向性＝優しいけど元気（宮調・撥弦）。
+  // 駆け上がりに好きな役＝一気通貫のフック（まっすぐ上る 1 2 3 4 5）を織り込む。合成・再生は ui（src/ui/audio）。
+  bgm: {
+    melody: {
+      instrument: 'pluck',
+      tonic: 'C5',
+      mode: '宮',
+      tempo: 96,
+      brightness: 5300,
+      sustain: 0.25,
+      notes:
+        "1 2 3 2 3 5 3:2 5 3 2 1 2 3 1:2 1 2 3 5 5 1' 5:2 3 5 3 2 1 2 1:2 5, 1 2 3 2 3 2:2 3 2 1 2 3 2 1:2 1 2 3 2 3 5 3:2 2 3 5 3 3 2 1:2 1 2 3 4 5 1' 2' 3' 2' 1' 5 3 5 1' 2' 5 1 2 3 4 5 1' 2' 3' 3' 2' 1' 5 1' 5 3 5 3' 2' 1' 5 3 5 3:2 5 3 2 1 2 3 2:2 1 2 3 2 3 2 1 2 2 3 2 1 3 2 1:2",
+    },
+    improv: [
+      { start: 0, length: 8, instrument: 'pluck', density: 1, octave: 1, offset: 0, volume: 0.4, brightness: 3000, sustain: 0.4 },
+      { start: 8, length: 8, instrument: 'pluck', density: 2, octave: 1, offset: 0, volume: 0.4, brightness: 3000, sustain: 0.4 },
+      { start: 16, length: 8, instrument: 'pluck', density: 2, octave: 1, offset: 0, volume: 0.4, brightness: 3000, sustain: 0.4 },
+      { start: 24, length: 8, instrument: 'pluck', density: 1, octave: 1, offset: 0, volume: 0.4, brightness: 3000, sustain: 0.4 },
+    ],
+  },
 };

@@ -80,7 +80,6 @@ export function rules(over: Partial<RuleSettings> = {}): RuleSettings {
     kazoeYakuman: false,
     doubleYakuman: false,
     rareYaku: false,
-    round: 'random',
     enabledYaku: {},
     ...over,
   };

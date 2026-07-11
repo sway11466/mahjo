@@ -25,22 +25,23 @@ ui ──calls──→ session ──→ engine / hints / characters
 
 ## 2. 永続化対象
 
-当面の保存対象は3つ。いずれも JSON シリアライズ可能な素のデータ。
+当面の保存対象は4つ。いずれも JSON シリアライズ可能な素のデータ。
 
 | 対象 | 型 | 型の正 | 既定値の正 |
 |---|---|---|---|
 | ルール設定 | `RuleSettings` | [data-model.md](./data-model.md) §14 | [scoring-rules.md](../spec/scoring-rules.md) §5 |
 | アプリ設定 | `AppSettings` | [data-model.md](./data-model.md) §15 | [data-model.md](./data-model.md) §15 |
 | 進捗・成績 | `ProgressByCharacter` | [data-model.md](./data-model.md) §16 | 空 `{}`（キャラ初出時に `{ correctTotal: 0, correctByMode: {} }`） |
+| 間違い履歴 | `MissHistory` | [data-model.md](./data-model.md) §16 | 空 `{}` |
 
 - 既定値は1箇所の既定値ファクトリから供給し、ここと読込フォールバック（§5）で共有する。値の出所は上表の「既定値の正」。
-- `Progress` は累計成績に加え**苦手集計**（`byTarget` ＝出題種類ごとの `{seen, correct}`。後続で `byMistake`）を持つ（[data-model.md §16](./data-model.md)）。いずれも**任意フィールド**で、欠落は §5 の防御的読込が既定（空マップ）で補完する＝**スキーマ version は上げずマイグレーション不要**（既存の保存データと共存し、未知フィールドは無視）。
+- `Progress` は累計成績に加え**苦手集計**（`byTarget` ＝出題種類ごとの `{seen, correct}`）を持つ（[data-model.md §16](./data-model.md)）。**任意フィールド**で、欠落は §5 の防御的読込が既定（空マップ）で補完する＝**スキーマ version は上げずマイグレーション不要**（既存の保存データと共存し、未知フィールドは無視）。- 間違い履歴（`MissHistory`）は誤り方の生データ（失敗した出題そのもの。[data-model.md §16](./data-model.md)）。既存キーとは独立した新キー（§3）＝既存の保存データには一切触れない（マイグレーション不要）。キャラ別×モード別・直近50件のリングバッファで、読込は**レコード単位**で形を検証し、合わないレコードだけ捨てる（§5。上限超過分も読込時に直近へ丸める）。
 - セッションの途中保存（`QuizSession` の中断・再開）は当面スコープ外。やるなら、永続化する型は `src/types/` に置く（storage → session の逆流を避ける。現在 `QuizSession` は `src/session/` にあるため、永続化対象に格上げする時点で types/ へ移す）。
 
 ## 3. キー設計とエンベロープ
 
 - 名前空間接頭辞 `mahjo:` を全キーに付ける（他アプリ・将来の別データと衝突させない）。
-- キー: `mahjo:rules` / `mahjo:app` / `mahjo:progress`。
+- キー: `mahjo:rules` / `mahjo:app` / `mahjo:progress` / `mahjo:misses`。
 - 値は version 付きエンベロープで包む（キー名に version を埋めない＝移行時に旧キーが孤児化しない）:
 
 ```ts
@@ -94,6 +95,7 @@ export function createStorage(backend: StorageBackend = globalThis.localStorage)
 
 - `usePersistentState` 的なフック（または Context プロバイダ）を ui に置き、「起動時 load → state、変化で save」の橋渡しだけを担わせる。
 - 規約: 画面コンポーネントは storage を直接 import しない（このフック／プロバイダ越しに使う）。永続化の知識を ui 全体に散らさないため。
+- 規約の解釈: ルーター（App）は永続化の合成点そのものであって「画面コンポーネント」ではない。App がフックの返すキャラ別進捗から現在キャラのスライスを導出する際の既定値ヘルパ（`defaultProgress` 等）を storage から直接 import するのは配線の一部として可。
 - 即時反映（設定変更が即 state に反映され save される）は [screens.md](./screens.md) §5 のとおり。
 
 ## 8. テスト方針

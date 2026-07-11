@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BGMづくりツール（主旋律＋即興音）</title>
+<style>
+  :root { --ink:#0c100e; --paper:#e8e3d6; --muted:#8a968f; --jade:#7fbfa8; --gold:#d8b46a; --cinnabar:#c8553d; --err:#e0776a; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; height:100%; }
+  body { background:radial-gradient(1200px 600px at 50% -10%, #1a2420 0%, var(--ink) 60%), var(--ink);
+    color:var(--paper); font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
+    display:flex; align-items:flex-start; justify-content:center; min-height:100%; padding:22px; }
+  .card { width:min(820px,100%);
+    background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.15));
+    border:1px solid rgba(216,180,106,.22); border-radius:16px;
+    padding:26px 28px 22px; box-shadow:0 30px 80px rgba(0,0,0,.5); }
+  h1 { font-size:21px; margin:0 0 4px; letter-spacing:3px; font-weight:600; }
+  .sub { color:var(--muted); font-size:12px; margin:0 0 8px; letter-spacing:.5px; line-height:1.7; }
+  .sub code { color:var(--gold); font-family:ui-monospace,monospace; }
+  .blocklabel { font-size:11px; color:var(--muted); letter-spacing:2px; margin:18px 0 8px; }
+  .panel { background:rgba(0,0,0,.2); border:1px solid rgba(127,191,168,.16); border-radius:12px; padding:16px 16px 6px; }
+  .sticky { position:sticky; top:0; z-index:5; background:#0e1512; padding-bottom:8px;
+    border-bottom:1px solid rgba(216,180,106,.15); }
+  .sticky .blocklabel { margin-top:8px; }
+  details.help { margin:6px 0 4px; font-size:12.5px; }
+  details.help summary { cursor:pointer; color:var(--gold); letter-spacing:1px; }
+  details.help h4 { margin:12px 0 2px; font-size:12px; color:var(--gold); letter-spacing:1px; }
+  details.help table { border-collapse:collapse; width:100%; }
+  details.help td { border-bottom:1px solid rgba(255,255,255,.08); padding:5px 8px; vertical-align:top; }
+  details.help td.k { color:var(--jade); white-space:nowrap; font-family:ui-monospace,monospace; }
+  details.help td.v { color:var(--muted); }
+  details.help code { color:var(--gold); font-family:ui-monospace,monospace; }
+  .controls { display:grid; grid-template-columns:repeat(4,1fr); gap:14px 18px; }
+  .ctrl { display:flex; flex-direction:column; gap:5px; margin-bottom:10px; }
+  .ctrl label { font-size:11.5px; color:var(--muted); letter-spacing:.5px; }
+  select, input[type=range] { width:100%; }
+  select { background:rgba(0,0,0,.3); color:var(--paper); border:1px solid rgba(255,255,255,.2);
+    border-radius:8px; padding:6px; font-family:inherit; font-size:14px; }
+  .presets { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+  .chip { font-family:inherit; font-size:13px; letter-spacing:1px; padding:6px 14px; border-radius:999px;
+    border:1px solid rgba(255,255,255,.18); background:transparent; color:var(--paper); cursor:pointer; }
+  .chip:hover { border-color:var(--gold); }
+  textarea { width:100%; resize:vertical; font-family:ui-monospace,"Courier New",monospace;
+    font-size:13px; letter-spacing:.3px; line-height:1.7; color:var(--jade);
+    background:rgba(0,0,0,.3); border:1px solid rgba(127,191,168,.28); border-radius:10px; padding:12px; white-space:pre; }
+  textarea#param { height:150px; }
+  textarea#improv { height:150px; }
+  .readout { margin-top:9px; font-family:ui-monospace,monospace; font-size:12px; color:var(--muted);
+    line-height:1.9; min-height:1.2em; word-break:break-word; }
+  .readout .tok { color:var(--jade); } .readout .bad { color:var(--err); text-decoration:underline wavy; }
+  canvas { width:100%; display:block; border-radius:10px;
+    background:radial-gradient(600px 240px at 50% 120%, #10201b, #0a0e0c); border:1px solid rgba(127,191,168,.14); }
+  canvas#viz { height:170px; }
+  canvas#vizImprov { height:96px; margin-top:9px; }
+  .row { display:flex; gap:14px; align-items:center; margin-top:14px; flex-wrap:wrap; }
+  button.play { font-family:inherit; font-size:16px; letter-spacing:2px; color:var(--ink);
+    background:var(--jade); border:none; border-radius:999px; padding:11px 28px; cursor:pointer; }
+  button.play.on { background:var(--gold); }
+  .check { display:flex; align-items:center; gap:7px; font-size:13.5px; cursor:pointer; }
+  .check input { width:17px; height:17px; }
+  @media (max-width:600px){ .controls{ grid-template-columns:repeat(2,1fr); } }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>BGMづくり</h1>
+    <p class="sub">
+      主旋律＝度数 <code>1〜5</code>／<code>'</code>上 <code>,</code>下／<code>:拍</code>（既定1）／休符 <code>0</code>／空白区切り。
+      即興音＝<code>{ start, length, instrument, density, octave, offset, volume, brightness, sustain }</code> のセグメント配列（<code>//</code> 以降は無視）。
+    </p>
+
+    <details class="help">
+      <summary>設定値の説明（意味・取り得る値）</summary>
+      <h4>主旋律</h4>
+      <table>
+        <tr><td class="k">楽器 instrument</td><td class="v">音色。撥弦(琴) / 鐘 / 木琴 / 笛 / 弓 の5種</td></tr>
+        <tr><td class="k">主音 tonic</td><td class="v">曲の中心の音＝キー。C〜B ＋ オクターブ 3〜6（テキストは <code>C5</code> の形）</td></tr>
+        <tr><td class="k">モード mode</td><td class="v">音階の色合い。宮 / 商 / 角 / 徵 / 羽（宮＝明るい 〜 羽＝暗い）</td></tr>
+        <tr><td class="k">テンポ tempo</td><td class="v">速さ。40〜120 BPM</td></tr>
+        <tr><td class="k">明るさ brightness</td><td class="v">こもり↔きらびやか（ローパス遮断周波数）。800〜7000 Hz</td></tr>
+        <tr><td class="k">余韻 sustain</td><td class="v">歯切れ↔伸びる。0〜1</td></tr>
+        <tr><td class="k">melody</td><td class="v">度数記法：度数 1〜5 ／ <code>'</code>上 <code>,</code>下 ／ <code>:拍</code>（既定1）／ <code>0</code>休符 ／ 空白区切り</td></tr>
+      </table>
+      <h4>即興音（セグメントの各項目）</h4>
+      <table>
+        <tr><td class="k">start</td><td class="v">開始小節（0＝先頭）。同じ start に複数セグメントを置くと重なって同時に鳴る（声部を重ねられる）</td></tr>
+        <tr><td class="k">length</td><td class="v">続く小節数。start＋length が主旋律の小節数を超えないように</td></tr>
+        <tr><td class="k">instrument</td><td class="v">楽器（5種）。主旋律と別に選べる</td></tr>
+        <tr><td class="k">density</td><td class="v">その小節で鳴らす音数。0＝休み。目安 0〜6</td></tr>
+        <tr><td class="k">octave</td><td class="v">主旋律の主音から何オクターブ上か。0＝同じ高さ ／ 1＝1つ上 ／ 2＝2つ上（目安 0〜3・負も可）</td></tr>
+        <tr><td class="k">offset</td><td class="v">拍からのずらし（拍数）。0＝拍ぴったり ／ 0.5＝裏拍。音は8分グリッドに整列</td></tr>
+        <tr><td class="k">volume</td><td class="v">音量。0〜1（主旋律は約0.6）</td></tr>
+        <tr><td class="k">brightness</td><td class="v">明るさ（この即興音のローパス）。800〜7000 Hz</td></tr>
+        <tr><td class="k">sustain</td><td class="v">余韻。0〜1</td></tr>
+      </table>
+    </details>
+
+    <!-- ① 主旋律パラメーター（UI）／キー・モード・テンポは即興音と共有 -->
+    <div class="sticky">
+    <div class="blocklabel">① 主旋律（パラメーターUI・キー/モード/テンポは即興音と共有）</div>
+    <div class="panel">
+      <div class="controls">
+        <div class="ctrl"><label>楽器</label>
+          <select id="inst">
+            <option value="pluck">撥弦（琴）</option>
+            <option value="bell">鐘（ベル）</option>
+            <option value="mallet">木琴</option>
+            <option value="flute">笛</option>
+            <option value="bowed">弓（胡弓ふう）</option>
+          </select></div>
+        <div class="ctrl"><label>主音（キー）</label>
+          <select id="root">
+            <option>C</option><option>C#</option><option>D</option><option>D#</option><option>E</option>
+            <option>F</option><option>F#</option><option>G</option><option>G#</option><option selected>A</option>
+            <option>A#</option><option>B</option>
+          </select></div>
+        <div class="ctrl"><label>オクターブ</label>
+          <select id="roct"><option>3</option><option selected>4</option><option>5</option><option>6</option></select></div>
+        <div class="ctrl"><label>モード（調）</label>
+          <select id="mode">
+            <option value="宮">宮調（明るい）</option>
+            <option value="商">商調</option>
+            <option value="角">角調</option>
+            <option value="徵">徵調</option>
+            <option value="羽" selected>羽調（翳り）</option>
+          </select></div>
+        <div class="ctrl"><label>テンポ <span id="bpmv">64</span> BPM</label>
+          <input id="tempo" type="range" min="40" max="120" step="1" value="64"></div>
+        <div class="ctrl"><label>明るさ（こもり↔きらびやか）</label>
+          <input id="bright" type="range" min="800" max="7000" step="50" value="3000"></div>
+        <div class="ctrl"><label>余韻（歯切れ↔伸びる）</label>
+          <input id="decay" type="range" min="0" max="1" step="0.01" value="0.5"></div>
+      </div>
+    </div>
+    </div>
+
+    <!-- ② 主旋律（テキスト・編集可／UIと同期） -->
+    <div class="blocklabel">② 主旋律（テキスト・直接編集可／UIと同期）</div>
+    <div class="presets">
+      <button class="chip" data-preset="clear">空にする</button>
+      <button class="chip" id="copy" style="margin-left:auto;">主旋律コピー</button>
+    </div>
+    <textarea id="param" spellcheck="false"></textarea>
+    <div id="readout" class="readout"></div>
+
+    <!-- ③ 即興音（セグメント配列＋小節グリッド） -->
+    <div class="blocklabel">③ 即興音（セグメント配列＝length＋特性／小節グリッドで確認）</div>
+    <textarea id="improv" spellcheck="false"></textarea>
+    <div id="improvStatus" class="readout"></div>
+    <canvas id="vizImprov"></canvas>
+
+    <!-- ④ 再生 -->
+    <div class="blocklabel">④ 再生（主旋律＋即興音を重ねる）</div>
+    <canvas id="viz"></canvas>
+    <div class="row">
+      <button id="toggle" class="play">▷ 再生</button>
+      <label class="check"><input id="loop" type="checkbox" checked> ループ</label>
+      <label class="check"><input id="melOn" type="checkbox" checked> 主旋律</label>
+      <label class="check"><input id="improvOn" type="checkbox" checked> 即興音</label>
+      <span id="status" class="sub" style="margin:0;">打ち込んで再生</span>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const MODES = { '宮':[0,2,4,7,9], '商':[0,2,5,7,10], '角':[0,3,5,8,10], '徵':[0,2,5,7,9], '羽':[0,3,5,7,10] };
+  const INST_LABEL = { pluck:'撥弦（琴）', bell:'鐘（ベル）', mallet:'木琴', flute:'笛', bowed:'弓（胡弓ふう）' };
+  const BEATS_PER_BAR = 4;
+  const midiToFreq = m => 440 * Math.pow(2, (m - 69) / 12);
+  const midiName = m => NOTE_NAMES[((m % 12) + 12) % 12] + (Math.floor(m / 12) - 1);
+
+  const DEFAULT = {
+    inst:'pluck', root:'C', roct:'5', mode:'宮', tempo:80, decay:0.4,
+    mel:'1 2 3 5 3 2 1:2 5 3 2 1 2 3 1:2',
+    improv:`即興音 = [
+  {
+    start:      0        // 開始小節（0=先頭。重ねたい時は同じ start で複数）
+    length:     4        // 続く小節数
+    instrument: pluck    // 楽器：pluck(琴)/bell/mallet/flute/bowed
+    density:    1        // その小節の音数（0=休み・目安0〜6）
+    octave:     1        // 主音から何オクターブ上（0=同じ・目安0〜3）
+    offset:     0        // 拍からのずらし（0=拍ぴったり・0.5=裏拍）
+    volume:     0.4      // 音量 0〜1
+    brightness: 3000     // 明るさ Hz（800〜7000）
+    sustain:    0.40     // 余韻 0〜1
+  },
+]`,
+  };
+
+  const state = { melody: '' };
+
+  // ---- 主旋律：度数記法パーサ ----
+  function parse(text) {
+    return String(text).trim().split(/\s+/).filter(Boolean).map(tok => {
+      const m = tok.match(/^([0-5])(['’,，]*)(?::(\d+(?:\.\d+)?))?$/);
+      if (!m) return { raw: tok, error: true };
+      let oct = 0;
+      for (const ch of m[2]) oct += (ch === "'" || ch === '’') ? 1 : -1;
+      return { raw: tok, deg: +m[1], oct, beats: m[3] ? +m[3] : 1 };
+    });
+  }
+  function tonicMidi() { return (parseInt($('roct').value) + 1) * 12 + NOTE_NAMES.indexOf($('root').value); }
+  function noteMidi(n) { return tonicMidi() + MODES[$('mode').value][n.deg - 1] + 12 * n.oct; }
+  function mainBeats() { return parse(state.melody).filter(n => !n.error).reduce((a, n) => a + n.beats, 0); }
+  function mainBars() { return Math.round(mainBeats() / BEATS_PER_BAR); }
+  function resolvedSustain(inst, len) {
+    switch (inst) {
+      case 'bell':   return `減衰 ${(1.2 + len * 3.5).toFixed(1)}s`;
+      case 'mallet': return `減衰 ${(0.3 + len * 1.3).toFixed(2)}s`;
+      case 'flute':  return `切れ際 ${(0.15 + len * 0.6).toFixed(2)}s`;
+      case 'bowed':  return `切れ際 ${(0.2 + len * 0.5).toFixed(2)}s`;
+      default:       return `減衰係数 ${(0.985 + len * 0.0142).toFixed(4)}・鳴り ${(2.2 + len * 3).toFixed(1)}s`;
+    }
+  }
+
+  // ---- 主旋律：テキスト ⇔ UI 同期 ----
+  const pad = s => s + ' '.repeat(Math.max(1, 30 - s.length));
+  function buildParamText() {
+    const inst = $('inst').value, len = +$('decay').value, mode = $('mode').value, tonic = tonicMidi();
+    return [
+      pad(`instrument: ${inst}`)              + `// ${INST_LABEL[inst]}`,
+      pad(`tonic:      ${midiName(tonic)}`)    + `// MIDI ${tonic}（主音）`,
+      pad(`mode:       ${mode}`)               + `// 音程 ${MODES[mode].join(',')}`,
+      pad(`tempo:      ${+$('tempo').value}`)  + `// BPM`,
+      pad(`brightness: ${+$('bright').value}`) + `// Hz`,
+      pad(`sustain:    ${len.toFixed(2)}`)     + `// 余韻 → ${resolvedSustain(inst, len)}`,
+      `melody:     ${state.melody}`,
+    ].join('\n');
+  }
+  function applyTextToUI() {
+    const cfg = {};
+    for (const line of $('param').value.split('\n')) {
+      const noc = line.split('//')[0]; const i = noc.indexOf(':'); if (i < 0) continue;
+      const k = noc.slice(0, i).trim(), v = noc.slice(i + 1).trim(); if (k) cfg[k] = v;
+    }
+    if (cfg.instrument && INST_LABEL[cfg.instrument]) $('inst').value = cfg.instrument;
+    if (cfg.tonic) { const m = cfg.tonic.match(/^([A-Ga-g]#?)(-?\d+)$/);
+      if (m) { const nm = m[1][0].toUpperCase() + m[1].slice(1); if (NOTE_NAMES.includes(nm)) $('root').value = nm; $('roct').value = m[2]; } }
+    if (cfg.mode && MODES[cfg.mode]) $('mode').value = cfg.mode;
+    if (cfg.tempo && !isNaN(+cfg.tempo)) { $('tempo').value = cfg.tempo; $('bpmv').textContent = +cfg.tempo; }
+    if (cfg.brightness && !isNaN(+cfg.brightness)) { $('bright').value = cfg.brightness; if (lowpass) lowpass.frequency.value = +cfg.brightness; }
+    if (cfg.sustain !== undefined && cfg.sustain !== '' && !isNaN(+cfg.sustain)) $('decay').value = cfg.sustain;
+    if (cfg.melody !== undefined) state.melody = cfg.melody;
+  }
+  function syncTextFromUI() { $('param').value = buildParamText(); }
+  function refreshReadout() {
+    const notes = parse(state.melody);
+    $('readout').innerHTML = notes.map(n => {
+      if (n.error) return `<span class="bad">${n.raw}?</span>`;
+      if (n.deg === 0) return `<span class="tok">休${n.beats !== 1 ? ':' + n.beats : ''}</span>`;
+      return `<span class="tok">${midiName(noteMidi(n))}${n.beats !== 1 ? ':' + n.beats : ''}</span>`;
+    }).join('　') || '<span style="color:var(--muted)">（メロディ空）</span>';
+  }
+
+  // ---- 即興音：セグメント配列パーサ ----
+  function parseImprov(text) {
+    const clean = text.split('\n').map(l => l.split('//')[0]).join('\n');
+    const blocks = clean.match(/\{[^}]*\}/g) || [];
+    return blocks.map(b => {
+      const seg = {};
+      for (const part of b.replace(/[{}]/g, '').split(/[\n,]/)) {
+        const i = part.indexOf(':'); if (i < 0) continue;
+        const k = part.slice(0, i).trim(), v = part.slice(i + 1).trim(); if (k) seg[k] = v;
+      }
+      return {
+        start: seg.start !== undefined ? parseInt(seg.start) || 0 : 0,
+        length: parseInt(seg.length) || 0,
+        instrument: INST_LABEL[seg.instrument] ? seg.instrument : 'pluck',
+        density: seg.density !== undefined ? +seg.density : 1,
+        octave: seg.octave !== undefined ? +seg.octave : 1,
+        offset: seg.offset !== undefined ? +seg.offset : 0,
+        volume: seg.volume !== undefined ? +seg.volume : 0.4,
+        brightness: seg.brightness !== undefined ? +seg.brightness : 3000,
+        sustain: seg.sustain !== undefined ? +seg.sustain : 0.4,
+      };
+    }).filter(s => s.length > 0);
+  }
+  function refreshImprov() {
+    const segs = parseImprov($('improv').value), B = mainBars();
+    const over = segs.filter(s => s.start + s.length > B).length;
+    $('improvStatus').innerHTML = `セグメント ${segs.length}（主旋律 ${B}小節）`
+      + (over ? ` <span class="bad">← ${over}件が範囲外（start+length &gt; ${B}）</span>` : ' <span style="color:var(--jade)">OK</span>');
+  }
+
+  // ================= オーディオ =================
+  let ctx, master, lowpass, dryG, wetG, conv, melBus;
+  let running = false, schedId = null, playStart = 0, improvWalks = {};
+
+  function reverbIR(sec, decay) {
+    const len = Math.floor(ctx.sampleRate * sec), ir = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch);
+      for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/len, decay); }
+    return ir;
+  }
+  function iPluck(freq, when, { bus, vel, len }) {
+    const damping = 0.985 + len * 0.0142, dur = 2.2 + len * 3.0;
+    const N = Math.max(2, Math.round(ctx.sampleRate / freq)), L = Math.floor(ctx.sampleRate * dur);
+    const buf = ctx.createBuffer(1, L, ctx.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < N; i++) d[i] = Math.random() * 2 - 1;
+    for (let i = N; i < L; i++) d[i] = damping * 0.5 * (d[i - N] + d[i - N + 1]);
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, when); g.gain.linearRampToValueAtTime(vel, when + 0.005);
+    src.connect(g).connect(bus); src.start(when); src.stop(when + dur);
+  }
+  function iBell(freq, when, { bus, vel, len }) {
+    const dur = 1.2 + len * 3.5;
+    const car = ctx.createOscillator(); car.type = 'sine'; car.frequency.value = freq;
+    const mod = ctx.createOscillator(); mod.type = 'sine'; mod.frequency.value = freq * 1.41;
+    const mg = ctx.createGain(); mg.gain.setValueAtTime(freq * 4, when);
+    mg.gain.exponentialRampToValueAtTime(freq * 0.02, when + dur * 0.6);
+    mod.connect(mg).connect(car.frequency);
+    const amp = ctx.createGain(); amp.gain.setValueAtTime(0.0001, when);
+    amp.gain.linearRampToValueAtTime(vel, when + 0.004); amp.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+    car.connect(amp).connect(bus); car.start(when); mod.start(when); car.stop(when + dur + 0.05); mod.stop(when + dur + 0.05);
+  }
+  function iMallet(freq, when, { bus, vel, len }) {
+    const dur = 0.3 + len * 1.3;
+    [[1, vel, dur], [4, vel * 0.35, dur * 0.5]].forEach(([mult, v, dd]) => {
+      const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = freq * mult;
+      const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, when);
+      g.gain.linearRampToValueAtTime(v, when + 0.003); g.gain.exponentialRampToValueAtTime(0.0001, when + dd);
+      o.connect(g).connect(bus); o.start(when); o.stop(when + dd + 0.05);
+    });
+  }
+  function iFlute(freq, when, { bus, vel, len, hold }) {
+    const rel = 0.15 + len * 0.6, atk = 0.06;
+    const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = freq;
+    const vib = ctx.createOscillator(); vib.frequency.value = 5; const vg = ctx.createGain(); vg.gain.value = freq * 0.006;
+    vib.connect(vg).connect(o.frequency);
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, when);
+    g.gain.linearRampToValueAtTime(vel * 0.55, when + atk); g.gain.setValueAtTime(vel * 0.55, when + atk + hold);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + atk + hold + rel);
+    o.connect(g).connect(bus); const end = when + atk + hold + rel + 0.05; o.start(when); vib.start(when); o.stop(end); vib.stop(end);
+  }
+  function iBowed(freq, when, { bus, vel, len, hold }) {
+    const rel = 0.2 + len * 0.5, atk = 0.12;
+    const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = freq;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = freq * 5;
+    const vib = ctx.createOscillator(); vib.frequency.value = 5.5; const vg = ctx.createGain(); vg.gain.value = freq * 0.008;
+    vib.connect(vg).connect(o.frequency);
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, when);
+    g.gain.linearRampToValueAtTime(vel * 0.4, when + atk); g.gain.setValueAtTime(vel * 0.4, when + atk + hold);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + atk + hold + rel);
+    o.connect(lp).connect(g).connect(bus); const end = when + atk + hold + rel + 0.05; o.start(when); vib.start(when); o.stop(end); vib.stop(end);
+  }
+  const INSTRUMENTS = { pluck:iPluck, bell:iBell, mallet:iMallet, flute:iFlute, bowed:iBowed };
+
+  // 即興音の1音（自前ローパス＝セグメントの明るさ）
+  function playImprovNote(midi, when, seg) {
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = seg.brightness;
+    const pan = ctx.createStereoPanner(); pan.pan.value = (Math.random() * 2 - 1) * 0.6;
+    lp.connect(pan); pan.connect(dryG); pan.connect(conv);
+    (INSTRUMENTS[seg.instrument] || iPluck)(midiToFreq(midi), when, { bus: lp, vel: seg.volume, len: seg.sustain, hold: 0.5 });
+  }
+  function nextImprovMidi(octaveOffset, walk) {
+    const scale = MODES[$('mode').value];
+    walk.idx += Math.round(Math.random() * 2) - 1;
+    walk.idx = Math.max(0, Math.min(scale.length - 1, walk.idx));
+    let midi = tonicMidi() + 12 * octaveOffset + scale[walk.idx];
+    if (Math.random() < 0.15) midi += 12;
+    return midi;
+  }
+  function scheduleImprovBar(seg, t, barDur, walk) {
+    const D = Math.max(0, Math.round(seg.density));
+    if (D === 0) return;
+    const SLOTS = 8; // 8分グリッド（拍に整列）
+    const off = Math.round((seg.offset || 0) * (SLOTS / BEATS_PER_BAR)); // ずらし（拍→スロット）
+    for (let k = 0; k < D; k++) {
+      const slot = ((Math.round(k * SLOTS / D) + off) % SLOTS + SLOTS) % SLOTS;
+      playImprovNote(nextImprovMidi(seg.octave, walk), t + (slot / SLOTS) * barDur, seg);
+    }
+  }
+
+  function buildGraph() {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    master = ctx.createGain(); master.gain.value = 0.9;
+    lowpass = ctx.createBiquadFilter(); lowpass.type = 'lowpass'; lowpass.frequency.value = +$('bright').value;
+    dryG = ctx.createGain(); dryG.gain.value = 0.85;
+    wetG = ctx.createGain(); wetG.gain.value = 0.4;
+    conv = ctx.createConvolver(); conv.buffer = reverbIR(3.5, 2.6);
+    melBus = ctx.createGain(); melBus.gain.value = 0.9;
+    melBus.connect(lowpass);
+    lowpass.connect(dryG).connect(master);
+    lowpass.connect(conv).connect(wetG).connect(master);
+    master.connect(ctx.destination);
+  }
+  function play() {
+    const notes = parse(state.melody).filter(n => !n.error);
+    if (!notes.length) { $('status').textContent = '有効な音符がありません'; return; }
+    buildGraph(); running = true; improvWalks = {};
+    const t0 = ctx.currentTime + 0.12; playStart = t0;
+    const stMel = { next: t0, step: 0 }, stImp = { next: t0, bar: 0 };
+    const tick = () => {
+      const beat = 60 / (+$('tempo').value), barDur = beat * BEATS_PER_BAR;
+      while (stMel.next < ctx.currentTime + 0.2) {
+        const i = stMel.step % notes.length, n = notes[i];
+        if (n.deg !== 0 && $('melOn').checked) INSTRUMENTS[$('inst').value](midiToFreq(noteMidi(n)), stMel.next,
+          { bus: melBus, vel: 0.6, len: +$('decay').value, hold: n.beats * beat });
+        stMel.next += n.beats * beat; stMel.step++;
+        if (!$('loop').checked && stMel.step >= notes.length) { stopSoon(stMel.next + 3.5); return; }
+      }
+      const segs = parseImprov($('improv').value), Bi = mainBars();
+      if ($('improvOn').checked && Bi > 0) {
+        while (stImp.next < ctx.currentTime + 0.2) {
+          const bi = stImp.bar % Bi;
+          segs.forEach((seg, si) => {
+            if (bi >= seg.start && bi < seg.start + seg.length)
+              scheduleImprovBar(seg, stImp.next, barDur, improvWalks[si] || (improvWalks[si] = { idx: 2 }));
+          });
+          stImp.next += barDur; stImp.bar++;
+        }
+      }
+    };
+    schedId = setInterval(tick, 25);
+    $('toggle').textContent = '❚❚ 停止'; $('toggle').classList.add('on'); $('status').textContent = '再生中';
+  }
+  function stopSoon(t) { clearInterval(schedId); schedId = setTimeout(stop, Math.max(0, (t - ctx.currentTime) * 1000)); }
+  function stop() {
+    running = false; clearInterval(schedId); clearTimeout(schedId); schedId = null;
+    if (ctx) ctx.close(); ctx = null;
+    $('toggle').textContent = '▷ 再生'; $('toggle').classList.remove('on'); $('status').textContent = '停止';
+  }
+
+  // ================= 表示 =================
+  function fitCanvas(cv) { const r = cv.getBoundingClientRect(), dpr = devicePixelRatio || 1;
+    cv.width = r.width * dpr; cv.height = r.height * dpr; cv.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0); }
+  const cv = $('viz'), g2 = cv.getContext('2d'), cvI = $('vizImprov'), gI = cvI.getContext('2d');
+  function fitAll() { fitCanvas(cv); fitCanvas(cvI); }
+  addEventListener('resize', fitAll); fitAll();
+  function roundRect(c, x, y, w, h, r) { c.beginPath();
+    c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+
+  function drawMain() {
+    const r = cv.getBoundingClientRect(); g2.clearRect(0, 0, r.width, r.height);
+    const notes = parse(state.melody).filter(n => !n.error), voiced = notes.filter(n => n.deg !== 0);
+    if (voiced.length) {
+      const total = notes.reduce((a, n) => a + n.beats, 0), mids = voiced.map(noteMidi);
+      const lo = Math.min(...mids) - 2, span = Math.max(4, Math.max(...mids) + 2 - lo);
+      const padX = 12, W = r.width - padX * 2, padY = 16, H = r.height - padY * 2;
+      const x = b => padX + (b / total) * W, y = m => padY + (1 - (m - lo) / span) * H;
+      let curPos = -1, curIdx = -1;
+      if (running && ctx) { const beat = 60 / (+$('tempo').value);
+        curPos = Math.max(0, (ctx.currentTime - playStart) / beat) % total;
+        let acc = 0; for (let i = 0; i < notes.length; i++) { acc += notes[i].beats; if (curPos < acc) { curIdx = i; break; } } }
+      let b = 0;
+      notes.forEach((n, i) => {
+        if (n.deg !== 0) { const m = noteMidi(n), yy = y(m), x0 = x(b), w = (n.beats / total) * W;
+          g2.fillStyle = (i === curIdx) ? '#f0d79a' : 'rgba(127,191,168,.75)';
+          roundRect(g2, x0 + 1, yy - 5, Math.max(4, w - 3), 10, 4); g2.fill(); }
+        b += n.beats;
+      });
+      if (curPos >= 0) { const px = x(curPos); g2.strokeStyle = 'rgba(255,255,255,.8)'; g2.lineWidth = 1.5;
+        g2.beginPath(); g2.moveTo(px, 12); g2.lineTo(px, r.height - 12); g2.stroke(); }
+    }
+    requestAnimationFrame(drawMain);
+  }
+  function drawImprov() {
+    const r = cvI.getBoundingClientRect(); gI.clearRect(0, 0, r.width, r.height);
+    const segs = parseImprov($('improv').value), B = mainBars();
+    if (B > 0 && segs.length) {
+      const padX = 10, W = r.width - padX * 2, padY = 8, H = r.height - padY * 2, cw = W / B;
+      // 各小節でアクティブなセグメントの密度合計 → 最大でスケール
+      let maxTotal = 1;
+      for (let b = 0; b < B; b++) { let t = 0;
+        segs.forEach(s => { if (b >= s.start && b < s.start + s.length) t += Math.max(0, s.density); });
+        if (t > maxTotal) maxTotal = t; }
+      // 小節ごとに密度を積み上げ（層グラフ）
+      for (let b = 0; b < B; b++) {
+        let yBase = padY + H; const xb = padX + b * cw;
+        segs.forEach((s, si) => {
+          if (b >= s.start && b < s.start + s.length && s.density > 0) {
+            const h = (s.density / maxTotal) * H;
+            gI.fillStyle = `hsla(${150 + s.octave * 22}, 52%, ${44 + (si % 3) * 9}%, .85)`;
+            gI.fillRect(xb + 0.5, yBase - h + 0.5, Math.max(1, cw - 1), Math.max(1, h - 1));
+            yBase -= h;
+          }
+        });
+      }
+      if (running && ctx) { const beat = 60 / (+$('tempo').value), barDur = beat * BEATS_PER_BAR;
+        const pos = (Math.max(0, (ctx.currentTime - playStart) / barDur)) % B, px = padX + pos * cw;
+        gI.strokeStyle = 'rgba(255,255,255,.85)'; gI.lineWidth = 1.5;
+        gI.beginPath(); gI.moveTo(px, padY - 2); gI.lineTo(px, padY + H + 2); gI.stroke(); }
+    }
+    requestAnimationFrame(drawImprov);
+  }
+  drawMain(); drawImprov();
+
+  // ================= 配線 =================
+  function loadDefault() {
+    state.melody = DEFAULT.mel;
+    $('inst').value = DEFAULT.inst; $('root').value = DEFAULT.root; $('roct').value = DEFAULT.roct;
+    $('mode').value = DEFAULT.mode; $('tempo').value = DEFAULT.tempo; $('bpmv').textContent = DEFAULT.tempo; $('decay').value = DEFAULT.decay;
+    $('improv').value = DEFAULT.improv;
+    syncTextFromUI(); refreshReadout(); refreshImprov();
+  }
+  document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => {
+    state.melody = ''; syncTextFromUI(); refreshReadout(); refreshImprov();
+  }));
+  ['inst','root','roct','mode'].forEach(id => $(id).addEventListener('change', () => { syncTextFromUI(); refreshReadout(); refreshImprov(); }));
+  $('tempo').addEventListener('input', e => { $('bpmv').textContent = e.target.value; syncTextFromUI(); });
+  $('decay').addEventListener('input', syncTextFromUI);
+  $('bright').addEventListener('input', e => { if (lowpass) lowpass.frequency.value = +e.target.value; syncTextFromUI(); });
+  $('param').addEventListener('input', () => { applyTextToUI(); refreshReadout(); refreshImprov(); });
+  $('improv').addEventListener('input', refreshImprov);
+  $('copy').addEventListener('click', () => {
+    try { navigator.clipboard.writeText($('param').value); } catch (e) {}
+    $('copy').textContent = 'コピー済'; setTimeout(() => $('copy').textContent = '主旋律コピー', 1200);
+  });
+  $('toggle').addEventListener('click', () => { if (running) stop(); else play(); });
+
+  loadDefault();
+})();
+</script>
+</body>
+</html>

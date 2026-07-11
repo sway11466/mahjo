@@ -63,11 +63,36 @@ describe('fu — 待ち符', () => {
   const base = (t: ReturnType<typeof mk>, wait: Tile[], win: Tile) =>
     hand([t.m(2), t.m(3), t.m(4), t.m(5), t.m(6), t.m(7), t.p(2), t.p(3), t.p(4), ...wait, t.s(9), t.s(9)], win);
 
-  it('嵌張・辺張・単騎は+2、両面は0', () => {
+  it('嵌張は+2、両面は0', () => {
     const k = mk();
     expect(compFu(fuRes(base(k, [k.s(4), k.s(6)], k.s(5)), tbl(), ctx({ win: 'tsumo' }), [], 'kanchan'), 'fu-wait')).toBe(2);
     const r = mk();
     expect(compFu(fuRes(base(r, [r.s(4), r.s(5)], r.s(6)), tbl(), ctx({ win: 'tsumo' }), [], 'ryanmen'), 'fu-wait')).toBe(0);
+  });
+
+  // testing-scoring-rule §2 の残り：辺張・単騎の +2、双碰の 0 も直接アサートで固定する。
+  it('辺張（12で3待ち）は+2', () => {
+    const t = mk();
+    expect(compFu(fuRes(base(t, [t.s(1), t.s(2)], t.s(3)), tbl(), ctx({ win: 'tsumo' }), [], 'penchan'), 'fu-wait')).toBe(2);
+  });
+
+  it('単騎（雀頭待ち）は+2', () => {
+    const t = mk();
+    const h = hand(
+      [t.m(2), t.m(3), t.m(4), t.m(5), t.m(6), t.m(7), t.p(2), t.p(3), t.p(4), t.s(6), t.s(7), t.s(8), t.s(9)],
+      t.s(9),
+    );
+    expect(compFu(fuRes(h, tbl(), ctx({ win: 'tsumo' }), [], 'tanki'), 'fu-wait')).toBe(2);
+  });
+
+  it('双碰（シャンポン）は0', () => {
+    const t = mk();
+    // 55s と 99s のシャンポン、5s ツモで 555s が完成
+    const h = hand(
+      [t.m(2), t.m(3), t.m(4), t.p(2), t.p(3), t.p(4), t.p(6), t.p(7), t.p(8), t.s(5), t.s(5), t.s(9), t.s(9)],
+      t.s(5),
+    );
+    expect(compFu(fuRes(h, tbl(), ctx({ win: 'tsumo' }), [], 'shanpon'), 'fu-wait')).toBe(0);
   });
 });
 

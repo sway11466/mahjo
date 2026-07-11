@@ -310,6 +310,43 @@ describe('yaku — 役満', () => {
     expect(ids).not.toContain('toitoi');
   });
 
+  // bug-5 回帰：enabledYaku は出題・判定範囲の設定（scoring-rules §5）。役満をオフにしたとき
+  // 通常役までまとめて消えて「役なし・0点」になってはいけない＝通常役へフォールバックする。
+  it('enabledYaku で四暗刻をオフにすると通常役へ落ちる（役なしにならない）', () => {
+    const t = mk();
+    const concealed = [
+      t.m(1), t.m(1), t.m(1),
+      t.p(2), t.p(2), t.p(2),
+      t.s(3), t.s(3), t.s(3),
+      t.m(9), t.m(9),
+      t.p(5), t.p(5),
+    ];
+    const ids = detect(hand(concealed, t.m(9)), {
+      win: ctx({ win: 'tsumo' }),
+      rules: rules({ enabledYaku: { suuankou: false } }),
+    });
+    expect(ids).not.toContain('suuankou');
+    expect(ids).toContain('menzen-tsumo');
+    expect(ids).toContain('toitoi');
+    expect(ids).toContain('sanankou'); // 暗刻4は暗刻3を含む（格下げで正確性を保つ）
+  });
+
+  it('enabledYaku で四暗刻単騎をオフにすると四暗刻へ格下げされる', () => {
+    const t = mk();
+    const concealed = [
+      t.m(1), t.m(1), t.m(1),
+      t.p(2), t.p(2), t.p(2),
+      t.s(3), t.s(3), t.s(3),
+      t.m(9), t.m(9), t.m(9),
+      t.p(5),
+    ];
+    const ids = detect(hand(concealed, t.p(5)), {
+      rules: rules({ enabledYaku: { 'suuankou-tanki': false } }),
+    });
+    expect(ids).not.toContain('suuankou-tanki');
+    expect(ids).toEqual(['suuankou']); // 単騎バリアントだけオフ＝素の四暗刻は生きる
+  });
+
   it('四暗刻単騎', () => {
     const t = mk();
     const concealed = [

@@ -33,7 +33,7 @@
 
 - 決定：ヒントの担い手として使い魔（familiar）を初めて UI に出す。方式は「使い魔は声を持たない相棒（演出担当）」＝Fork A。具体的には (1) ヒントボタンを使い魔（まお＝猫）の見た目にする（「ヒント」の文字は残す）、(2) ヒントのセリフ（`HintScript`）を「使い魔がそっと示唆 → キャラ本体がひらめいて言葉にする」語り口に書き換える。会話窓の話者はキャラ本体のまま（声を増やさない＝authoring は1人分）。ヒント中の表情は既定どおり `insight`（ひらめき）で、この語り口と整合する。
 - 理由：(1) 魔女＋使い魔の世界観に「使い魔がささやく」が噛み合い、ヒント＝「答えを言わず“そっと促す”」層と役割分離できる（[product-concept](./product-concept.md) §3）。(2) Fork B（使い魔が独自の声でヒントを語る）は型・アセット・script が使い魔ぶん増え、キャラ追加ごとに authoring が2倍になる。A は「キャラ追加＝データ＋画像、ロジック不変」（[characters/character-guide.md](./characters/character-guide.md)）の約束を守れて可逆。(3) 既存の `hinting:insight`（キャラのひらめき顔）と「キャラがひらめく」語り口が一致する。
-- 影響：未決の判断が2点（移す前に詰める）。(a) ヒントボタンの使い魔ビジュアル＝使い魔の画像アセットが未制作（character-guide §2「使い魔」は当面 UI 未登場）。仮の SVG（猫/肉球の皮。御札 `ui/character/items/` と同じ二層分離）で先行するか、素材確定まで構造だけ用意するか。(b) `HintScript` 書き換えの口調＝「猫の所作を地の文で書く」か「キャラのひらめきビートだけにして示唆は視覚に寄せる」か。確定後、正は [spec/hints.md](./spec/hints.md)（誰がヒントを出すか）＋ [characters/character-guide.md](./characters/character-guide.md) §2「使い魔」＋各 `character-<id>-script.md` §2 へ移し、本エントリは消す。
+- 影響：内容は各正本へ移行済み——語り口（旧・未決 (b)）は確定し、[spec/hints.md](./spec/hints.md) §1・[characters/character-guide.md](./characters/character-guide.md) §2「使い魔」＋各 `character-<id>-script.md` §2 に反映済み（まお／りんの script は「使い魔の示唆 → キャラのひらめき」で書き換え済み）。ヒントボタンの UI 枠も実装済み（使い魔画像を渡す口＋未配置時はテキスト「ヒント」フォールバック）。残る未決は (a) 使い魔の画像アセット未制作のみ（[backlog](./backlog.md) parking lot「使い魔アイコンの制作・配置」で追跡）。素材が入って未決が無くなったら本エントリは消す。
 
 ## 2026-06-06 Tailwind は当面入れず、素のCSS＋CSS変数で進める
 

@@ -147,6 +147,20 @@ describe('summarize — ドラ', () => {
     expect(summarize(make(), table, ctx({ riichi: false }), rules()).doraHan).toBe(0);
     expect(summarize(make(), table, ctx({ riichi: true }), rules()).doraHan).toBe(1);
   });
+
+  // bug-4 回帰：ダブルリーチはリーチと排他表現（double 成立時 riichi は立てない＝scoring-rules
+  // §1.1）だが、リーチ状態には変わりないので裏ドラは同様に計上する。
+  it('裏ドラはダブルリーチ和了でも計上する（riichi と排他表現でも）', () => {
+    const t = mk();
+    const h = hand(
+      [t.m(1), t.m(2), t.m(3), t.m(4), t.m(5), t.m(6), t.p(7), t.p(8), t.p(9), t.s(2), t.s(3), t.s(5), t.s(5)],
+      t.s(4),
+    );
+    const table = tbl({ uraDoraIndicators: [suited('man', 3)] }); // 裏ドラ＝4m
+    const s = summarize(h, table, ctx({ doubleRiichi: true }), rules());
+    expect(s.yaku).toContain('double-riichi');
+    expect(s.doraHan).toBe(1);
+  });
 });
 
 import { score, scorePoints } from './score.ts';
@@ -161,10 +175,22 @@ describe('score — 点数・配分・満貫境界（scorePoints）', () => {
     ['4翻30符 子ロン（切り上げ無）', 4, 30, false, 'ron', {}, 7700, 'normal'],
     ['4翻30符 親ロン（切り上げ無）', 4, 30, true, 'ron', {}, 11600, 'normal'],
     ['4翻30符 切り上げ満貫オン', 4, 30, false, 'ron', { kiriageMangan: true }, 8000, 'mangan'],
+    // 3翻60符（基本点 60×2^5=1920）：切り上げ無しは通常計算（子 7680→7700／親 11520→11600）、
+    // 切り上げ満貫オンで満貫（testing-scoring-rule §4 は 4翻30符・3翻60符の両方を要求）
+    ['3翻60符 子ロン（切り上げ無）', 3, 60, false, 'ron', {}, 7700, 'normal'],
+    ['3翻60符 親ロン（切り上げ無）', 3, 60, true, 'ron', {}, 11600, 'normal'],
+    ['3翻60符 切り上げ満貫オン', 3, 60, false, 'ron', { kiriageMangan: true }, 8000, 'mangan'],
     ['5翻は満貫', 5, 30, false, 'ron', {}, 8000, 'mangan'],
     ['6翻は跳満', 6, 30, false, 'ron', {}, 12000, 'haneman'],
+    ['7翻は跳満（区分の上端）', 7, 30, false, 'ron', {}, 12000, 'haneman'],
     ['8翻は倍満', 8, 30, false, 'ron', {}, 16000, 'baiman'],
+    ['10翻は倍満（区分の上端）', 10, 30, false, 'ron', {}, 16000, 'baiman'],
     ['11翻は三倍満', 11, 30, false, 'ron', {}, 24000, 'sanbaiman'],
+    ['12翻は三倍満（区分の上端）', 12, 30, false, 'ron', {}, 24000, 'sanbaiman'],
+    // 親の固定値（子の1.5倍＝scoring-rules §3.1 の親列）
+    ['6翻 親ロンは跳満18000', 6, 30, true, 'ron', {}, 18000, 'haneman'],
+    ['8翻 親ロンは倍満24000', 8, 30, true, 'ron', {}, 24000, 'baiman'],
+    ['11翻 親ロンは三倍満36000', 11, 30, true, 'ron', {}, 36000, 'sanbaiman'],
     ['13翻 数え役満オフは三倍満', 13, 30, false, 'ron', {}, 24000, 'sanbaiman'],
     ['13翻 数え役満オンは役満', 13, 30, false, 'ron', { kazoeYakuman: true }, 32000, 'kazoe-yakuman'],
   ])('%s', (_n, han, fu, dealer, win, over, total, rank) => {
@@ -183,6 +209,23 @@ describe('score — 点数・配分・満貫境界（scorePoints）', () => {
     const s = scorePoints(5, 30, true, 'tsumo', rules());
     expect(s.payments).toMatchObject({ fromEach: 4000, total: 12000 });
     expect(s.scoreText).toBe('親ツモ 4000オール');
+  });
+
+  it('親ツモの配分（非満貫）は各支払いを100点切り上げ（3翻30符＝1920→2000オール）', () => {
+    // 基本点 a=30×2^5=960、親ツモは子全員から a×2=1920 → 100点切り上げで 2000オール
+    const s = scorePoints(3, 30, true, 'tsumo', rules());
+    expect(s.payments).toMatchObject({ fromEach: 2000, total: 6000 });
+    expect(s.scoreText).toBe('親ツモ 2000オール');
+  });
+
+  it('跳満以上のツモ配分：子倍満は4000/8000、親跳満は6000オール', () => {
+    // 固定値の配分（scoring-rules §3.1）：子＝総計の 1/4 と 1/2、親＝総計の 1/3 オール
+    const baiman = scorePoints(8, 30, false, 'tsumo', rules());
+    expect(baiman.payments).toMatchObject({ fromNonDealer: 4000, fromDealer: 8000, total: 16000 });
+    expect(baiman.scoreText).toBe('子ツモ 4000/8000');
+    const haneman = scorePoints(6, 30, true, 'tsumo', rules());
+    expect(haneman.payments).toMatchObject({ fromEach: 6000, total: 18000 });
+    expect(haneman.scoreText).toBe('親ツモ 6000オール');
   });
 
   it('子ロンの文言（5200点）', () => {
@@ -250,5 +293,47 @@ describe('score — 役満', () => {
     );
     expect(score(h, tbl(), ctx({ win: 'ron' }), rules({ doubleYakuman: false })).payments.total).toBe(32000);
     expect(score(h, tbl(), ctx({ win: 'ron' }), rules({ doubleYakuman: true })).payments.total).toBe(64000);
+  });
+
+  it('親の役満は48000（四暗刻 親ツモ＝16000オール）', () => {
+    const t = mk();
+    const h = hand(
+      [t.m(1), t.m(1), t.m(1), t.p(2), t.p(2), t.p(2), t.s(3), t.s(3), t.s(3), t.m(9), t.m(9), t.p(5), t.p(5)],
+      t.m(9),
+    );
+    const res = score(h, tbl(), ctx({ win: 'tsumo', seatWind: 'east' }), rules());
+    expect(res.rank).toBe('yakuman');
+    expect(res.payments).toMatchObject({ fromEach: 16000, total: 48000 });
+    expect(res.scoreText).toBe('親ツモ 16000オール');
+  });
+
+  it('ダブル役満トグル：国士無双十三面はオフ32000・オン64000', () => {
+    const make = () => {
+      const t = mk();
+      return hand(
+        [
+          t.m(1), t.m(9), t.p(1), t.p(9), t.s(1), t.s(9),
+          t.z('east'), t.z('south'), t.z('west'), t.z('north'),
+          t.z('haku'), t.z('hatsu'), t.z('chun'),
+        ],
+        t.m(1), // 13種そろい＝十三面待ち
+      );
+    };
+    expect(score(make(), tbl(), ctx(), rules({ doubleYakuman: false })).payments.total).toBe(32000);
+    expect(score(make(), tbl(), ctx(), rules({ doubleYakuman: true })).payments.total).toBe(64000);
+  });
+
+  it('ダブル役満トグル：大四喜はオフ32000・オン64000', () => {
+    // 北をポン（副露）にして四暗刻と複合させない＝トグル差分を大四喜単独で見る
+    const make = () => {
+      const t = mk();
+      return hand(
+        [t.z('east'), t.z('east'), t.z('east'), t.z('south'), t.z('south'), t.z('south'), t.z('west'), t.z('west'), t.z('west'), t.m(5)],
+        t.m(5),
+        [{ type: 'kotsu', tiles: [t.z('north'), t.z('north'), t.z('north')], open: true }],
+      );
+    };
+    expect(score(make(), tbl(), ctx({ win: 'ron' }), rules({ doubleYakuman: false })).payments.total).toBe(32000);
+    expect(score(make(), tbl(), ctx({ win: 'ron' }), rules({ doubleYakuman: true })).payments.total).toBe(64000);
   });
 });

@@ -1,6 +1,7 @@
 import type { ReactNode, CSSProperties } from 'react';
 import type { Character } from '../../types/index.ts';
-import { themeColorOf, expressionFor } from '../../characters/index.ts';
+import { expressionFor } from '../../session/index.ts';
+import { themeColorOf } from '../character/themeColor.ts';
 import { standeeUrl } from '../character/avatarAssets.ts';
 import { BackButton } from '../common/BackButton.tsx';
 import './settings.css';

@@ -15,7 +15,7 @@
 
 ## 2. キャラクターアセット
 
-キャラを構成する部品の定義。1キャラ＝3ファイル（定義 doc・セリフ doc・画像プロンプト doc）＋配布アセットで構成する（全ファイルのパス・命名は §5「ファイル構成」が正本）。定義 doc は 基本情報・ペルソナ・ビジュアル・セリフ の4章。型は data-model §13。本節は定義 doc の各章に「何を定義するか」を対応させる（雛形＝character-mao.md）。作る手順は §4。
+キャラを構成する部品の定義。1キャラ＝4ファイル（定義 doc・セリフ doc・サウンド doc・画像プロンプト doc）＋配布アセットで構成する（全ファイルのパス・命名は §5「ファイル構成」が正本）。定義 doc は 基本情報・ペルソナ・ビジュアル・セリフ の4章。型は data-model §13。本節は定義 doc の各章に「何を定義するか」を対応させる（雛形＝character-mao.md）。作る手順は §4。
 
 ### 基本情報
 
@@ -347,6 +347,7 @@ plain solid white background.
 |---|---|---|---|---|
 | 定義 doc | `docs/characters/<id>/character-<id>.md` | — | 基本情報・ペルソナ・ビジュアル（identity）・好きな役 | §2 |
 | セリフ doc | `docs/characters/<id>/character-<id>-script.md` | — | 場面別＋ヒント＋解説＋誤答の全セリフ（hint-base 全キー網羅） | §2「セリフ」 |
+| サウンド doc | `docs/characters/<id>/character-<id>-sound.md` | — | キャラの BGM（主旋律の度数記法＋即興音のセグメント配列）。定義 doc §5 はここへのポインタ | sound.md「BGM の実現方式」・[ADR-0003](../adr/ADR-0003-bgm-code-generation.md) |
 | 画像プロンプト doc | `docs/characters/<id>/character-<id>-image-prompts.md` | — | master・派生・使い魔の生成プロンプト集 | §4 |
 | 制作ソース | `docs/characters/<id>/`（加工後 PNG）／`original/`（生t2i＋master のみ） | `<id>-portrait-<expr>-<variant>.png` 等。master は `<id>-master-bustup.png`・`<id>-master-full.png`（original 限定） | master・加工後 PNG（クロップ＋透過済み・リサイズ前。i2i の種。ビルド非搭載） | §3・§4 |
 | 配布アバター | `src/assets/characters/<id>/` | `<id>-portrait-<expr>-<variant>.webp`・`<id>-avatar.webp`・`<id>-full-<kind>-<variant>.webp`・`<id>-familiar.webp` | アプリで使う表情差分・サムネ・立ち絵・使い魔 | §3 |
@@ -368,7 +369,7 @@ export const characters: Character[] = [mao /*, …順次追加 */];
 export const defaultCharacterId = 'mao';
 ```
 
-新キャラは「まお」一式（定義 doc＋セリフ doc＋画像プロンプト doc＋配布アバター＋キャラデータ）に倣って作り、レジストリに足す。
+新キャラは「まお」一式（定義 doc＋セリフ doc＋サウンド doc＋画像プロンプト doc＋配布アバター＋キャラデータ）に倣って作り、レジストリに足す。
 
 
 ## 6. 参考ドキュメント

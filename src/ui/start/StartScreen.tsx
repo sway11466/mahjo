@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from 'react';
 import type { Character, StudyMode } from '../../types/index.ts';
-import { themeColorOf, expressionFor } from '../../characters/index.ts';
+import { expressionFor } from '../../session/index.ts';
+import { themeColorOf } from '../character/themeColor.ts';
 import { BackButton } from '../common/BackButton.tsx';
 import { CharacterDecor } from '../character/decor/CharacterDecor.tsx';
 import { RitualHoverMark } from '../character/RitualHoverMark.tsx';

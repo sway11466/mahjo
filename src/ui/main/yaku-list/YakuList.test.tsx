@@ -75,6 +75,13 @@ describe('YakuList', () => {
     // 一発はリーチ棒の横に「一発」バッジ（アプリの表記に合わせる）
     const ippatsu = screen.getByText('一発（イッパツ）').closest('li')!;
     expect(within(ippatsu).getByText('一発')).toBeInTheDocument(); // 見出しは「一発（イッパツ）」、バッジは「一発」
+    // ダブルリーチはリーチ棒の横に「第一打」バッジ（盤面のリーチ脇表記の鏡写し。feature-8）
+    const doubleRiichi = screen.getByText('ダブルリーチ').closest('li')!;
+    expect(within(doubleRiichi).getByText('第一打')).toBeInTheDocument();
+    // 素のリーチにはバッジなし
+    const riichiRow = screen.getByText('リーチ').closest('li')!;
+    expect(within(riichiRow).queryByText('第一打')).toBeNull();
+    expect(within(riichiRow).queryByText('一発')).toBeNull();
     // 同じ状況役でもリーチ以外（海底摸月）は手牌もリーチ棒も出さない
     const haitei = screen.getByText('海底摸月（ハイテイ）').closest('li')!;
     expect(within(haitei).queryByRole('img')).toBeNull();

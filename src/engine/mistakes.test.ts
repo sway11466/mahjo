@@ -1,4 +1,4 @@
-import { buildQuiz, buildHanQuiz, buildYakuQuiz, buildFuQuiz, buildScoreQuiz, type ScoredSummary } from './mistakes.ts';
+import { buildQuiz, buildHanQuiz, buildScoreQuiz, type ScoredSummary } from './mistakes.ts';
 import { mulberry32 } from './rng.ts';
 import { rules } from './__tests__/hands.ts';
 import type { QuizQuestion } from '../types/index.ts';
@@ -23,15 +23,15 @@ function values(q: QuizQuestion): string[] {
 }
 
 describe('mistakes — 共通の健全性', () => {
-  it.each(['yaku', 'han'] as const)('%s：正解1＋誤答3で重複しない', (target) => {
-    const q = buildQuiz(target, summary({ doraHan: 1 }), mulberry32(1));
+  it('han：正解1＋誤答3で重複しない', () => {
+    const q = buildQuiz('han', summary({ doraHan: 1 }), mulberry32(1));
     expect(q.choices).toHaveLength(4);
     expect(q.choices.filter((c) => c.correct)).toHaveLength(1);
     expect(new Set(values(q)).size).toBe(4); // 値が全て異なる
   });
 
-  it.each(['yaku', 'han'] as const)('%s：誤答にはミス種別と理由が付く', (target) => {
-    const q = buildQuiz(target, summary({ doraHan: 1 }), mulberry32(2));
+  it('han：誤答にはミス種別と理由が付く', () => {
+    const q = buildQuiz('han', summary({ doraHan: 1 }), mulberry32(2));
     for (const c of q.choices) {
       expect(c.explanation.length).toBeGreaterThan(0);
       if (!c.correct) expect(c.mistakeKind).toBeDefined();
@@ -39,9 +39,9 @@ describe('mistakes — 共通の健全性', () => {
     }
   });
 
-  it.each(['yaku', 'han'] as const)('%s：同じ入力・seed なら同じ問題（決定的）', (target) => {
-    const a = buildQuiz(target, summary({ doraHan: 1 }), mulberry32(99));
-    const b = buildQuiz(target, summary({ doraHan: 1 }), mulberry32(99));
+  it('han：同じ入力・seed なら同じ問題（決定的）', () => {
+    const a = buildQuiz('han', summary({ doraHan: 1 }), mulberry32(99));
+    const b = buildQuiz('han', summary({ doraHan: 1 }), mulberry32(99));
     expect(a).toEqual(b);
   });
 
@@ -80,45 +80,19 @@ describe('mistakes — 翻あての変換', () => {
     const q = buildHanQuiz(summary({ han: 3 }), mulberry32(6));
     expect(values(q)).toContain('2翻');
   });
-});
 
-describe('mistakes — 役あての変換', () => {
-  it('正解は成立役・誤答は不成立役で、名前が重複しない', () => {
-    const q = buildYakuQuiz(summary({ yaku: ['chinitsu', 'tanyao'] }), mulberry32(7));
-    const correct = q.choices.find((c) => c.correct)!;
-    // 表示値は役名＋読み（初心者向けふりがな。yakuDisplayName）
-    expect(['清一色（チンイツ）', '断幺九（タンヤオ）']).toContain(correct.value); // 成立役の名称
-    expect(new Set(values(q)).size).toBe(4);
-    // 誤答は成立していない役（清一色・断幺九は出ない＝正解側のみ）
-    const wrongs = q.choices.filter((c) => !c.correct).map((c) => c.value);
-    expect(wrongs).not.toContain('清一色（チンイツ）');
-  });
-
-  it('代表役は翻の高い役が選ばれる', () => {
-    // chinitsu(6) > tanyao(1) なので清一色が正解になる
-    const q = buildYakuQuiz(summary({ yaku: ['tanyao', 'chinitsu'] }), mulberry32(8));
-    expect(q.choices.find((c) => c.correct)!.value).toBe('清一色（チンイツ）');
-  });
-});
-
-describe('mistakes — 符あて', () => {
-  it('正解は{符}、誤答3つは fu-miscount で重複なし・全て20符以上', () => {
-    const q = buildFuQuiz(summary({ fu: 40 }), mulberry32(1));
-    expect(q.target).toBe('fu');
+  // bug-3 回帰：役満手は summarize が han:0 を返す。通常経路に流すと正解が「0翻」になるため、
+  // 役満分岐で正解を「役満」にする（役満は翻を数えず固定点＝scoring-rules §1.2）。
+  it('役満は正解「役満」・誤答は翻数との取り違え（0翻は出ない）', () => {
+    const q = buildHanQuiz(summary({ yakuman: true, han: 0, yaku: ['suuankou'], points: 32000 }), mulberry32(7));
     expect(q.choices).toHaveLength(4);
-    expect(q.choices.find((c) => c.correct)?.value).toBe('40符');
-    expect(new Set(q.choices.map((c) => c.value)).size).toBe(4);
-    for (const c of q.choices) {
-      const n = Number(c.value.replace('符', ''));
-      expect(n).toBeGreaterThanOrEqual(20);
-      if (!c.correct) expect(c.mistakeKind).toBe('fu-miscount');
+    expect(q.choices.find((c) => c.correct)?.value).toBe('役満');
+    expect(new Set(values(q)).size).toBe(4);
+    expect(values(q)).not.toContain('0翻');
+    for (const c of q.choices.filter((c) => !c.correct)) {
+      expect(c.mistakeKind).toBe('han-miscount');
+      expect(c.value).toMatch(/^\d+翻$/);
     }
-  });
-
-  it('七対子25符でも正解と一致する誤答は出ない', () => {
-    const q = buildFuQuiz(summary({ fu: 25 }), mulberry32(2));
-    expect(q.choices.find((c) => c.correct)?.value).toBe('25符');
-    expect(q.choices.filter((c) => c.value === '25符')).toHaveLength(1);
   });
 });
 

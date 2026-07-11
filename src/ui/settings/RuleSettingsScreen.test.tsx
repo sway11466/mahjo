@@ -31,6 +31,16 @@ describe('RuleSettingsScreen', () => {
     expect(next!.kuitan).toBe(false);
   });
 
+  it('赤ドラ枚数のセレクトは選んだ枚数で onChange する（feature-12）', () => {
+    let next: RuleSettings | null = null;
+    renderScreen(defaultRuleSettings(), (r) => (next = r));
+    fireEvent.change(screen.getByRole('combobox', { name: '赤ドラ枚数' }), {
+      target: { value: '3' },
+    });
+    expect(next).not.toBeNull();
+    expect(next!.akaDoraCount).toBe(3);
+  });
+
   it('未実装項目（後付け）は操作不可（disabled）', () => {
     renderScreen(defaultRuleSettings());
     expect(screen.getByRole('switch', { name: '後付け' })).toBeDisabled();
