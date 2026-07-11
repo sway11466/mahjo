@@ -4,7 +4,7 @@
 
 ## index
 
-次回採番: bug=9 / feature=20 / refactoring=19
+次回採番: bug=9 / feature=21 / refactoring=19
 
 項目（バグ bug / 機能追加 feature / リファクタリング refactoring）を追加するときは、該当カテゴリの採番を +1 して ID を継ぐ。完了した項目は本書から削除し、番号は再利用しない（過去の使用済み番号は `git log -p -- docs/backlog.md | grep -oE '(feature|refactoring)-[0-9]+' | sort -u` で確認できる）。状態は「本書に載っていれば未完了／消えていれば完了」で表す（状態列は持たない）。優先度は各エントリ見出しに 高（設計の背骨に関わる）／中／低（飾り・潜在）で記す。
 
@@ -17,6 +17,14 @@
 ## 機能追加
 
 実装済みコードに足す機能。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す。
+
+### feature-20
+
+**E2E テスト（Large）の導入**（優先度：中）
+
+- 背景：[testing](./dev/testing.md) §5 は E2E 層（ブラウザで実アプリ通し・少数・安定重視）を定義するが、ランナー未導入・テスト未作成（`package.json` に E2E コマンドなし＝仕様にだけ存在する状態）。現状の回帰は Small＋UI単体（jsdom）と人手確認（§6）が担っており、「主要フローがブラウザで繋がる」ことと PWA のオフライン起動は実ブラウザでしか検証できない。
+- 対応：Playwright を導入し、シナリオは [testing](./dev/testing.md) §5 の5本（役モード通し／クイズ 回答→リアクション→解説／点数モードのハイライト連携／設定の反映と localStorage 永続／PWA オフライン起動）。実行は別コマンド（例 `npm run test:e2e`。コマンド名・CI 組み込みは導入時に確定し testing.md §2/§5/§10 へ反映）。少数・安定重視＝Small で守れるものは E2E に足さない（§1 の SML 方針）。
+- 該当：新規（`e2e/` 等の置き場＋ Playwright 設定）・`package.json`（devDependencies・スクリプト）・[testing](./dev/testing.md) §2/§5/§10（確定内容の反映）。
 
 ### feature-9
 
