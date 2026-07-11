@@ -14,6 +14,7 @@
 - Vitest — テスト（テスト戦略は [testing.md](../dev/testing.md)、ビルド/実行手順は [development.md](../dev/development.md)）。
 - vite-plugin-pwa — Service Worker でアセットを precache。初回読込後はオフライン動作（PWA）。
 - 牌は SVG で描画する。Unicode の麻雀牌文字は環境で表示が崩れるため使わない（アバターは AI 生成のラスター画像）。
+- 音（SE/BGM）は Web Audio API でコード生成する。BGM は音源ファイルも音楽ライブラリも持たず素の Web Audio で合成（サイズ・権利・PWAオフラインの都合。方式は [ADR-0003](../adr/ADR-0003-bgm-code-generation.md)・[sound.md](./sound.md)）。SE は当面 CC0 等の素材を静的アセット化（[sound.md](./sound.md)）。
 
 ## 2. レイヤ分離と依存方向
 
@@ -43,10 +44,10 @@
 
 - engine は他のどのアプリ層にも依存しない（types のみ参照）。React/DOM を import しない。1手の素材（生成・採点・誤答）までで状態を持たない。
 - hints は engine の出力型（ScoreResult 等）・役テーブル（`YAKU_TABLE`＝役定義データ。ヒントキーの正本が役IDを列挙するため）と types に依存してよいが、UI・characters・session には依存しない。キャラ非依存（8.1 の二層分離）。
-- characters はペルソナ（場面別セリフプール＋着目ポイント別ヒント文言＝script）・`reactions`・アバター参照のデータ。ロジックを持たない（文言・参照データのみ）。レジストリ（キャラ一覧・id 引き・未知 id の既定キャラへのフォールバック＝`getCharacter`）はデータ参照としてここが持つ。解決ロジックは持たない＝場面→表情の既定マップと解決（`expressionFor`）は session、テーマ色の既定フォールバック（`themeColorOf`）は ui。
+- characters はペルソナ（場面別セリフプール＋着目ポイント別ヒント文言＝script）・`reactions`・アバター参照・BGM（主旋律・即興音）のデータ。ロジックを持たない（文言・参照データのみ）。BGM の主旋律（度数記法の文字列）・即興音（セグメント配列）も「楽譜」に相当するデータとしてここが持ち、合成・再生は持たない（DOM も Web Audio も持たない層）＝ui が鳴らす。レジストリ（キャラ一覧・id 引き・未知 id の既定キャラへのフォールバック＝`getCharacter`）はデータ参照としてここが持つ。解決ロジックは持たない＝場面→表情の既定マップと解決（`expressionFor`）は session、テーマ色の既定フォールバック（`themeColorOf`）は ui。
 - session は engine・hints・characters・types に依存してよいが、UI には依存しない。クイズの「セッション（8問のひとまとまり）」の進行・正誤判定・進捗更新に加え、1ターンの view-state を組み立てる（出題＝手/場/4択、キャラのリアクション選択＝場面→表情＋セリフを characters データと rng から、ヒントの段組み＋文言差し込み＝HintProvider＋HintRenderer）。すべて純関数（state＋入力 → state、rng 注入）。状態の保持は ui、永続化の IO は storage（ui が配線）。永続データ（設定・進捗）は session にとって引数で入り返り値で出るだけ＝session は storage を知らない。仕様は [session.md](../spec/session.md)。当面はクイズ session を持つ（解説の単独モードは別途）。
 - storage は localStorage への永続化（IO）を一点集約する被駆動アダプタ。types のみに依存し、session・engine・hints・characters・React/DOM には依存しない（localStorage は注入可能にしてテストする）。キー設計・version／マイグレーション・読込時の防御的フォールバックを持つ。仕様は [storage.md](./storage.md)。
-- ui は session の view-state を描画し、操作を session に dispatch するだけ（「何を見せるか」は決めない）。担当は 牌SVG描画・アバター画像の描画・効果音/BGM・アニメ・レイアウト・入力・永続化の配線（IO は storage に集約。画面コンポーネントは storage を直接 import せず合成点のフック越しに使う＝[storage.md](./storage.md) §7）。view-state は抽象キャラ（characterId＋expression＋line）を持ち、表情→画像の解決は ui（characters のアセット参照）。テーマ色の解決（未指定→既定色）も装飾なので ui の resolver（`ui/character/themeColor.ts`）。
+- ui は session の view-state を描画し、操作を session に dispatch するだけ（「何を見せるか」は決めない）。担当は 牌SVG描画・アバター画像の描画・効果音/BGM・アニメ・レイアウト・入力・永続化の配線（IO は storage に集約。画面コンポーネントは storage を直接 import せず合成点のフック越しに使う＝[storage.md](./storage.md) §7）。BGM は「どう鳴らすか」＝characters の楽譜データ（主旋律の度数記法・即興音のセグメント配列）をパースし、Web Audio API で音色合成・小節スケジューリング・再生/停止する（音の IO は SE と同じくここに集約。方式は [sound.md](./sound.md)「BGM の実現方式」・[ADR-0003](../adr/ADR-0003-bgm-code-generation.md)）。度数記法パーサ・合成ロジックは engine（麻雀計算）に入れない。view-state は抽象キャラ（characterId＋expression＋line）を持ち、表情→画像の解決は ui（characters のアセット参照）。テーマ色の解決（未指定→既定色）も装飾なので ui の resolver（`ui/character/themeColor.ts`）。
 
 理由（session を独立層にし、ui を描画専任にする）：セッションは麻雀の真実ではなく学習の進行・提示。engine（純・麻雀計算）に混ぜると engine の自己像（1手の価値・合法形）が崩れ、ui に置くと提示ロジック（リアクション選択・ヒント組み立て・進行判定）が React に混ざってテストしづらい。hints（「教え方」の純ロジックを engine から分けた層）と同じ発想で、「学習者の進行・提示」を独立した純ロジック層にし、ui は view-state の描画に徹する。これにより提示ロジックを Small テストで厚く守れる。
 
