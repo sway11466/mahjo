@@ -13,7 +13,6 @@ const rules: RuleSettings = {
   kazoeYakuman: false,
   doubleYakuman: false,
   rareYaku: false,
-  round: 'random',
   enabledYaku: {},
 };
 

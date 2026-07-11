@@ -361,7 +361,7 @@ export type ReactionTrigger =
   | 'greeting'    // あいさつ（セッション開始の1回）
   | 'dealing'     // 出題中（各問・回答前）
   | 'hinting'     // ヒント表示中（表情 insight のみ＝ひらめきを促す。専用セリフは持たない）
-  | 'explaining'  // 説明・解説中（役表示・採点説明）
+  | 'explaining'  // 説明・解説中（解説シーン＝成立役・採点の説明）
   | 'correct'     // 正解
   | 'wrong'       // ミス
   | 'finished';   // 全クイズ終了（結果のお祝い・セッション終わりの1回）
@@ -417,7 +417,6 @@ export interface RuleSettings {
   kazoeYakuman: boolean;           // 数え役満（13翻以上）
   doubleYakuman: boolean;          // ダブル役満・役満複合
   rareYaku: boolean;               // レア役（流し満貫・人和 等）
-  round: 'east-fixed' | 'random';  // 場（局）の固定/ランダム
   enabledYaku: Partial<Record<YakuId, boolean>>; // 出題する役の範囲（役ID→オン/オフ）。明示的に false の役だけ除外し、未指定・空 {} は全役オン（生成・判定とも）
 }
 ```
@@ -488,7 +487,7 @@ export type MissHistory = Record<string /* characterId */, Partial<Record<StudyM
 
 ## 17. セッション QuizSession / SessionViewState
 
-セッション（提示層 `session`）の型。`QuizSession` は進行状態（ui が保持、session 層の純関数が遷移）、`SessionViewState` は ui が描く提示モデル（session が1ターンごとに組み立てる）。挙動の正は [session.md](../spec/session.md)。当面はクイズ session（解説の単独モードは別途）。
+セッション（提示層 `session`）の型。`QuizSession` は進行状態（ui が保持、session 層の純関数が遷移）、`SessionViewState` は ui が描く提示モデル（session が1ターンごとに組み立てる）。挙動の正は [session.md](../spec/session.md)。当面はクイズ session。
 
 ```ts
 export type SessionStatus = 'greeting' | 'playing' | 'finished'; // 開始のあいさつ／出題中／終了

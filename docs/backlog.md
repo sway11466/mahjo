@@ -35,7 +35,6 @@
   - 呼び方（`playerName`）：プレイヤーの呼び名を Persona のセリフに差し込む（[character-guide](./characters/character-guide.md) §2）。差し込みの仕組み（テンプレート）自体が未実装なので機構ごと用意する。
   - 牌のランダム並び（`randomTileOrder`）：手牌を正準順でなくシャッフルして描画する（Tile データは不変・表示側だけ＝[data-model](./design/data-model.md) §1）。
   - 後付け（`atozuke`）：生成・和了可否の判定に反映する（採点には影響しない。[scoring-rules](./spec/scoring-rules.md) §5）。
-  - 場の固定/ランダム（`round`）：クイズは局が場風を決めるので効かない（[scoring-rules](./spec/scoring-rules.md) §5）。場風を渡さない解説単独モード（別途設計）でのみ有効化する。
   - 対象外（別項目で追跡）：効果音・音楽（`se`/`bgm`）＝parking lot「音（SE/BGM）の実装」＋[feature-9](#feature-9)／レア役（`rareYaku`）＝parking lot・[scoring-rules](./spec/scoring-rules.md) §1.3（未対応）。
 - 該当：`src/ui/settings/RuleSettingsScreen.tsx`・`src/ui/settings/AppSettingsScreen.tsx`（`soon` 行の解除）・`src/engine/generate.ts`（後付け）・`src/characters/`＋`src/session/`（呼び方差し込み）・`src/ui/main/`（牌並び表示）。
 

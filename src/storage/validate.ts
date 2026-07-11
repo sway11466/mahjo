@@ -60,7 +60,6 @@ export function validateRuleSettings(raw: unknown): RuleSettings {
     kazoeYakuman: bool(raw.kazoeYakuman, d.kazoeYakuman),
     doubleYakuman: bool(raw.doubleYakuman, d.doubleYakuman),
     rareYaku: bool(raw.rareYaku, d.rareYaku),
-    round: raw.round === 'east-fixed' || raw.round === 'random' ? raw.round : d.round,
     enabledYaku: validateEnabledYaku(raw.enabledYaku),
   };
 }

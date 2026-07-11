@@ -32,7 +32,7 @@ export type ReactionTrigger =
   | 'greeting' // あいさつ（セッション開始の1回）
   | 'dealing' // 出題中（各問・回答前）
   | 'hinting' // ヒント表示中（表情 insight のみ＝ひらめきを促す。専用セリフは持たない）
-  | 'explaining' // 説明・解説中（役表示・採点説明）
+  | 'explaining' // 説明・解説中（解説シーン＝成立役・採点の説明）
   | 'correct' // 正解
   | 'wrong' // ミス
   | 'finished'; // 全クイズ終了（結果のお祝い・セッション終わりの1回）
