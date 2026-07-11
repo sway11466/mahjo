@@ -39,9 +39,13 @@ describe('scoreTable — 特殊符（20・25）の成立可否', () => {
     expect(c.tsumo).toEqual({ kind: 'ko', fromKo: 400, fromOya: 700 });
   });
 
-  it('25符（七対子）は2翻以上のみ', () => {
+  it('25符（七対子）はロン2翻以上・ツモ3翻以上のみ', () => {
     expect(cellFor(25, 1, false)).toEqual({ ron: null, tsumo: null });
     expect(cellFor(25, 2, false).ron).toBe(1600); // 七対子2翻ロン
+    // 25符2翻ツモは実戦で発生しない：七対子ツモは門前清自摸和が必ず付き最低3翻。
+    expect(cellFor(25, 2, false).tsumo).toBeNull();
+    // 25符3翻ツモ＝a=800：子ツモ 800/1600
+    expect(cellFor(25, 3, false).tsumo).toEqual({ kind: 'ko', fromKo: 800, fromOya: 1600 });
   });
 });
 

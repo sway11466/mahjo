@@ -1,5 +1,6 @@
 import type { HintScript, ExplainScript } from './hint.ts';
 import type { MistakeScript } from './quiz.ts';
+import type { BgmData } from './bgm.ts';
 
 /**
  * 顔の全パレット（全キャラ合算。各キャラは持つ分だけ ExpressionAsset を用意する）。
@@ -31,7 +32,7 @@ export type ReactionTrigger =
   | 'greeting' // あいさつ（セッション開始の1回）
   | 'dealing' // 出題中（各問・回答前）
   | 'hinting' // ヒント表示中（表情 insight のみ＝ひらめきを促す。専用セリフは持たない）
-  | 'explaining' // 説明・解説中（役表示・採点説明）
+  | 'explaining' // 説明・解説中（解説シーン＝成立役・採点の説明）
   | 'correct' // 正解
   | 'wrong' // ミス
   | 'finished'; // 全クイズ終了（結果のお祝い・セッション終わりの1回）
@@ -86,5 +87,10 @@ export interface Character {
    * 中立の基準は hint-base.md「誤答の諭し素」、文言は character-<id>-script.md §4 が正。
    */
   mistakes: MistakeScript;
+  /**
+   * BGM の楽譜データ（主旋律＋即興音）。任意＝未指定キャラは無音（中立曲は持たない）。
+   * データのみ（合成・再生は ui 層 src/ui/audio）。正は character-<id>-sound.md・sound.md「BGM の実現方式」。
+   */
+  bgm?: BgmData;
   unlock?: { kind: 'correctCount'; threshold: number }; // 任意・未対応
 }

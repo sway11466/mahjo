@@ -19,7 +19,7 @@
 
 ## 2. ツールと配置
 
-- Vitest（Small・UI単体）、@testing-library/react ＋ jsdom（UI単体）、Playwright（E2E。要確定）。
+- Vitest（Small・UI単体）、@testing-library/react ＋ jsdom（UI単体）、Playwright（E2E。未導入＝[backlog](../backlog.md) feature-20）。
 - テストは実装ファイルの隣（`*.test.ts`）またはレイヤ直下の `__tests__/`。
 - 領域別の重み：
 
@@ -43,18 +43,18 @@
 
 - 牌SVG：id/種別から正しい牌、赤ドラ区別、上がり牌の区別、副露の向き。
 - 盤面：手牌・副露・上がり牌・ドラ表示牌の配置。
-- 採点パネル：`items` を箇条書き表示、項目クリックで対応 `highlightTargets` の要素にハイライトが付く（連携ロジックはここで担保）。
+- 採点・解説の表示：`items` の各ステップで対応 `highlightTargets` の要素にハイライトが付く（解説の段送り連動＝[screens.md](../design/screens.md) §3。連携ロジックはここで担保。項目クリックでの個別ハイライトは将来の併用案）。
 - ヒントUI：ボタンで段が1つずつ開く、最終段でも答えを出さない。
 - クイズUI：4択表示・選択で正誤リアクション・解説へ遷移。
 - 設定UI：トグルで RuleSettings/AppSettings 更新 → 表示反映（randomTileOrder で並び変化 等）。
 
 ## 5. E2E（Large）
 
-ブラウザで実アプリを通し、主要フローが繋がることだけ確認（少数・安定重視）。
+ブラウザで実アプリを通し、主要フローが繋がることだけ確認（少数・安定重視）。**未導入**（Playwright の導入・シナリオ作成は [backlog](../backlog.md) feature-20。本節はその導入時のシナリオの正）。
 
-- 役モード：出題 → ヒント段階表示 → 役を表示。
+- 役モード：出題 → ヒント段階表示 → 回答 → 解説（成立役のウォークスルー）。
 - クイズ：回答 → キャラのリアクション → 解説へ。
-- 点数モード：採点説明のクリック → ハイライト連携（通し1本）。
+- 点数モード：解説の符・点数ステップ → ハイライト連携（通し1本）。
 - 設定：ルール変更が出題・採点に反映＋ localStorage 永続。
 - PWA：オフライン起動（precache）。
 
@@ -90,5 +90,5 @@
 
 ## 10. 実行
 
-- `npm test`（Vitest watch）／`npm run test:run`（CI/一回実行）。E2E は別コマンド（要確定、例 `npm run test:e2e`）。
+- `npm test`（Vitest watch）／`npm run test:run`（CI/一回実行）。E2E は別コマンド（未導入＝[backlog](../backlog.md) feature-20。例 `npm run test:e2e`）。
 - カバレッジは engine を重点的に確認（数値の網羅が主目的でカバレッジ率自体は目安）。

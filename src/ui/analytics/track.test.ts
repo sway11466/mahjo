@@ -15,10 +15,10 @@ describe('track', () => {
 
   it('既存の dataLayer に追記する（GTM スニペット生成分を壊さない）', () => {
     window.dataLayer = [{ event: 'gtm.js' }];
-    track({ event: 'quiz_answer', character_id: 'rin', correct: true, target: 'yaku' });
+    track({ event: 'quiz_answer', character_id: 'rin', correct: true, target: 'han' });
     expect(window.dataLayer).toEqual([
       { event: 'gtm.js' },
-      { event: 'quiz_answer', character_id: 'rin', correct: true, target: 'yaku' },
+      { event: 'quiz_answer', character_id: 'rin', correct: true, target: 'han' },
     ]);
   });
 

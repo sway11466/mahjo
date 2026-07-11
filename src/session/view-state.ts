@@ -7,13 +7,13 @@ import type {
   ReactionTrigger,
   ScoreItem,
 } from '../types/index.ts';
-import { expressionFor } from '../characters/index.ts';
+import { expressionFor } from './reaction.ts';
 import { hintProvider, hintRenderer } from '../hints/index.ts';
 import { pick, type Rng } from '../engine/rng.ts';
 import type { QuizSession, SessionViewState } from './types.ts';
 
 // session が組み立てる view-state のうち「キャラ」部（抽象キャラ＝id＋expression＋line）。
-// 表情→画像の解決は ui。場面→表情は characters（reactions＋既定マップ）、セリフは persona から rng で選ぶ。
+// 表情→画像の解決は ui。場面→表情は reactions（キャラのデータ）＋既定マップ（reaction.ts）、セリフは persona から rng で選ぶ。
 // 仕様：[session.md](../../docs/spec/session.md) §4。
 
 /** SessionViewState.character と同じ形（1ターン分のキャラ提示）。 */
@@ -190,6 +190,8 @@ export function buildViewState(
 
   const allHintSteps = buildHintSteps(session, character);
   const hintingNow = !answered && !finished && ui.hintOpenCount > 0;
+  // 開けるのは実在する段まで（ui 側が同じ計算でクランプしてくれる前提に頼らず、session 側でも守る）。
+  const openedHints = Math.min(ui.hintOpenCount, allHintSteps.length);
 
   const explainSteps = buildExplainSteps(session, character);
   const explaining = answered && ui.explainIndex !== null;
@@ -203,7 +205,7 @@ export function buildViewState(
   const line = explainStep
     ? explainStep.text
     : hintingNow
-      ? allHintSteps[ui.hintOpenCount - 1]!.text
+      ? (allHintSteps[openedHints - 1]?.text ?? charView.line)
       : charView.line;
 
   return {
@@ -215,7 +217,7 @@ export function buildViewState(
     selectedIndex: answered ? current!.selectedIndex : ui.pendingIndex,
     revealed: answered,
     character: { id: charView.id, expression, line, variantSeed: charView.variantSeed },
-    hintSteps: allHintSteps.slice(0, ui.hintOpenCount), // 開いた段だけ（型 §17 の意味に合わせる）
+    hintSteps: allHintSteps.slice(0, openedHints), // 開いた段だけ（型 §17 の意味に合わせる）
     result: answered ? session.result : null,
     roundIndex: session.index,
     correctCount: session.correctCount,

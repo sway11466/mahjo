@@ -4,13 +4,13 @@
 
 ## index
 
-次回採番: bug=3 / feature=19 / refactoring=14
+次回採番: bug=9 / feature=21 / refactoring=19
 
 項目（バグ bug / 機能追加 feature / リファクタリング refactoring）を追加するときは、該当カテゴリの採番を +1 して ID を継ぐ。完了した項目は本書から削除し、番号は再利用しない（過去の使用済み番号は `git log -p -- docs/backlog.md | grep -oE '(feature|refactoring)-[0-9]+' | sort -u` で確認できる）。状態は「本書に載っていれば未完了／消えていれば完了」で表す（状態列は持たない）。優先度は各エントリ見出しに 高（設計の背骨に関わる）／中／低（飾り・潜在）で記す。
 
 ## バグ
 
-判明済みの不具合。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す。
+判明済みの不具合。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す（優先度順）。
 
 （現在、判明済みの不具合はなし）
 
@@ -18,13 +18,13 @@
 
 実装済みコードに足す機能。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す。
 
-### feature-8
+### feature-20
 
-**ダブルリーチを出題に含める**（優先度：中）
+**E2E テスト（Large）の導入**（優先度：中）
 
-- 背景：ダブルリーチが現状クイズに出ない。生成器（`src/engine/generate.ts:164-168`）は門前時に `riichi`（＋確率で `ippatsu`）だけを立て、`doubleRiichi` をどこでも立てない（`makeCtx` で常に false）。役一覧（実装済み）には載るが出題されない役になっている。
-- 対応：生成器で一定確率で `doubleRiichi` を立てる（`riichi` とは排他＝double 成立時 `riichi` は付けない。[scoring-rules](./spec/scoring-rules.md) §1.1）。本アプリは和了形のみ扱い局進行を持たないので「第一巡」は状況設定として `winContext` フラグで表現する（`riichi` と同じ流儀）。出題・採点・解説・誤答変換（mistakes）への波及を確認。**あわせて役一覧のダブルリーチ表現を更新する**：現状はリーチ棒のみでリーチと見分けが付かないため、出題に出すなら見分けの付く表現（例：ダブルリーチ用バッジ等）を決め、`src/ui/main/yaku-list/`（`yakuReference.ts`・`YakuList.tsx`）に反映する。
-- 該当：`src/engine/generate.ts:164-168`・`makeCtx`・`src/ui/main/yaku-list/`（役一覧の表現反映）。
+- 背景：[testing](./dev/testing.md) §5 は E2E 層（ブラウザで実アプリ通し・少数・安定重視）を定義するが、ランナー未導入・テスト未作成（`package.json` に E2E コマンドなし＝仕様にだけ存在する状態）。現状の回帰は Small＋UI単体（jsdom）と人手確認（§6）が担っており、「主要フローがブラウザで繋がる」ことと PWA のオフライン起動は実ブラウザでしか検証できない。
+- 対応：Playwright を導入し、シナリオは [testing](./dev/testing.md) §5 の5本（役モード通し／クイズ 回答→リアクション→解説／点数モードのハイライト連携／設定の反映と localStorage 永続／PWA オフライン起動）。実行は別コマンド（例 `npm run test:e2e`。コマンド名・CI 組み込みは導入時に確定し testing.md §2/§5/§10 へ反映）。少数・安定重視＝Small で守れるものは E2E に足さない（§1 の SML 方針）。
+- 該当：新規（`e2e/` 等の置き場＋ Playwright 設定）・`package.json`（devDependencies・スクリプト）・[testing](./dev/testing.md) §2/§5/§10（確定内容の反映）。
 
 ### feature-9
 
@@ -39,42 +39,32 @@
 **設定画面に並べただけで未実装の項目を、実際に動くよう配線する**（優先度：低）
 
 - 背景：設定画面とその保存（`src/storage/`）は実装済みで、設定項目は2種類ある。**すでに採点エンジンに効くもの**（`kuitan`・`kiriageMangan`・`kazoeYakuman`・`doubleYakuman`・`enabledYaku`）は動作する。一方**挙動が未実装のもの**は、設定画面に項目だけ並べて「機能追加予定」表示でグレーアウトし（コード上は `RuleSettingsScreen.tsx`・`AppSettingsScreen.tsx` の `soon` 行）、値の保存だけ通している＝操作しても何も起きない。この「保存はされるが挙動が無い」項目を1つずつ「設定 → 実際の挙動」に繋ぐのが本項。配線できた項目から `soon` を外して編集可へ昇格する。
-- 対応：項目ごとに独立して着手できる。
-  - 赤ドラ（`akaDoraCount`）：生成器が赤牌（`Tile.red`）を `akaDoraCount` 枚を上限に作って出題に混ぜる。採点側（赤を数える）は実装済み（`src/engine/score.ts`）なので、残りは生成と、盤面での赤ドラ区別表示（[screens.md](./design/screens.md) §3）。
+- 対応：項目ごとに独立して着手できる（赤ドラ〔`akaDoraCount`〕は対応済み＝生成・表示・設定UI とも稼働）。
   - 呼び方（`playerName`）：プレイヤーの呼び名を Persona のセリフに差し込む（[character-guide](./characters/character-guide.md) §2）。差し込みの仕組み（テンプレート）自体が未実装なので機構ごと用意する。
   - 牌のランダム並び（`randomTileOrder`）：手牌を正準順でなくシャッフルして描画する（Tile データは不変・表示側だけ＝[data-model](./design/data-model.md) §1）。
   - 後付け（`atozuke`）：生成・和了可否の判定に反映する（採点には影響しない。[scoring-rules](./spec/scoring-rules.md) §5）。
-  - 場の固定/ランダム（`round`）：クイズは局が場風を決めるので効かない（[scoring-rules](./spec/scoring-rules.md) §5）。場風を渡さない解説単独モード（別途設計）でのみ有効化する。
   - 対象外（別項目で追跡）：効果音・音楽（`se`/`bgm`）＝parking lot「音（SE/BGM）の実装」＋[feature-9](#feature-9)／レア役（`rareYaku`）＝parking lot・[scoring-rules](./spec/scoring-rules.md) §1.3（未対応）。
-- 該当：`src/ui/settings/RuleSettingsScreen.tsx`・`src/ui/settings/AppSettingsScreen.tsx`（`soon` 行の解除）・`src/engine/generate.ts`（赤ドラ・後付け）・`src/characters/`＋`src/session/`（呼び方差し込み）・`src/ui/main/`（牌並び表示）。
+- 該当：`src/ui/settings/RuleSettingsScreen.tsx`・`src/ui/settings/AppSettingsScreen.tsx`（`soon` 行の解除）・`src/engine/generate.ts`（後付け）・`src/characters/`＋`src/session/`（呼び方差し込み）・`src/ui/main/`（牌並び表示）。
 
 ### feature-14
 
 **苦手データをキャラの寄り添いアドバイスに活かす**（優先度：低。だいぶ先）
 
-- 背景：`Progress` に苦手集計（`byTarget`＝出題種類ごとの `{seen, correct}`、後続で `byMistake`＝誤り方）を貯める土台ができた（[data-model.md §16](./design/data-model.md)・[session.md](./spec/session.md) §5）。これは「苦手な問題に寄り添ったアドバイスをする」ための素材で、貯めるところまでが実装済み・**活用は未着手**。本項は貯まったデータをキャラのセリフに反映する出口。
-- 対応：苦手（率が一定以下かつ `seen` が閾値以上の出題種類／偏った `MistakeKind`）を検出し、キャラがやわらかく寄り添う文言を出す。`プレッシャーをかけない`（[product-concept.md](./product-concept.md) §3・session.md §6）を厳守＝失敗の採点表として突きつけず、`byMistake` は真因の診断でなくヒント扱い（断定しない）。実現には characters に**新カテゴリ（苦手寄り添い script）**が要る見込み（型・authoring がキャラ人数分ファンアウト）。検出ロジックは session 寄りの純関数に置きテスト対象。
-- 関連（出口は2系統で別物・集計は共有）：もう一方の出口＝**苦手を多めに再出題**は parking lot「間違い復習、出題範囲の細かな調整」。好感度アンロック（parking lot）とも素材を共有しうる。前提＝苦手データが貯まっていること。`byMistake` を使う部分は [refactoring-13](#refactoring-13)（MistakeKind 精査）の後。
+- 背景：`Progress` に苦手集計（`byTarget`＝出題種類ごとの `{seen, correct}`）を貯める土台ができた（[data-model.md §16](./design/data-model.md)・[session.md](./spec/session.md) §5）。これは「苦手な問題に寄り添ったアドバイスをする」ための素材で、貯めるところまでが実装済み・**活用は未着手**。誤り方の素材は間違い履歴（実装済み＝[data-model.md §16](./design/data-model.md) `MissHistory`）が担う。本項は貯まったデータをキャラのセリフに反映する出口。
+- 対応：苦手（率が一定以下かつ `seen` が閾値以上の出題種類／間違い履歴に見える傾向）を検出し、キャラがやわらかく寄り添う文言を出す。`プレッシャーをかけない`（[product-concept.md](./product-concept.md) §3・session.md §6）を厳守＝失敗の採点表として突きつけず、誤り方の推測は真因の診断でなくヒント扱い（断定しない。履歴＝事実から表示時に都度計算する）。実現には characters に**新カテゴリ（苦手寄り添い script）**が要る見込み（型・authoring がキャラ人数分ファンアウト）。検出ロジックは session 寄りの純関数に置きテスト対象。
+- 関連（出口は2系統で別物・素材は共有）：もう一方の出口＝**苦手を多めに再出題**は parking lot「間違い復習、出題範囲の細かな調整」。好感度アンロック（parking lot）とも素材を共有しうる。前提＝苦手データが貯まっていること（`byTarget`・間違い履歴とも保存は稼働済み＝出口はいつでも作れる）。
 - 該当：新規（`src/session/` の苦手検出＋`src/characters/`＋各 `character-<id>-script.md` の寄り添い文言）。型は data-model §16、思想は session.md §5/§6。
 
 ## リファクタリング
 
-メイン画面（役モード）実装後のレビューで挙がった改善項目。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す。
-
-### refactoring-13
-
-**`MistakeKind` の精査（誤答分類の honest 化）**（優先度：中。byMistake 永続化の前提＝早めに）
-
-- 背景：誤答の分類 `MistakeKind`（[data-model.md §12](./design/data-model.md)）は荒く、**1つの誤答値に複数の真因がありうる**のに1 kind へ決め打ちしている（例：「1翻不足」を `tsumo-ron-swap` に固定するが、単純な `han-miscount` のこともある）。生成（`src/engine/mistakes.ts`）が値→kind を多対一で潰しているため、ラベルが「ユーザーの真因」ではなく「出題が仕込んだ罠」を表すに留まる。苦手の `byMistake` 集計（[data-model.md §16](./design/data-model.md)・[session.md](./spec/session.md) §5）を貯め始める前に分類を固めておかないと、古い分類のカウントが溜まり意味がズレる（分類の安定した `byTarget` は先行済み）。
-- 対応：値→kind の対応を honest に見直す（kind の分割・追加、あるいは「1誤答値が複数 kind を取りうる」ことの明示）。`byMistake` を「真因の診断でなくヒント」として扱う前提（断定しない＝プレッシャーをかけない）と整合させる。**波及に注意**：`MistakeKind` を変えると 型（data-model §12）＋ `engine/mistakes.ts`（生成・ラベル）＋ 各キャラの `MistakeScript`（諭し文・全 kind 網羅）＋ テスト（[testing.md](./dev/testing.md) §8）に及び、**kind 追加はまお／りん両方の諭し文の authoring を要する**（人数分ファンアウト）。
-- 該当：`src/types/`（`MistakeKind`）・`src/engine/mistakes.ts`・各 `docs/characters/<id>/character-<id>-script.md` §4＋`src/characters/`（`MistakeScript`）・テスト。完了後に `byMistake` 永続化（[feature-14](#feature-14) の前提）へ進む。
+メイン画面（役モード）実装後のレビューで挙がった改善項目。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す（優先度順）。
 
 ### refactoring-12
 
 **キャラクターガイドの見直し**（優先度：中）
 
-- 背景：[character-guide.md](./characters/character-guide.md) は キャラの位置づけ・アセット・作り方（AI 生成の知見含む）・データ管理を一手に抱えて肥大化しており、まお／りんの実制作で得た知見（同一セッション t2i・セッション再構築・画質と一貫性のトレードオフ等）が §4 に積み増しで足されてきた。記述の重複・粒度のばらつき・他 doc（[data-model](./design/data-model.md) §13・[architecture](./design/architecture.md) §5・[hints](./spec/hints.md)・各 `character-<id>.md`）との境界の曖昧さがあり、新キャラ追加時に「どこを読めば作れるか」が辿りにくい。あわせて**記述が決定事項（[decisions.md](./decisions.md)）や実装・実態と乖離している箇所**が疑われる。とくにガイド冒頭の概要説明が不正確：
-  - 「各キャラ固有の中身は 1キャラ＝1doc」とあるが、実際は §2 のとおり 1キャラ＝2ファイル（定義 `character-<id>.md` ＋ セリフ `character-<id>-script.md`）で、冒頭と本文が食い違う。
+- 背景：[character-guide.md](./characters/character-guide.md) は キャラの位置づけ・アセット・作り方（AI 生成の知見含む）・データ管理を一手に抱えて肥大化しており、まお／りんの実制作で得た知見（同一セッション t2i・セッション再構築・画質と一貫性のトレードオフ等）が §4 に積み増しで足されてきた。記述の重複・粒度のばらつき・他 doc（[data-model](./design/data-model.md) §13・[architecture](./design/architecture.md) §5・[hints](./spec/hints.md)・各 `character-<id>.md`）との境界の曖昧さがあり、新キャラ追加時に「どこを読めば作れるか」が辿りにくい。あわせて**記述が決定事項（[decisions.md](./decisions.md)）や実装・実態と乖離している箇所**が疑われる。概要説明と実態のズレの例（旧例「1キャラ＝1doc」は解消済み。冒頭は「doc＋配布アセット」、§2 は「1キャラ＝4ファイル」に更新されている）：
+  - §2 冒頭の「定義 doc は 基本情報・ペルソナ・ビジュアル・セリフ の**4章**」が実態と食い違う——サウンド doc の追加で定義 doc には §5 音楽（BGM）が増えており（`character-mao.md`）、§5 ファイル構成表のサウンド doc 行自身も「定義 doc §5 はここへのポインタ」と書いていて、同一 doc 内で矛盾する。
   - 「キャラを追加してもヒント内容（教える中身）は書き換え不要」も誤解を招く——書き換え不要なのは中立の教える中身（hint-base・HintProvider）だけで、各キャラは全ヒントキー分の **script（キャラの声のヒント文）を新規に authoring** する必要がある（§2・`character-<id>-script.md` §2、hint-base 全キー網羅）。「ヒントの authoring が不要」とは読めない言い回しに直す。
 
   この種の先頭サマリと本文・実態のズレを洗い出して直す。
@@ -94,19 +84,20 @@
 
 後回し・いつかやる候補の置き場（特定の作業に紐付かない将来アイデア）。着手が決まった段で機能追加・リファクタリングへ引き上げる。
 
-- 学習イベント計測のフェーズ2（行動の質）：旧 feature-18 フェーズ1（6イベント＝`track()` ラッパ＋GTM/GA4 配信）は実装・本番稼働済み（契約は [analytics.md](./spec/analytics.md)）。任意の追加計測＝`highlight_click`（クリック内訳ハイライトの利用・`category`）・`character_select`（キャラ選択画面の探索）・`setting_change`（どのルールで遊ぶか・`key`/`value`。`playerName` 除外）・画面遷移の仮想ページビュー・PWA インストール／`display-mode: standalone` 判定（リピーター把握、下記「オフライン計測（GA4）」の前段）・不正解時の `mistake_kind`（[refactoring-13](#refactoring-13) の MistakeKind 精査後）。発火点（`track()` 呼び出し）を足すだけで取れる（土台は不変）。
+- 学習イベント計測のフェーズ2（行動の質）：旧 feature-18 フェーズ1（6イベント＝`track()` ラッパ＋GTM/GA4 配信）は実装・本番稼働済み（契約は [analytics.md](./spec/analytics.md)）。任意の追加計測＝`highlight_click`（クリック内訳ハイライトの利用・`category`）・`character_select`（キャラ選択画面の探索）・`setting_change`（どのルールで遊ぶか・`key`/`value`。`playerName` 除外）・画面遷移の仮想ページビュー・PWA インストール／`display-mode: standalone` 判定（リピーター把握、下記「オフライン計測（GA4）」の前段）・不正解時の `mistake_kind`（`MistakeKind` は諭し表示専用の語彙＝永続化しない〔[data-model.md §16](./design/data-model.md)〕。罠ラベルとして計測に載せる意味があるかは要判断）。発火点（`track()` 呼び出し）を足すだけで取れる（土台は不変）。
 - 役満シード生成、手続き的な任意合法和了形の生成。
 - 間違い復習、出題範囲の細かな調整。
 - サポートキャラの追加（順次）。
+- 多言語化（i18n）：日本語のみの割り切り（[architecture](./design/architecture.md)「対象環境・非機能の割り切り」）の再評価。機構より authored セリフ（キャラ script×言語数）と手書き静的サイトの再オーサリングが本体コスト。偶発的な海外閲覧はブラウザの機械翻訳で足りる（役名の誤訳・キャラの口調は保証外）ため、ユーザー要望が出たら検討。
 - LP／キャラ紹介ページからアプリへのキャラ指定ディープリンク（URL でキャラを選択状態にして起動）。ルーティング未整備（[screens.md](./design/screens.md) §6。旧 feature-1／feature-5 から引き継ぐ将来分）。
 - オフライン計測（GA4）：オフライン起動分は素の GTM/GA だと取りこぼす（`gtm.js` 未キャッシュで GTM 自体が起動しない）。取るなら Workbox の offline-google-analytics（`workbox-google-analytics`）で収集リクエストを横取りし Background Sync キュー→再接続時に元タイムスタンプで再送（GA4 のタイムスタンプ補正ウィンドウ〔約72h〕超過は破棄・再接続しない端末は不可）。precache 込みで導入するか判断。GTM の素の導入・オンライン計測は稼働済み。
 - 累計正答数による表情/衣装/特別セリフのアンロック・節目演出（好感度）。
-- 音（SE/BGM）の実装（[sound](./design/sound.md)）。収集済み SE の再生配線（`AppSettings.se`／autoplay 制限／precache）と BGM。SE 素材の収集は [feature-9](#feature-9) が先。
+- 音の実装（[sound](./design/sound.md)）。**BGM は実装済み**＝コード生成（Web Audio・2層）を App ルートの1本のコントローラ（`src/ui/audio`：notation/improv/synth/player/useBgm）で鳴らす（`AppSettings.bgm`＋選択キャラの `Character.bgm` を見る／autoplay 解禁は初回操作／キャラ切替でクロスフェード）。まおの曲は投入済み。**残り**：(1) SE の再生配線（`AppSettings.se`／autoplay／precache。SE 素材の収集は [feature-9](#feature-9) が先）、(2) 他キャラの `bgm` データ（りん等＝各 `character-<id>-sound.md` 作成後）、(3) 音量スライダー等の拡張（任意）。
 - 連続正解などのゲーム要素。
 - **ストーリーモード（兼ハードモード｜将来・新ゲームモード）**：世界に厄災（＝人間の悪意を増幅する思念体。[characters/world.md](./characters/world.md) §3）が起こりかけるが、麻雀の和了を正しく読むと防げる物語モード。**通常の「プレッシャーをかけない」方針からの唯一の意図的な例外**＝ハードたるゆえん（[product-concept](./product-concept.md) §3 と緊張するが、下記の失敗演出で優しさを保つ）。舞台＝[characters/world.md](./characters/world.md)。
   - **システム（構想）**：練習と同じ手牌が出る→役/点数を当てる**タイムアタック**。**1ラン＝1ステージ**（タイマー全体一本・単位/閾値はステージ内固定）。
     - **得点**：正解＝その手の配点ぶん加点／誤答＝失点。**速く回すほど大量得点**＝習熟→速い判断→報酬の好循環。
-    - **当てる単位はステージで進化**（`QuizTarget`＝yaku/han/fu/score の段に対応＝[data-model](./design/data-model.md) §12）。序盤は易しい役のみ＝**役だけ当てればOK**、目標も点数でなく「XX役を目指せ」。後半（点数へ上がる先・ボス構成）は **TBD**。
+    - **当てる単位はステージで進化**。序盤は易しい役のみ＝**役だけ当てればOK**、目標も点数でなく「XX役を目指せ」。後半（点数へ上がる先・ボス構成）は **TBD**（練習モードの `QuizTarget` は翻/点数の2値＝[data-model](./design/data-model.md) §12。ステージ用の単位が要るならその設計時に別途定める）。
     - **ブタ（役無し手）**：正解しても0点・誤答は失点＝厄災の惑わし（「正しい読みが鎮め、誤り・悪意が太らせる」§3 と一致）。
     - **失点はストーリーで重くなる**：序盤ほぼ無害→最終＝厄災本体（ラスボス）で大量失点。緊張を段階的にしか出さない。
     - **好感度ボーナス**：そのストーリーに登場するキャラとの好感度が高いと得点にボーナス（好感度＝[data-model](./design/data-model.md) §16 Progress 由来。細部 **TBD**）。
@@ -121,4 +112,5 @@
 - 頻出表情の差分バリアント（`<id>-portrait-<expr>-b.webp` 等）の用意（`srcs` ローテーションは配線済み＝旧 refactoring-8・素材待ちで休眠。各キャラ `expressions[].srcs` に追記すれば有効化。[character-guide](./characters/character-guide.md) §4）。
 - りんの「照れ隠し」表情：ストーリー用 `bashful` を作成済み（[story/episode-01.md](./story/episode-01.md)・素材は `original/`）。リアクション系でも 照れ隠し が要るかは rin 実装時に判断（既存 `flustered` 兼用か、専用キー追加か。[character-rin](./characters/rin/character-rin.md)）。
 - 実機での感性チェック（hinting=insight の強さ・ヒントの“気づきビート”（「…あ。」等）の単調さ・smile↔happy の見分け）。[testing](./dev/testing.md) §6 のチェックリストで回す。
+- Error Boundary の導入（`src/ui/App.tsx`）：予期しない throw で白画面にせず復旧導線を出す一般防御。既知のクラッシュ経路（enabledYaku 全オフ＝旧 bug-7）は出題入口の無害化（`sanitizeForGeneration`）で塞ぎ済みで、残りは未知の例外への保険。
 - decisions.md 2026-06-10 エントリの整理（内容は hints / character-guide / character-mao-script へ移行済み。使い魔素材が入って未決が無くなったらエントリを削除）。

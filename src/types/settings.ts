@@ -2,7 +2,7 @@ import type { YakuId } from './yaku.ts';
 
 /**
  * ルール設定（採点・生成・出題に効く）。選択肢・既定値の正は scoring-rules.md §5。
- * すべて即時反映・localStorage 保存。一部（round/atozuke/enabledYaku）は採点でなく
+ * すべて即時反映・localStorage 保存。一部（atozuke/enabledYaku）は採点でなく
  * 生成・出題範囲に効く。
  */
 export interface RuleSettings {
@@ -13,7 +13,6 @@ export interface RuleSettings {
   kazoeYakuman: boolean; // 数え役満（13翻以上）
   doubleYakuman: boolean; // ダブル役満・役満複合
   rareYaku: boolean; // レア役（流し満貫・人和 等）
-  round: 'east-fixed' | 'random'; // 場（局）の固定/ランダム
   enabledYaku: Partial<Record<YakuId, boolean>>; // 出題する役の範囲（未指定はオン扱い）
 }
 

@@ -4,6 +4,21 @@
 
 保守性とは **意図の読み取りやすさ・シンプルさ** を指す。レイヤ分離・API・リファクタの良し悪しはこの軸で判断し、処理効率・実装コストは設計判断の材料にしない。とくに「無駄な処理を削る」だけを目的にしたリファクタはしない（公開APIや抽象が増えて意図がぼやけるなら、重複処理が消えても不採用）。パフォーマンスは正確性・学習体験に実害が出てから測って対処する別問題として扱う。
 
+## 正本の規約（docs とコードの分担）
+
+仕様の正は docs（CLAUDE.md）。ただし**値**の正本は性質で2種に分け、新しい値を足すときはどちらに置くか先に決める：
+
+- **正確性に関わる値**（役の翻数・符・点数境界・ルール設定の選択肢/既定値 等、間違えたら学習アプリとして致命的な値）＝ **doc が正**。数値・境界に疑義が出たら doc を更新してからコードを直す（[scoring-rules.md](../spec/scoring-rules.md) 冒頭の規則の一般化）。
+- **プレイ感のチューニング値**（生成の付与確率・難易度帯の閾値 等、正誤でなく調整の問題である値）＝ **コードの定数が正**（例 `engine/generate.ts` の `BAND_THRESHOLD`・`P_KAN`）。doc は定数名と意味を指す。値を doc に載せる場合は「写し」と明記し、正とは扱わない（調整のたびに doc を追従させる義務を作らない）。
+
+## 対象環境・非機能の割り切り
+
+個人用の学習アプリ（主対象は作者自身＝[decisions.md](../decisions.md) 2026-06-05）として、以下は**意図的にスコープ外**とする。冒頭のパフォーマンスと同じ扱い＝実害・要望が出たら再評価する：
+
+- **対応ブラウザ**：互換マトリクスは持たない。モダンブラウザの最新版を前提とし、動かない環境が実害になったら対処する。
+- **アクセシビリティ**：当面スコープ外（スクリーンリーダー・キーボード操作等の作り込みはしない）。
+- **言語**：日本語のみ。i18n 機構は持たない——本アプリの本体は authored セリフ（キャラ1体で場面・ヒント・解説・諭し合わせて100本超）で、多言語化はオーサリングが言語数倍になり「キャラ追加＝データ＋画像だけ」の約束が崩れるため。偶発的な海外からの閲覧はブラウザの機械翻訳が無料のフォールバックになる（アイデアの置き場は [backlog.md](../backlog.md) parking lot「多言語化」）。
+
 ## 1. 技術スタック
 
 バックエンドを持たない完全静的クライアント。採用技術:
@@ -14,6 +29,7 @@
 - Vitest — テスト（テスト戦略は [testing.md](../dev/testing.md)、ビルド/実行手順は [development.md](../dev/development.md)）。
 - vite-plugin-pwa — Service Worker でアセットを precache。初回読込後はオフライン動作（PWA）。
 - 牌は SVG で描画する。Unicode の麻雀牌文字は環境で表示が崩れるため使わない（アバターは AI 生成のラスター画像）。
+- 音（SE/BGM）は Web Audio API でコード生成する。BGM は音源ファイルも音楽ライブラリも持たず素の Web Audio で合成（サイズ・権利・PWAオフラインの都合。方式は [ADR-0003](../adr/ADR-0003-bgm-code-generation.md)・[sound.md](./sound.md)）。SE は当面 CC0 等の素材を静的アセット化（[sound.md](./sound.md)）。
 
 ## 2. レイヤ分離と依存方向
 
@@ -42,11 +58,11 @@
 依存ルール（厳守）:
 
 - engine は他のどのアプリ層にも依存しない（types のみ参照）。React/DOM を import しない。1手の素材（生成・採点・誤答）までで状態を持たない。
-- hints は engine の出力型（ScoreResult 等）と types に依存してよいが、UI・characters・session には依存しない。キャラ非依存（8.1 の二層分離）。
-- characters はペルソナ（場面別セリフプール＋着目ポイント別ヒント文言＝script）・`reactions`・アバター参照のデータ。ロジックを持たない（文言・参照データのみ）。
-- session は engine・hints・characters・types に依存してよいが、UI には依存しない。クイズの「セッション（8問のひとまとまり）」の進行・正誤判定・進捗更新に加え、1ターンの view-state を組み立てる（出題＝手/場/4択、キャラのリアクション選択＝場面→表情＋セリフを characters データと rng から、ヒントの段組み＋文言差し込み＝HintProvider＋HintRenderer）。すべて純関数（state＋入力 → state、rng 注入）。状態の保持は ui、永続化の IO は storage（ui が配線）。永続データ（設定・進捗）は session にとって引数で入り返り値で出るだけ＝session は storage を知らない。仕様は [session.md](../spec/session.md)。当面はクイズ session を持つ（解説の単独モードは別途）。
+- hints は engine の出力型（ScoreResult 等）・役テーブル（`YAKU_TABLE`＝役定義データ。ヒントキーの正本が役IDを列挙するため）と types に依存してよいが、UI・characters・session には依存しない。キャラ非依存（8.1 の二層分離）。
+- characters はペルソナ（場面別セリフプール＋着目ポイント別ヒント文言＝script）・`reactions`・アバター参照・BGM（主旋律・即興音）のデータ。ロジックを持たない（文言・参照データのみ）。BGM の主旋律（度数記法の文字列）・即興音（セグメント配列）も「楽譜」に相当するデータとしてここが持ち、合成・再生は持たない（DOM も Web Audio も持たない層）＝ui が鳴らす。レジストリ（キャラ一覧・id 引き・未知 id の既定キャラへのフォールバック＝`getCharacter`）はデータ参照としてここが持つ。解決ロジックは持たない＝場面→表情の既定マップと解決（`expressionFor`）は session、テーマ色の既定フォールバック（`themeColorOf`）は ui。
+- session は engine・hints・characters・types に依存してよいが、UI には依存しない。クイズの「セッション（8問のひとまとまり）」の進行・正誤判定・進捗更新に加え、1ターンの view-state を組み立てる（出題＝手/場/4択、キャラのリアクション選択＝場面→表情＋セリフを characters データと rng から、ヒントの段組み＋文言差し込み＝HintProvider＋HintRenderer）。すべて純関数（state＋入力 → state、rng 注入）。状態の保持は ui、永続化の IO は storage（ui が配線）。永続データ（設定・進捗）は session にとって引数で入り返り値で出るだけ＝session は storage を知らない。仕様は [session.md](../spec/session.md)。当面はクイズ session を持つ。
 - storage は localStorage への永続化（IO）を一点集約する被駆動アダプタ。types のみに依存し、session・engine・hints・characters・React/DOM には依存しない（localStorage は注入可能にしてテストする）。キー設計・version／マイグレーション・読込時の防御的フォールバックを持つ。仕様は [storage.md](./storage.md)。
-- ui は session の view-state を描画し、操作を session に dispatch するだけ（「何を見せるか」は決めない）。担当は 牌SVG描画・アバター画像の描画・効果音/BGM・アニメ・レイアウト・入力・永続化の配線（IO は storage に集約。画面コンポーネントは storage を直接 import せず合成点のフック越しに使う＝[storage.md](./storage.md) §7）。view-state は抽象キャラ（characterId＋expression＋line）を持ち、表情→画像の解決は ui（characters のアセット参照）。
+- ui は session の view-state を描画し、操作を session に dispatch するだけ（「何を見せるか」は決めない）。担当は 牌SVG描画・アバター画像の描画・効果音/BGM・アニメ・レイアウト・入力・永続化の配線（IO は storage に集約。画面コンポーネントは storage を直接 import せず合成点のフック越しに使う＝[storage.md](./storage.md) §7）。BGM は「どう鳴らすか」＝characters の楽譜データ（主旋律の度数記法・即興音のセグメント配列）をパースし、Web Audio API で音色合成・小節スケジューリング・再生/停止する（音の IO は SE と同じくここに集約。方式は [sound.md](./sound.md)「BGM の実現方式」・[ADR-0003](../adr/ADR-0003-bgm-code-generation.md)）。度数記法パーサ・合成ロジックは engine（麻雀計算）に入れない。view-state は抽象キャラ（characterId＋expression＋line）を持ち、表情→画像の解決は ui（characters のアセット参照）。テーマ色の解決（未指定→既定色）も装飾なので ui の resolver（`ui/character/themeColor.ts`）。
 
 理由（session を独立層にし、ui を描画専任にする）：セッションは麻雀の真実ではなく学習の進行・提示。engine（純・麻雀計算）に混ぜると engine の自己像（1手の価値・合法形）が崩れ、ui に置くと提示ロジック（リアクション選択・ヒント組み立て・進行判定）が React に混ざってテストしづらい。hints（「教え方」の純ロジックを engine から分けた層）と同じ発想で、「学習者の進行・提示」を独立した純ロジック層にし、ui は view-state の描画に徹する。これにより提示ロジックを Small テストで厚く守れる。
 
@@ -82,7 +98,8 @@ mahjo/
     storage/                localStorage 永続化（キー・version・防御的読込。純TSのIO境界）
     ui/                     画面・React コンポーネント・牌SVG・永続化の配線
     assets/                 牌=SVG / 看板牌(1筒/1索)デフォルト=ラスター(tiles/) / キャラのアバター=ラスター画像
-  app.html                  React アプリの唯一のエントリ（/app.html）。ルート index.html は持たず vite input は app.html のみ
+  app.html                  React アプリの唯一のエントリ（/app.html）。vite input は app.html のみ
+  index.html                dev 専用リダイレクト（npm run dev の / 404 回避で app.html へ転送。ビルド対象外＝dist に出ない）
   vite.config.ts
   vitest.config.ts (または vite.config 内)
   tsconfig.json
@@ -91,7 +108,7 @@ mahjo/
 
 公開サイト（LP・キャラ紹介）は React アプリ（`app.html`）と分離した素 HTML で、`public/` に置き dist ルートへ素通しコピーする（ファイルパス＝URL）。SEO を狙うため・初見の入口を軽く保つための分離。組み立ての機構：
 
-- `vite.config.ts` の `build.rollupOptions.input` は **`app.html` のみ**（ルート `index.html` を持たない）。アプリの全画面はこの SPA 内（[screens.md](./screens.md) §1〜§5）。
+- `vite.config.ts` の `build.rollupOptions.input` は **`app.html` のみ**。アプリの全画面はこの SPA 内（[screens.md](./screens.md) §1〜§5）。リポジトリ直下の `index.html` は **dev 専用のリダイレクト**（`npm run dev` で `/` が 404 にならないよう `app.html` へ転送）で、ビルド対象外＝dist には出ない。本番の `/` は `public/index.html`（LP）が担う。
 - `public/` はバンドラを通さず dist ルートへ素通しコピー＝ファイルパスがそのまま URL（素 HTML の LP・キャラ紹介・`site.css`・`img/`・`robots.txt`/`sitemap.xml`・`favicon`/`pwa-*.png`）。
 - PWA `start_url` は **`app.html`**。インストール起動・リピーターはアプリへ直行し、`/` 直アクセスだけが LP になる（LP も workbox 既定 glob で precache）。
 

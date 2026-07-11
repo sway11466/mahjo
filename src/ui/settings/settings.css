@@ -189,6 +189,26 @@
   color: #c8cdd8;
 }
 
+/* 数値・列挙を選ぶネイティブセレクト（赤ドラ枚数 等） */
+.setting-select {
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #c8cdd8;
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  border: 1px solid #5a6172;
+  border-radius: 0.5rem;
+  padding: 0.3rem 0.55rem;
+  cursor: pointer;
+}
+.setting-select:hover {
+  border-color: #79808f;
+}
+.setting-select option {
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
 /* ── トグルスイッチ ── */
 .toggle {
   position: relative; /* 隠し input の絶対配置の基準。無いと input が文書原点に飛び、

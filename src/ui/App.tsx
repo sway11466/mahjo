@@ -1,9 +1,12 @@
 import { useRef, useState } from 'react';
-import type { Progress, StudyMode } from '../types/index.ts';
+import type { Progress, StudyMode, MissRecord } from '../types/index.ts';
 import { mulberry32, type Rng } from '../engine/rng.ts';
 import { getCharacter } from '../characters/index.ts';
+// App は永続化の合成点＝「画面コンポーネントは storage を直接 import しない」規約の対象外
+// （既定値ヘルパの参照のみ可。storage.md §7）。
 import { defaultProgress } from '../storage/index.ts';
 import { usePersistence } from './usePersistence.ts';
+import { useBgm } from './audio/useBgm.ts';
 import { StartScreen } from './start/StartScreen.tsx';
 import { MainScreen } from './main/MainScreen.tsx';
 import { CharacterScreen } from './settings/CharacterScreen.tsx';
@@ -31,10 +34,15 @@ export function App() {
     setAppSettings,
     progressByCharacter,
     setProgressForCharacter,
+    recordMissForCharacter,
   } = usePersistence();
 
   // キャラは選択中 id から引く（未知 id は既定へフォールバック）。選択 UI は feature-1。
   const character = getCharacter(appSettings.selectedCharacterId);
+
+  // BGM はアプリ全体で1本（画面遷移の外側で通し再生）。設定オン＋選択キャラの楽譜だけを見る。
+  // 開始は最初のユーザー操作（autoplay 制限）、キャラ切替でクロスフェード（sound.md「BGM の実現方式」）。
+  useBgm(appSettings.bgm, character.bgm);
 
   // 進捗の真実はキャラ別（ProgressByCharacter）。現在キャラのスライスを導出して使う
   // （無ければ既定）。キャラ切替で自動的にそのキャラの進捗へ追従する（同期不要）。
@@ -45,6 +53,10 @@ export function App() {
   const [screen, setScreen] = useState<Screen>('start');
   const [mode, setMode] = useState<StudyMode>('yaku');
 
+  // 間違い履歴も進捗と同じくキャラ別（＋モード別）。現在キャラ・モードで書き込む。
+  const recordMiss = (record: MissRecord) =>
+    recordMissForCharacter(character.id, mode, record);
+
   const goStart = () => setScreen('start');
 
   if (screen === 'main') {
@@ -54,6 +66,7 @@ export function App() {
         character={character}
         progress={progress}
         setProgress={setProgress}
+        recordMiss={recordMiss}
         rng={rng}
         rules={rules}
         onExit={goStart}

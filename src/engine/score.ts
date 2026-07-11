@@ -281,6 +281,13 @@ function who(isDealer: boolean): string {
   return isDealer ? '親' : '子';
 }
 
+/** リーチ状態か。ダブルリーチはリーチと排他表現（doubleRiichi:true のとき riichi は立てない＝
+ *  scoring-rules §1.1）なので、「リーチしているか」（裏ドラ計上・リーチ棒表示 等）を見る判定は
+ *  win.riichi を直接見ず必ずこのヘルパを通す。 */
+export function riichiActive(win: WinContext): boolean {
+  return win.riichi || win.doubleRiichi;
+}
+
 // ── ドラ（scoring-rules §1.4） ─────────────────────────────
 
 interface DoraBreakdown {
@@ -299,7 +306,7 @@ function doraBreakdown(hand: Hand, table: Table, win: WinContext): DoraBreakdown
   let aka = 0;
   for (const t of tiles) if (t.kind === 'suited' && t.red) aka++;
   const dora = countByIndicators(tiles, table.doraIndicators);
-  const ura = win.riichi && table.uraDoraIndicators ? countByIndicators(tiles, table.uraDoraIndicators) : 0;
+  const ura = riichiActive(win) && table.uraDoraIndicators ? countByIndicators(tiles, table.uraDoraIndicators) : 0;
   return { dora, aka, ura, total: dora + aka + ura };
 }
 

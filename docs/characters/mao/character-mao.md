@@ -5,7 +5,7 @@
 ## 1. 基本情報
 
 - id：`mao`（レジストリ登録名・アセットパス `characters/mao/`）
-- 表示名：まお（仮）
+- 表示名：まお
 - 位置づけ：アプリ名 Mahjo（＝魔女）にちなむマスコット。既定キャラ。
 - 好きな役：一気通貫（1〜9のまっすぐ一本＝「まっすぐ」な性格と掛かる）。手にあるとヒント／正解で専用セリフを優先（個性付け）。
 
@@ -70,3 +70,7 @@
 全セリフ（場面別・ヒント・解説・誤答）は [character-mao-script.md](./character-mao-script.md)。共通規則は [character-guide.md](../character-guide.md) §2「セリフ」、口調と「答え（役名・確定値）を言わない」原則は §2 ペルソナ。
 
 - 個性フック：好きな役＝一気通貫（§1）。手にあるとき `correct`／`explaining` は専用セリフを優先（解説に「…わたしの好きな役なんです」等）。ヒント中は役名を言わず嬉しさだけ滲ませる。
+
+## 5. 音楽（BGM）
+
+主旋律・即興音の設定は [character-mao-sound.md](./character-mao-sound.md)。BGM はコード生成方式（Web Audio 合成・音源ファイルなし）の二層構成（主旋律＋即興音）で、記法の編集・試聴は開発ツール [tools/melody-authoring](../../../tools/melody-authoring/)。

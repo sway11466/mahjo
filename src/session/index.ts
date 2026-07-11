@@ -13,8 +13,11 @@ export {
   answerCurrent,
   advance,
   applyProgress,
+  buildMissRecord,
+  appendMiss,
 } from './quiz-session.ts';
 export { buildProblem, startQuiz, nextProblem } from './problem.ts';
+export { defaultReactions, expressionFor } from './reaction.ts';
 export {
   sceneOf,
   buildCharacterView,

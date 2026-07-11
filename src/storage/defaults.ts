@@ -3,6 +3,7 @@ import type {
   AppSettings,
   Progress,
   ProgressByCharacter,
+  MissHistory,
 } from '../types/index.ts';
 
 /**
@@ -23,7 +24,6 @@ export function defaultRuleSettings(): RuleSettings {
     kazoeYakuman: false,
     doubleYakuman: false,
     rareYaku: false,
-    round: 'random',
     enabledYaku: {},
   };
 }
@@ -43,5 +43,9 @@ export function defaultProgress(): Progress {
 }
 
 export function defaultProgressByCharacter(): ProgressByCharacter {
+  return {};
+}
+
+export function defaultMissHistory(): MissHistory {
   return {};
 }

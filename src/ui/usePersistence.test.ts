@@ -1,3 +1,4 @@
+import { createElement, StrictMode, type ReactNode } from 'react';
 import { renderHook, act } from '@testing-library/react';
 import type { Progress } from '../types/index.ts';
 import { createStorage } from '../storage/index.ts';
@@ -25,6 +26,19 @@ describe('usePersistence: 進捗（feature-7）', () => {
     // フックを作り直すと load 経路で復元される。
     const { result } = renderHook(() => usePersistence());
     expect(result.current.progressByCharacter).toEqual({ mao });
+  });
+
+  it('StrictMode でも保存は1回（setState の updater 内で副作用を起こさない）', () => {
+    // updater は純粋であるべき＝StrictMode（開発時）は updater を2重実行する。
+    // 保存が updater 内にあると setItem が2回走る（冪等だが作法違反の検出器として数える）。
+    const wrapper = ({ children }: { children: ReactNode }) =>
+      createElement(StrictMode, null, children);
+    const { result } = renderHook(() => usePersistence(), { wrapper });
+    const spy = vi.spyOn(Storage.prototype, 'setItem');
+    act(() => result.current.setProgressForCharacter('mao', mao));
+    expect(spy).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
+    expect(createStorage().loadProgress()).toEqual({ mao }); // 保存内容は従来どおり
   });
 
   it('キャラごとにスライスが分かれて保存される', () => {

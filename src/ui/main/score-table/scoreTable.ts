@@ -21,7 +21,6 @@ const STANDARD: RuleSettings = {
   kazoeYakuman: false,
   doubleYakuman: false,
   rareYaku: false,
-  round: 'random',
   enabledYaku: {},
 };
 // 満貫以上の別表で「役満（数え役満）」の値を出すため kazoeYakuman を有効化したルール。
@@ -46,11 +45,12 @@ export interface ScoreCell {
 /**
  * (符, 翻, 親か) の1セル。成立しない組み合わせは null（表では「—」）：
  *  - 20符はロンが無い（平和ロンは30符）。ツモも平和ツモ＝2翻以上のみ。
- *  - 25符（七対子）は2翻以上のみ（七対子は2翻）。
+ *  - 25符（七対子）のロンは2翻以上（七対子は2翻）。
+ *  - 25符のツモは3翻以上のみ（七対子ツモは門前清自摸和が必ず付くため2翻がない）。
  */
 export function cellFor(fu: number, han: number, isDealer: boolean): ScoreCell {
   const ronAvail = fu !== 20 && !(fu === 25 && han < 2);
-  const tsumoAvail = !((fu === 20 || fu === 25) && han < 2);
+  const tsumoAvail = !(fu === 20 && han < 2) && !(fu === 25 && han < 3);
   return {
     ron: ronAvail ? (scorePoints(han, fu, isDealer, 'ron', STANDARD).payments.ron ?? null) : null,
     tsumo: tsumoAvail

@@ -22,7 +22,7 @@
 | 13 | キャラ | `Character`（`Persona` / `Expression` / `ReactionTrigger`） | サポートキャラ |
 | 14 | 設定 | `RuleSettings` | ルール設定（採点に影響） |
 | 15 | 設定 | `AppSettings` | アプリ/UX 設定（音・呼び方・キャラ選択 等） |
-| 16 | 設定 | `Progress`（`ProgressByCharacter`） | 進捗・成績（キャラ別。難易度の駆動要素） |
+| 16 | 設定 | `Progress`（`ProgressByCharacter`）／`MissRecord`（`MissHistory`） | 進捗・成績と間違い履歴（キャラ別。難易度・寄り添いの駆動要素） |
 | 17 | セッション | `QuizSession`（`SessionAnswer` / `SessionStatus`）／`SessionViewState` | セッションの進行状態と、ui が描く提示モデル |
 
 ## 1. 牌 Tile
@@ -157,7 +157,7 @@ export type YakuId =
   | 'yakuhai-haku' | 'yakuhai-hatsu' | 'yakuhai-chun'
   | 'yakuhai-round' | 'yakuhai-seat'   // 場風 / 自風（連風は両方成立で 2 翻）
   | 'sanshoku-doujun' | 'sanshoku-doukou' | 'ittsuu'
-  | 'chanta' | 'junchan' | 'chiitoitsu' | 'toitoi' | 'sanankou'
+  | 'chanta' | 'junchan' | 'chiitoitsu' | 'toitoi' | 'sanankou' | 'sankantsu'
   | 'honroutou' | 'shousangen' | 'honitsu' | 'ryanpeikou' | 'chinitsu'
   | 'haitei' | 'houtei' | 'rinshan' | 'chankan'
   // 役満
@@ -298,7 +298,10 @@ export type HintRenderer = (plan: HintStepPlan[], script: HintScript) => HintSte
 ## 12. クイズ QuizQuestion（§3.7）
 
 ```ts
-export type QuizTarget = 'yaku' | 'han' | 'fu' | 'score';
+// クイズが問う対象。役モードは複合役がありうるため役名でなく翻で答える＝'han'、
+// 点数モードは総合（X翻Y符ZZZZ点）で答える＝'score'（screens.md §3「選択肢の値の表示」）。
+// 役名そのものの確認はクイズでなく解説・ヒント側の役割。
+export type QuizTarget = 'han' | 'score';
 
 /** 誤答の由来（学習者がやりがちなミスの種類）*/
 export type MistakeKind =
@@ -309,7 +312,7 @@ export type MistakeKind =
   | 'han-miscount';    // 翻の数え違い（役見落とし・喰い下がり無視・満貫境界）
 
 export interface QuizChoice {
-  value: string;        // 表示値（"3翻", "40符", "5200点", "三色同順" 等）
+  value: string;        // 表示値（"3翻", "3翻 40符 5200点" 等）
   correct: boolean;
   mistakeKind?: MistakeKind; // 誤答のとき：どのミスか
   explanation: string;       // 「この値は◯◯と取り違えた場合」等の理由・解説
@@ -317,7 +320,7 @@ export interface QuizChoice {
 
 export interface QuizQuestion {
   target: QuizTarget;
-  prompt: string;        // 例 "この手の役は？" "翻数は？"
+  prompt: string;        // 例 "翻数（ハンスウ）は？" "点数は？"
   choices: QuizChoice[]; // 正解1＋誤答3（ミス変換で生成）
 }
 
@@ -358,7 +361,7 @@ export type ReactionTrigger =
   | 'greeting'    // あいさつ（セッション開始の1回）
   | 'dealing'     // 出題中（各問・回答前）
   | 'hinting'     // ヒント表示中（表情 insight のみ＝ひらめきを促す。専用セリフは持たない）
-  | 'explaining'  // 説明・解説中（役表示・採点説明）
+  | 'explaining'  // 説明・解説中（解説シーン＝成立役・採点の説明）
   | 'correct'     // 正解
   | 'wrong'       // ミス
   | 'finished';   // 全クイズ終了（結果のお祝い・セッション終わりの1回）
@@ -397,6 +400,10 @@ export interface Character {
   /** 誤答の諭し文言（キャラの声）。MistakeScript＝MistakeKind→1文（§12）。誤答時にそっと諭す（screens.md §3）。
    *  答え（正解値）は言わない。全 MistakeKind を網羅（Record で強制）。中立基準は hint-base.md「誤答の諭し素」、文言は character-<id>-script.md §4 が正。 */
   mistakes: MistakeScript;
+  /** BGM の楽譜データ（主旋律＝度数記法の文字列＋即興音＝セグメント配列）。データのみ＝合成・再生は ui（`src/ui/audio`）。
+   *  型の詳細は `src/types/bgm.ts`（`BgmMelody`/`ImprovSegment`）、方式・語彙の正は sound.md「BGM の実現方式」・ADR-0003、
+   *  キャラ別の曲の正は character-<id>-sound.md。未指定キャラは無音（中立曲は持たない）。 */
+  bgm?: BgmData;
   unlock?: { kind: 'correctCount'; threshold: number }; // 任意・未対応
 }
 ```
@@ -414,7 +421,6 @@ export interface RuleSettings {
   kazoeYakuman: boolean;           // 数え役満（13翻以上）
   doubleYakuman: boolean;          // ダブル役満・役満複合
   rareYaku: boolean;               // レア役（流し満貫・人和 等）
-  round: 'east-fixed' | 'random';  // 場（局）の固定/ランダム
   enabledYaku: Partial<Record<YakuId, boolean>>; // 出題する役の範囲（役ID→オン/オフ）。明示的に false の役だけ除外し、未指定・空 {} は全役オン（生成・判定とも）
 }
 ```
@@ -451,25 +457,41 @@ export interface Progress {
   correctByMode: Partial<Record<StudyMode, number>>; // モード別（難易度アンロックの駆動）
   // 苦手の把握（寄り添いアドバイスの素。出口の活用は未対応＝backlog feature-14）。
   // 任意フィールド＝既存データと共存し、欠落は防御的読込が補完する（storage.md §5・マイグレ不要）。
-  byTarget?: Partial<Record<QuizTarget, SkillStat>>; // 何が弱いか（役/翻/符/点数の定着度＝率の真実）
-  // byMistake（誤り方＝MistakeKind の積み上げ）は MistakeKind 精査（backlog refactoring-13）の後に追加する。
-  // 精査前に貯めると古い分類のカウントが溜まり意味がズレるため（byTarget は分類が安定なので先行）。
+  byTarget?: Partial<Record<QuizTarget, SkillStat>>; // 何が弱いか（翻/点数の定着度＝率の真実）
+  // 誤り方は byMistake（MistakeKind のカウント）でなく、間違い履歴＝失敗した出題の生データを貯める
+  // （下の MissRecord。解釈でなく事実を保存し、分類は表示時に都度行う）。
 }
 
 // 成績はキャラごとに別管理（characterId → 成績）。キャラを切り替えると、そのキャラの
 // 進捗・難易度帯で続く。localStorage 保存（永続化の詳細は design/storage.md）。
 export type ProgressByCharacter = Record<string /* characterId */, Progress>;
+
+// 間違い履歴の1件＝失敗した出題の生データ。事実だけを保存し、解釈（MistakeKind）は保存しない
+// （分類は表示時に都度行う＝真因の診断でなくヒント）。誤答の確定と同時に session が組み立て
+// （buildMissRecord）、ui が保存を配線する。target はモード（下のバケット）から一意なので持たない。
+export interface MissRecord {
+  at: string;            // 保存時刻（ISO 8601。直近重視の集計・表示用）
+  hand: Hand;
+  table: Table;
+  winContext: WinContext;
+  selectedValue: string; // 選んだ誤答の表示値（QuizChoice.value）
+  correctValue: string;  // 正解の表示値
+}
+
+// キャラ別×モード別のリングバッファ（新しいものが末尾。各バッファ直近 MISS_HISTORY_CAP=50 件）。
+// Progress とは別の localStorage キーで保存する（storage.md §2,3）。
+export type MissHistory = Record<string /* characterId */, Partial<Record<StudyMode, MissRecord[]>>>;
 ```
 
 苦手モデルの設計メモ（思想は [session.md](../spec/session.md) §5）：
 
 - `seen/correct`（byTarget）＝**率（定着度）の真実**。分母 `seen` が必須（正解数だけでは露出不足と苦手が混同する）。
-- 将来の `byMistake`（誤り方）＝不正解を `MistakeKind` で割った**カウントのみ**（分母なし）。`seen/correct` とは射影する軸が違う周辺集計で、二重計上にはならない（共有するのは「総 wrong」という整合点だけ）。`byMistake` は「どの罠に引っかかったか」＝真因の**診断ではなくヒント**として扱う（断定しない＝プレッシャーをかけない）。
+- 誤り方＝**間違い履歴**（失敗した出題の生データ：手・場・和了状況・選んだ誤答値＝上の `MissRecord`）。当初案の `byMistake`（不正解を `MistakeKind` で割ったカウント）は**廃止**——分類は誤答値からの推測で決めつけが残り（1つの誤答値に複数の真因がありうる）、分類を後から変えると貯めたカウントの意味がズレる。解釈でなく事実を保存すれば、集計・分類は表示時に何度でもやり直せる。誤り方の推測は真因の**診断ではなくヒント**として扱う（断定しない＝プレッシャーをかけない）。`MistakeKind` は永続化せず、回答直後の諭し文選択だけに使う表示用語彙。
 - v1 は**通算**で集計（直近重視・ユーザー横断プロファイルは効果を見て格上げ）。「失敗を内部で数える」ことと「プレッシャーをかけない」は両立する（後者は**提示**の原則であって保存の制約ではない）。
 
 ## 17. セッション QuizSession / SessionViewState
 
-セッション（提示層 `session`）の型。`QuizSession` は進行状態（ui が保持、session 層の純関数が遷移）、`SessionViewState` は ui が描く提示モデル（session が1ターンごとに組み立てる）。挙動の正は [session.md](../spec/session.md)。当面はクイズ session（解説の単独モードは別途）。
+セッション（提示層 `session`）の型。`QuizSession` は進行状態（ui が保持、session 層の純関数が遷移）、`SessionViewState` は ui が描く提示モデル（session が1ターンごとに組み立てる）。挙動の正は [session.md](../spec/session.md)。当面はクイズ session。
 
 ```ts
 export type SessionStatus = 'greeting' | 'playing' | 'finished'; // 開始のあいさつ／出題中／終了
