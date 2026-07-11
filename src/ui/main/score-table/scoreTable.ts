@@ -21,7 +21,6 @@ const STANDARD: RuleSettings = {
   kazoeYakuman: false,
   doubleYakuman: false,
   rareYaku: false,
-  round: 'random',
   enabledYaku: {},
 };
 // 満貫以上の別表で「役満（数え役満）」の値を出すため kazoeYakuman を有効化したルール。

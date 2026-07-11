@@ -129,17 +129,10 @@ describe('generate — 場風（セッション連携）', () => {
     expect(detectedUnion(q)).toContain('yakuhai-round');
   });
 
-  it('場風を省略すると RuleSettings.round に従う（east-fixed→east）', () => {
-    for (let s = 0; s < 10; s++) {
-      const q = generateForSeed('tanyao', mulberry32(s + 1), rules({ round: 'east-fixed' }));
-      expect(q.table.roundWind).toBe('east');
-    }
-  });
-
-  it('場風を省略・random のときは east か south（西北は出ない）', () => {
+  it('場風を省略すると east か south からランダム（西北は出ない）', () => {
     const seen = new Set<string>();
     for (let s = 0; s < 40; s++) {
-      seen.add(generateForSeed('tanyao', mulberry32(s * 7 + 3), rules({ round: 'random' })).table.roundWind);
+      seen.add(generateForSeed('tanyao', mulberry32(s * 7 + 3), rules()).table.roundWind);
     }
     expect([...seen].every((w) => w === 'east' || w === 'south')).toBe(true);
   });

@@ -87,7 +87,7 @@ export function sanitizeForGeneration(rules: RuleSettings): RuleSettings {
 
 /** 進捗・モードに応じて1問生成する（高レベルの入口）。
  *  roundWind を渡すとその場風で（セッションの局に整合させて）生成する。
- *  省略時は RuleSettings.round に従いランダム（単発生成）。generation.md §2。 */
+ *  省略時は東・南からランダム（単発生成）。generation.md §2。 */
 export function generate(
   progress: Progress,
   mode: StudyMode,
@@ -151,7 +151,7 @@ export function generateForSeed(
   if (!def) throw new Error(`no constructor for seed: ${seed}`);
   for (let attempt = 0; attempt < 300; attempt++) {
     try {
-      const plan = applyContext(def.build(rng, rules, roundWind), seed, rng, rules);
+      const plan = applyContext(def.build(rng, roundWind), seed, rng, rules);
       return realize(plan, rng, rules.akaDoraCount);
     } catch (e) {
       if (e instanceof CopyOverflow) continue; // 同種5枚目など。rng を進めて再試行
@@ -361,11 +361,10 @@ function makeCtx(rng: Rng, over: Partial<WinContext> = {}): WinContext {
     ...over,
   };
 }
-/** 場風を決める：roundWind が渡されればそれ、なければ RuleSettings.round に従う（generation.md §2） */
-function makeTable(rng: Rng, rules: RuleSettings, roundWind?: Wind): Table {
+/** 場風を決める：roundWind が渡されればそれ、なければ東・南からランダム（generation.md §2） */
+function makeTable(rng: Rng, roundWind?: Wind): Table {
   return {
-    roundWind:
-      roundWind ?? (rules.round === 'east-fixed' ? 'east' : pick(rng, ['east', 'south'] as const)),
+    roundWind: roundWind ?? pick(rng, ['east', 'south'] as const),
     doraIndicators: [],
   };
 }
@@ -385,14 +384,14 @@ function randSet(rng: Rng): SetSpec {
 
 interface SeedDef {
   band: Difficulty;
-  build: (rng: Rng, rules: RuleSettings, roundWind: Wind | undefined) => BuildPlan;
+  build: (rng: Rng, roundWind: Wind | undefined) => BuildPlan;
 }
 
 const SEEDS: Partial<Record<YakuId, SeedDef>> = {
   // ── 易 ──
   tanyao: {
     band: 'easy',
-    build: (rng, rules, roundWind) => {
+    build: (rng, roundWind) => {
       const melds = [randSimpleSet(rng), randSimpleSet(rng), randSimpleSet(rng), randSimpleSet(rng)];
       melds.push(pr(num(pick(rng, SUITS3), 2 + randInt(rng, 7))));
       const m0 = melds[0]!;
@@ -400,27 +399,27 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
         seed: 'tanyao',
         melds,
         winning: { meldIndex: 0, kind: m0.kinds[m0.kinds.length - 1]! },
-        table: makeTable(rng, rules, roundWind),
+        table: makeTable(rng, roundWind),
         winContext: makeCtx(rng),
       };
     },
   },
   chiitoitsu: {
     band: 'easy',
-    build: (rng, rules, roundWind) => {
+    build: (rng, roundWind) => {
       const kinds = shuffle(rng, range(TILE_KINDS)).slice(0, 7);
       return {
         seed: 'chiitoitsu',
         melds: kinds.map(pr),
         winning: { meldIndex: 0, kind: kinds[0]! },
-        table: makeTable(rng, rules, roundWind),
+        table: makeTable(rng, roundWind),
         winContext: makeCtx(rng),
       };
     },
   },
   toitoi: {
     band: 'easy',
-    build: (rng, rules, roundWind) => {
+    build: (rng, roundWind) => {
       // 4刻子＋雀頭。1組を副露（明刻）にして四暗刻化を避ける。上がりは雀頭（単騎）
       const ks = shuffle(rng, [num('man', 2 + randInt(rng, 7)), num('pin', 2 + randInt(rng, 7)), num('sou', 2 + randInt(rng, 7)), honKind(pick(rng, WINDS))]);
       const pairKind = honKind(pick(rng, DRAGONS));
@@ -435,7 +434,7 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
         seed: 'toitoi',
         melds,
         winning: { meldIndex: 4, kind: pairKind },
-        table: makeTable(rng, rules, roundWind),
+        table: makeTable(rng, roundWind),
         winContext: makeCtx(rng),
       };
     },
@@ -445,7 +444,7 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
   ...yakuhaiDragon('yakuhai-chun', 'chun'),
   'yakuhai-round': {
     band: 'easy',
-    build: (rng, rules, roundWind) => {
+    build: (rng, roundWind) => {
       // 場風牌の刻子。セッションから場風が来たらそれで構築（局に整合）
       const w = roundWind ?? pick(rng, WINDS);
       const other = pick(rng, WINDS.filter((x) => x !== w)); // 自風は場風と別（連風回避）
@@ -454,14 +453,14 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
         seed: 'yakuhai-round',
         melds,
         winning: { meldIndex: 0, kind: honKind(w) },
-        table: makeTable(rng, rules, w),
+        table: makeTable(rng, w),
         winContext: makeCtx(rng, { seatWind: other }),
       };
     },
   },
   'yakuhai-seat': {
     band: 'easy',
-    build: (rng, rules, roundWind) => {
+    build: (rng, roundWind) => {
       // 自風牌の刻子。自風は random、場風はセッション指定があればそれ（無ければ自風と別）
       const w = pick(rng, WINDS);
       const round = roundWind ?? pick(rng, WINDS.filter((x) => x !== w));
@@ -470,7 +469,7 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
         seed: 'yakuhai-seat',
         melds,
         winning: { meldIndex: 0, kind: honKind(w) },
-        table: makeTable(rng, rules, round),
+        table: makeTable(rng, round),
         winContext: makeCtx(rng, { seatWind: w }),
       };
     },
@@ -479,21 +478,21 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
   // ── 中 ──
   'sanshoku-doujun': {
     band: 'medium',
-    build: (rng, rules, roundWind) => {
+    build: (rng, roundWind) => {
       const r = 1 + randInt(rng, 7);
       const melds: SetSpec[] = [sh('man', r), sh('pin', r), sh('sou', r), randSet(rng), pr(honKind(pick(rng, [...WINDS, ...DRAGONS])))];
       return {
         seed: 'sanshoku-doujun',
         melds,
         winning: { meldIndex: 0, kind: num('man', r + 2) },
-        table: makeTable(rng, rules, roundWind),
+        table: makeTable(rng, roundWind),
         winContext: makeCtx(rng),
       };
     },
   },
   'sanshoku-doukou': {
     band: 'medium',
-    build: (rng, rules, roundWind) => {
+    build: (rng, roundWind) => {
       // 同じ数の刻子を3色。1組を副露（明刻）にして三暗刻の常伴を避ける（toitoi と同じ手筋）。
       // 上がりは4つ目の順子側＝刻子を崩さない
       const r = 1 + randInt(rng, 9);
@@ -508,28 +507,28 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
         seed: 'sanshoku-doukou',
         melds,
         winning: { meldIndex: 3, kind: s4.kinds[2]! },
-        table: makeTable(rng, rules, roundWind),
+        table: makeTable(rng, roundWind),
         winContext: makeCtx(rng),
       };
     },
   },
   ittsuu: {
     band: 'medium',
-    build: (rng, rules, roundWind) => {
+    build: (rng, roundWind) => {
       const s = pick(rng, SUITS3);
       const melds: SetSpec[] = [sh(s, 1), sh(s, 4), sh(s, 7), ko(honKind(pick(rng, DRAGONS))), pr(honKind(pick(rng, WINDS)))];
       return {
         seed: 'ittsuu',
         melds,
         winning: { meldIndex: 1, kind: num(s, 5) },
-        table: makeTable(rng, rules, roundWind),
+        table: makeTable(rng, roundWind),
         winContext: makeCtx(rng),
       };
     },
   },
   honitsu: {
     band: 'medium',
-    build: (rng, rules, roundWind) => {
+    build: (rng, roundWind) => {
       const s = pick(rng, SUITS3);
       // 2順子の開始ランク（各 1–7。独立なので一致しうる＝混一色に一盃口が乗ることもある）
       const a = 1 + randInt(rng, 7);
@@ -539,14 +538,14 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
         seed: 'honitsu',
         melds,
         winning: { meldIndex: 0, kind: num(s, a + 2) },
-        table: makeTable(rng, rules, roundWind),
+        table: makeTable(rng, roundWind),
         winContext: makeCtx(rng),
       };
     },
   },
   chinitsu: {
     band: 'medium',
-    build: (rng, rules, roundWind) => {
+    build: (rng, roundWind) => {
       const s = pick(rng, SUITS3);
       const melds: SetSpec[] = [sh(s, 1 + randInt(rng, 7)), sh(s, 1 + randInt(rng, 7)), sh(s, 1 + randInt(rng, 7)), ko(num(s, 1 + randInt(rng, 9))), pr(num(s, 1 + randInt(rng, 9)))];
       const m0 = melds[0]!;
@@ -554,14 +553,14 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
         seed: 'chinitsu',
         melds,
         winning: { meldIndex: 0, kind: m0.kinds[2]! },
-        table: makeTable(rng, rules, roundWind),
+        table: makeTable(rng, roundWind),
         winContext: makeCtx(rng),
       };
     },
   },
   iipeikou: {
     band: 'medium',
-    build: (rng, rules, roundWind) => {
+    build: (rng, roundWind) => {
       const s = pick(rng, SUITS3);
       const r = 1 + randInt(rng, 7);
       const hs = shuffle(rng, HONORS.map(honKind));
@@ -570,7 +569,7 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
         seed: 'iipeikou',
         melds,
         winning: { meldIndex: 2, kind: hs[0]! },
-        table: makeTable(rng, rules, roundWind),
+        table: makeTable(rng, roundWind),
         winContext: makeCtx(rng),
       };
     },
@@ -578,7 +577,7 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
 
   shousangen: {
     band: 'medium',
-    build: (rng, rules, roundWind) => {
+    build: (rng, roundWind) => {
       // 三元牌のうち2種が刻子＋残り1種が雀頭。役牌2つと必ず複合（実質4翻）が学習ポイント。
       // 自由部分は順子2つ（刻子を足すと三暗刻・対々和へ流れて主役がぼやける）
       const [d1, d2, dp] = shuffle(rng, [...DRAGONS]);
@@ -588,14 +587,14 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
         seed: 'shousangen',
         melds,
         winning: { meldIndex: 2, kind: s3.kinds[2]! },
-        table: makeTable(rng, rules, roundWind),
+        table: makeTable(rng, roundWind),
         winContext: makeCtx(rng),
       };
     },
   },
   honroutou: {
     band: 'medium',
-    build: (rng, rules, roundWind) => {
+    build: (rng, roundWind) => {
       // 么九牌のみの刻子4＋雀頭（対々和と必ず複合）。刻子は老頭2＋字2の固定比で混ぜる：
       // 老頭のみ＝清老頭／字のみ＝字一色に加え、字刻子3つを許すと大三元（三元3刻子）や
       // 小四喜（風3刻子＋風雀頭）の役満にも倒れるため、字刻子は2つまでに抑える。
@@ -614,7 +613,7 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
         seed: 'honroutou',
         melds,
         winning: { meldIndex: 4, kind: pairKind },
-        table: makeTable(rng, rules, roundWind),
+        table: makeTable(rng, roundWind),
         winContext: makeCtx(rng),
       };
     },
@@ -623,7 +622,7 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
   // ── 難 ──
   pinfu: {
     band: 'hard',
-    build: (rng, rules, roundWind) => {
+    build: (rng, roundWind) => {
       const s0 = pick(rng, SUITS3);
       const start = 2 + randInt(rng, 5); // 2–6 始まり＝両面が成立する位置
       const melds: SetSpec[] = [sh(s0, start), randShuntsu(rng), randShuntsu(rng), randShuntsu(rng), pr(num(pick(rng, SUITS3), 2 + randInt(rng, 7)))];
@@ -631,14 +630,14 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
         seed: 'pinfu',
         melds,
         winning: { meldIndex: 0, kind: num(s0, start + 2) }, // 両面の上端で和了
-        table: makeTable(rng, rules, roundWind),
+        table: makeTable(rng, roundWind),
         winContext: makeCtx(rng),
       };
     },
   },
   chanta: {
     band: 'hard',
-    build: (rng, rules, roundWind) => {
+    build: (rng, roundWind) => {
       const term = () => pick(rng, [1, 7] as const); // 123 or 789（端を含む順子）
       const melds: SetSpec[] = [
         sh(pick(rng, SUITS3), term()),
@@ -652,14 +651,14 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
         seed: 'chanta',
         melds,
         winning: { meldIndex: 0, kind: m0.kinds[1]! }, // 嵌張でも端牌は手に残る
-        table: makeTable(rng, rules, roundWind),
+        table: makeTable(rng, roundWind),
         winContext: makeCtx(rng),
       };
     },
   },
   junchan: {
     band: 'hard',
-    build: (rng, rules, roundWind) => {
+    build: (rng, roundWind) => {
       // チャンタの字牌なし版＝全面子・雀頭が老頭牌（1/9）を含む。順子3つで清老頭（刻子のみ＝役満）に倒さない
       const term = () => pick(rng, [1, 7] as const); // 123 or 789（端を含む順子）
       const one9 = () => pick(rng, [1, 9] as const);
@@ -675,14 +674,14 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
         seed: 'junchan',
         melds,
         winning: { meldIndex: 0, kind: m0.kinds[1]! }, // 嵌張でも端牌は手に残る（chanta と同じ）
-        table: makeTable(rng, rules, roundWind),
+        table: makeTable(rng, roundWind),
         winContext: makeCtx(rng),
       };
     },
   },
   sanankou: {
     band: 'hard',
-    build: (rng, rules, roundWind) => {
+    build: (rng, roundWind) => {
       // 3暗刻＋順子＋雀頭。上がりは順子側にして3刻子を暗刻のまま保つ
       const melds: SetSpec[] = [
         ko(num('man', 2 + randInt(rng, 7))),
@@ -696,14 +695,14 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
         seed: 'sanankou',
         melds,
         winning: { meldIndex: 3, kind: sset.kinds[2]! },
-        table: makeTable(rng, rules, roundWind),
+        table: makeTable(rng, roundWind),
         winContext: makeCtx(rng),
       };
     },
   },
   ryanpeikou: {
     band: 'hard',
-    build: (rng, rules, roundWind) => {
+    build: (rng, roundWind) => {
       const [s1, s2] = shuffle(rng, [...SUITS3]);
       const r1 = 1 + randInt(rng, 7);
       const r2 = 1 + randInt(rng, 7);
@@ -712,7 +711,7 @@ const SEEDS: Partial<Record<YakuId, SeedDef>> = {
         seed: 'ryanpeikou',
         melds,
         winning: { meldIndex: 0, kind: num(s1!, r1 + 2) },
-        table: makeTable(rng, rules, roundWind),
+        table: makeTable(rng, roundWind),
         winContext: makeCtx(rng),
       };
     },
@@ -724,7 +723,7 @@ function yakuhaiDragon(seed: YakuId, dragon: Honor): Partial<Record<YakuId, Seed
   return {
     [seed]: {
       band: 'easy',
-      build: (rng: Rng, rules: RuleSettings, roundWind: Wind | undefined): BuildPlan => {
+      build: (rng: Rng, roundWind: Wind | undefined): BuildPlan => {
         const melds: SetSpec[] = [
           ko(honKind(dragon)),
           randSet(rng),
@@ -736,7 +735,7 @@ function yakuhaiDragon(seed: YakuId, dragon: Honor): Partial<Record<YakuId, Seed
           seed,
           melds,
           winning: { meldIndex: 0, kind: honKind(dragon) },
-          table: makeTable(rng, rules, roundWind),
+          table: makeTable(rng, roundWind),
           winContext: makeCtx(rng),
         };
       },

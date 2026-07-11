@@ -126,14 +126,12 @@ describe('storage — 欠けたフィールドの補完', () => {
       memoryBackend({
         [STORAGE_KEYS.rules]: envelope({
           akaDoraCount: 'three',
-          round: 'bogus',
           enabledYaku: { tanyao: 'no', pinfu: false },
         }),
       }),
     );
     const loaded = s.loadRules();
     expect(loaded.akaDoraCount).toBe(0);
-    expect(loaded.round).toBe('random');
     // boolean でない enabledYaku エントリは捨て、boolean のみ残る
     expect(loaded.enabledYaku).toEqual({ pinfu: false });
   });

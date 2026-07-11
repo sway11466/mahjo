@@ -16,9 +16,8 @@ interface RuleSettingsScreenProps {
 /**
  * ルール設定（screens.md §5・scoring-rules.md §5）。採点・出題に効く項目を編集（即時反映＋保存）。
  *
- * 現状エンジンに効いていない項目（後付け・レア役・場の固定）は操作不可にし「機能追加予定」を
- * 添える（feature-2 の方針：UI は出すが現値固定、値は保存される）。round は generate に配線済みだが、
- * クイズは局が場風を決めるため出題に影響しない（scoring-rules.md §5）ので、未対応側に置く。
+ * 現状エンジンに効いていない項目（後付け・レア役）は操作不可にし「機能追加予定」を
+ * 添える（feature-2 の方針：UI は出すが現値固定、値は保存される）。
  */
 /** 赤ドラ枚数の選択肢：0〜12 の任意枚数（scoring-rules §5。上限12＝5の牌の物理枚数） */
 const AKA_DORA_OPTIONS = Array.from({ length: 13 }, (_, i) => i);
@@ -127,16 +126,6 @@ export function RuleSettingsScreen({
               description="流し満貫・人和・大車輪などを有効化（出題生成に反映予定）。"
               control={
                 <ToggleSwitch label="レア役" checked={rules.rareYaku} disabled onChange={() => {}} />
-              }
-            />
-            <SettingRow
-              soon
-              title="場（局）の固定/ランダム"
-              description="場風の決め方。クイズは局が場風を決めるため、解説モードで有効化予定。"
-              control={
-                <span className="setting-value">
-                  {rules.round === 'east-fixed' ? '東場固定' : 'ランダム'}
-                </span>
               }
             />
           </section>
