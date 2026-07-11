@@ -38,7 +38,7 @@
 
 **赤ドラ**：`RuleSettings.akaDoraCount`（生成時の上限＝[scoring-rules](./scoring-rules.md) §5）を萬→筒→索の順に均等配分し、各色の5のどのコピー（4枚中）を赤にするかを問題ごとに rng で決める（実装＝`engine/generate.ts` の `redCopyPlan`）。決めたコピーが手・表示牌に含まれたときだけ赤（`Tile.red`）で現れる＝**上限であって出現の保証ではない**（現物の雀牌セットと同じ確率感）。id・模様は不変で red だけ立てる（[data-model](../design/data-model.md) §1）。表示牌の赤は採点に数えない（score 側の仕様どおり・見た目だけ現実に寄せる）。
 
-確率の既定（仮・`engine/generate.ts` の `P_KAN` / `P_OPEN` / `P_RIICHI` / `P_DOUBLE_RIICHI` / `P_IPPATSU` / `P_RINSHAN`。プレイ感で再評価）：
+確率の既定（**正はコードの定数**＝`engine/generate.ts` の `P_KAN` / `P_OPEN` / `P_RIICHI` / `P_DOUBLE_RIICHI` / `P_IPPATSU` / `P_RINSHAN`。本表は写し。チューニング値の正本規約は [architecture.md](../design/architecture.md)「正本の規約」。プレイ感で再評価）：
 
 | 事象 | 確率 | 条件 |
 |---|---|---|
@@ -70,7 +70,7 @@
 決定（仮・要精査）：
 
 - 帯は3段（易/中/難）。アンロックは**モード別**＝ `Progress.correctByMode[mode]` で駆動（役モードの進捗が役モードの難易度を、点数モードの進捗が点数モードの難易度を上げる）。
-- アンロック閾値（仮）：**中＝10問・難＝30問**（そのモードの累計正答数）。`engine/generate.ts` の `BAND_THRESHOLD` が正で、調整しやすいよう定数化。値はプレイ感を見て再評価する。
+- アンロック閾値：**中＝10問・難＝30問**（そのモードの累計正答数。本値は写し）。正は `engine/generate.ts` の `BAND_THRESHOLD`（チューニング値＝コードが正。[architecture.md](../design/architecture.md)「正本の規約」）。調整しやすいよう定数化し、値はプレイ感を見て再評価する。
 - 出題プール ＝ `enabledYaku`（オン） ∩ 解放済み帯 ∩ 構築器のある役。増える方向のみ・逆戻りなし。
 - 「進捗を使わず全役出題」専用の設定は当面持たない（全役を試したい場合は `enabledYaku` と帯解放で足りる。必要になれば再検討）。
 
