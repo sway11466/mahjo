@@ -1,6 +1,6 @@
 # セッション
 
-セッション＝学習の「ひとまとまり」を進め、1ターンに ui が描く view-state を組み立てる提示層（`session`）の仕様。挙動の正は本書。型は [data-model.md](../design/data-model.md) §12、画面・遷移は [screens.md](../design/screens.md) §3、出題生成は [generation.md](./generation.md)、採点は [scoring-rules.md](./scoring-rules.md)。
+セッション＝学習の「ひとまとまり」を進め、1ターンに ui が描く view-state を組み立てる提示層（`session`）の仕様。挙動の正は本書。型は [data-model.md](../design/data-model.md) §17、画面・遷移は [screens.md](../design/screens.md) §3、出題生成は [generation.md](./generation.md)、採点は [scoring-rules.md](./scoring-rules.md)。
 
 `session` は engine と同列の純TS層（React 非依存。[architecture.md](../design/architecture.md) §2）。engine（生成・採点・誤答）・hints・characters を束ね、セッションの進行・正誤判定・進捗更新に加えて、1ターンの view-state を組み立てる。ui はその view-state を描画し、操作を session に投げ返すだけ（「何を見せるか」は決めない）。状態の保持は ui、永続化（`Progress`・`AppSettings` の localStorage）の IO は storage 層、その配線は ui（[storage.md](../design/storage.md)）。session は永続データを引数で受け返り値で返すだけで storage を知らない。
 
