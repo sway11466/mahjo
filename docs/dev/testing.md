@@ -19,7 +19,7 @@
 
 ## 2. ツールと配置
 
-- Vitest（Small・UI単体）、@testing-library/react ＋ jsdom（UI単体）、Playwright（E2E。要確定）。
+- Vitest（Small・UI単体）、@testing-library/react ＋ jsdom（UI単体）、Playwright（E2E。未導入＝[backlog](../backlog.md) feature-20）。
 - テストは実装ファイルの隣（`*.test.ts`）またはレイヤ直下の `__tests__/`。
 - 領域別の重み：
 
@@ -50,7 +50,7 @@
 
 ## 5. E2E（Large）
 
-ブラウザで実アプリを通し、主要フローが繋がることだけ確認（少数・安定重視）。
+ブラウザで実アプリを通し、主要フローが繋がることだけ確認（少数・安定重視）。**未導入**（Playwright の導入・シナリオ作成は [backlog](../backlog.md) feature-20。本節はその導入時のシナリオの正）。
 
 - 役モード：出題 → ヒント段階表示 → 回答 → 解説（成立役のウォークスルー）。
 - クイズ：回答 → キャラのリアクション → 解説へ。
@@ -90,5 +90,5 @@
 
 ## 10. 実行
 
-- `npm test`（Vitest watch）／`npm run test:run`（CI/一回実行）。E2E は別コマンド（要確定、例 `npm run test:e2e`）。
+- `npm test`（Vitest watch）／`npm run test:run`（CI/一回実行）。E2E は別コマンド（未導入＝[backlog](../backlog.md) feature-20。例 `npm run test:e2e`）。
 - カバレッジは engine を重点的に確認（数値の網羅が主目的でカバレッジ率自体は目安）。
