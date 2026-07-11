@@ -1,8 +1,6 @@
-import type { ReactNode, CSSProperties } from 'react';
+import type { ReactNode } from 'react';
 import type { Character } from '../../types/index.ts';
-import { expressionFor } from '../../session/index.ts';
-import { themeColorOf } from '../character/themeColor.ts';
-import { standeeUrl } from '../character/avatarAssets.ts';
+import { CharacterScreenFrame } from '../character/CharacterScreenFrame.tsx';
 import { BackButton } from '../common/BackButton.tsx';
 import './settings.css';
 
@@ -15,41 +13,21 @@ interface SettingsLayoutProps {
 }
 
 /**
- * 設定画面の2カラム土台（ルール設定／アプリ設定で共有）。左にキャラの立ち絵（固定）、
- * 右にタイトル（中央）＋設定一覧。スクロールは右の一覧だけ（外周は overflow:hidden で二重バーを防ぐ）。
- * 立ち絵の解決は StartScreen と同じ（あいさつ表情→全身→アバターのフォールバック）。
+ * 設定画面の土台（ルール設定／アプリ設定／キャラクター選択で共有）。画面のジオメトリ・立ち絵・
+ * 装飾・グローは CharacterScreenFrame（メニュー画面と共通）に委ね、ここは設定固有の中身＝
+ * タイトル（中央・固定）＋一覧（ここだけスクロール）を右カラムに載せるだけ。
+ * mode='scroll'＝外周は固定高、一覧だけ内部スクロール。立ち絵はメニュー画面と同じ中央寄せ。
  */
 export function SettingsLayout({ title, character, onBack, children }: SettingsLayoutProps) {
-  const baselineExpr = expressionFor(character, 'greeting');
-  const baselineSrc = character.expressions.find(
-    (e) => e.expression === baselineExpr,
-  )?.srcs[0];
-  const standee = standeeUrl(character.id, baselineSrc, character.avatar);
-
-  const style = { '--char-glow': themeColorOf(character) } as CSSProperties;
-
   return (
-    <div className="settings-screen" style={style}>
-      <div className="settings-screen__figure">
-        {standee ? (
-          <img
-            className="settings-screen__standee"
-            src={standee}
-            alt={character.displayName}
-          />
-        ) : (
-          <div className="settings-screen__standee-ph" aria-hidden="true">
-            立ち絵
-          </div>
-        )}
-      </div>
-
-      <div className="settings-screen__panel">
-        <h1 className="settings-screen__title">{title}</h1>
-        <div className="settings-screen__scroll">{children}</div>
-      </div>
-
-      <BackButton onClick={onBack} />
-    </div>
+    <CharacterScreenFrame
+      character={character}
+      align="center"
+      mode="scroll"
+      back={<BackButton onClick={onBack} />}
+    >
+      <h1 className="settings-screen__title">{title}</h1>
+      <div className="settings-screen__scroll">{children}</div>
+    </CharacterScreenFrame>
   );
 }
