@@ -210,4 +210,23 @@ export const rin: Character = {
     'han-miscount':
       '翻（ハン）の数え、ひとつ抜けたかもね。役をもう一度、かぞえ直してみよ。',
   },
+  // BGM（主旋律＋即興音）。正は character-rin-sound.md。方向性＝小悪魔・軽やか＋上流の艶（徵調・揚琴）。
+  // 対の動機（3 3・5 5…）で好きな役＝七対子＋鈴（りんりん）を織り込む。合成・再生は ui（src/ui/audio）。
+  bgm: {
+    melody: {
+      instrument: 'yangqin',
+      tonic: 'D5',
+      mode: '徵',
+      tempo: 110,
+      brightness: 5200,
+      sustain: 0.5,
+      notes:
+        "3 3 5 5 3 2 3:2 5 5 3 3 2 1 2:2 5 5 1' 1' 5 3 5:2 1' 1' 5 5 3 5 3:2 5 1' 2' 1' 5 1' 2':2 3' 2' 1' 2' 1' 5 3:2 3 3 2 2 3 5 3:2 2 2 3 3 5 3 5:2",
+    },
+    improv: [
+      { start: 0, length: 8, instrument: 'pluck', density: 1, octave: 1, offset: 0.5, volume: 0.3, brightness: 5000, sustain: 0.5 },
+      { start: 8, length: 8, instrument: 'pluck', density: 2, octave: 1, offset: 0.5, volume: 0.3, brightness: 5000, sustain: 0.5 },
+      { start: 8, length: 8, instrument: 'yangqin', density: 4, octave: 1, offset: 0, volume: 0.26, brightness: 5200, sustain: 0.4 },
+    ],
+  },
 };
