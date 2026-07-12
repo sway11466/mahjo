@@ -74,7 +74,7 @@
       <summary>設定値の説明（意味・取り得る値）</summary>
       <h4>主旋律</h4>
       <table>
-        <tr><td class="k">楽器 instrument</td><td class="v">音色。撥弦(琴) / 鐘 / 木琴 / 笛 / 弓 の5種</td></tr>
+        <tr><td class="k">楽器 instrument</td><td class="v">音色。撥弦(琴) / 鐘 / 木琴 / 笛 / 弓 / 揚琴 の6種</td></tr>
         <tr><td class="k">主音 tonic</td><td class="v">曲の中心の音＝キー。C〜B ＋ オクターブ 3〜6（テキストは <code>C5</code> の形）</td></tr>
         <tr><td class="k">モード mode</td><td class="v">音階の色合い。宮 / 商 / 角 / 徵 / 羽（宮＝明るい 〜 羽＝暗い）</td></tr>
         <tr><td class="k">テンポ tempo</td><td class="v">速さ。40〜120 BPM</td></tr>
@@ -86,7 +86,7 @@
       <table>
         <tr><td class="k">start</td><td class="v">開始小節（0＝先頭）。同じ start に複数セグメントを置くと重なって同時に鳴る（声部を重ねられる）</td></tr>
         <tr><td class="k">length</td><td class="v">続く小節数。start＋length が主旋律の小節数を超えないように</td></tr>
-        <tr><td class="k">instrument</td><td class="v">楽器（5種）。主旋律と別に選べる</td></tr>
+        <tr><td class="k">instrument</td><td class="v">楽器（6種）。主旋律と別に選べる</td></tr>
         <tr><td class="k">density</td><td class="v">その小節で鳴らす音数。0＝休み。目安 0〜6</td></tr>
         <tr><td class="k">octave</td><td class="v">主旋律の主音から何オクターブ上か。0＝同じ高さ ／ 1＝1つ上 ／ 2＝2つ上（目安 0〜3・負も可）</td></tr>
         <tr><td class="k">offset</td><td class="v">拍からのずらし（拍数）。0＝拍ぴったり ／ 0.5＝裏拍。音は8分グリッドに整列</td></tr>
@@ -108,6 +108,7 @@
             <option value="mallet">木琴</option>
             <option value="flute">笛</option>
             <option value="bowed">弓（胡弓ふう）</option>
+            <option value="yangqin">揚琴（ヤンチン）</option>
           </select></div>
         <div class="ctrl"><label>主音（キー）</label>
           <select id="root">
@@ -167,7 +168,7 @@
   const $ = id => document.getElementById(id);
   const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
   const MODES = { '宮':[0,2,4,7,9], '商':[0,2,5,7,10], '角':[0,3,5,8,10], '徵':[0,2,5,7,9], '羽':[0,3,5,7,10] };
-  const INST_LABEL = { pluck:'撥弦（琴）', bell:'鐘（ベル）', mallet:'木琴', flute:'笛', bowed:'弓（胡弓ふう）' };
+  const INST_LABEL = { pluck:'撥弦（琴）', bell:'鐘（ベル）', mallet:'木琴', flute:'笛', bowed:'弓（胡弓ふう）', yangqin:'揚琴（ヤンチン）' };
   const BEATS_PER_BAR = 4;
   const midiToFreq = m => 440 * Math.pow(2, (m - 69) / 12);
   const midiName = m => NOTE_NAMES[((m % 12) + 12) % 12] + (Math.floor(m / 12) - 1);
@@ -179,7 +180,7 @@
   {
     start:      0        // 開始小節（0=先頭。重ねたい時は同じ start で複数）
     length:     4        // 続く小節数
-    instrument: pluck    // 楽器：pluck(琴)/bell/mallet/flute/bowed
+    instrument: pluck    // 楽器：pluck(琴)/bell/mallet/flute/bowed/yangqin(揚琴)
     density:    1        // その小節の音数（0=休み・目安0〜6）
     octave:     1        // 主音から何オクターブ上（0=同じ・目安0〜3）
     offset:     0        // 拍からのずらし（0=拍ぴったり・0.5=裏拍）
@@ -346,7 +347,29 @@
     g.gain.exponentialRampToValueAtTime(0.0001, when + atk + hold + rel);
     o.connect(lp).connect(g).connect(bus); const end = when + atk + hold + rel + 0.05; o.start(when); vib.start(when); o.stop(end); vib.stop(end);
   }
-  const INSTRUMENTS = { pluck:iPluck, bell:iBell, mallet:iMallet, flute:iFlute, bowed:iBowed };
+  function iYangqin(freq, when, { bus, vel, len }) {
+    // 揚琴（ヤンチン）＝竹のばちで叩く金属弦。撥弦（爪弾く琴）との差は「叩いた立ち上がり」。
+    // ① 弦の胴＝KS を course で重ね伸びと煌めき（シャン…）／② 打撃の金属アタック（チン）を短く重ねて琴と分ける。
+    const damping = 0.990 + len * 0.008, dur = 2.6 + len * 3.4;
+    // ① 弦の胴（course を3本、微妙にずらす）。ループフィルタ明るめ（0.8/0.2）で金属寄りに伸ばす。
+    [[1, 0.42], [1.0012, 0.34], [0.9991, 0.30]].forEach(([dt, amp]) => {
+      const f = freq * dt, N = Math.max(2, Math.round(ctx.sampleRate / f)), L = Math.floor(ctx.sampleRate * dur);
+      const buf = ctx.createBuffer(1, L, ctx.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < N; i++) d[i] = Math.random() * 2 - 1;
+      for (let i = N; i < L; i++) d[i] = damping * (0.8 * d[i - N] + 0.2 * d[i - N + 1]);
+      const src = ctx.createBufferSource(); src.buffer = buf;
+      const g = ctx.createGain(); g.gain.setValueAtTime(0, when); g.gain.linearRampToValueAtTime(vel * amp, when + 0.002);
+      src.connect(g).connect(bus); src.start(when); src.stop(when + dur);
+    });
+    // ② 打撃の金属アタック（ばちが弦を叩くチン）。やや非整数倍音を短い減衰で重ね、撥弦との差を出す。
+    [[4.1, 0.12, 0.14], [6.7, 0.07, 0.10]].forEach(([mult, v, dd]) => {
+      const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = freq * mult;
+      const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, when);
+      g.gain.linearRampToValueAtTime(vel * v, when + 0.002); g.gain.exponentialRampToValueAtTime(0.0001, when + dd);
+      o.connect(g).connect(bus); o.start(when); o.stop(when + dd + 0.05);
+    });
+  }
+  const INSTRUMENTS = { pluck:iPluck, bell:iBell, mallet:iMallet, flute:iFlute, bowed:iBowed, yangqin:iYangqin };
 
   // 即興音の1音（自前ローパス＝セグメントの明るさ）
   function playImprovNote(midi, when, seg) {

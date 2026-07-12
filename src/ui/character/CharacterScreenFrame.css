@@ -1,0 +1,136 @@
+/* キャラの立ち絵を左に据える画面の共通土台（メニュー画面・設定画面系で共有）。
+   立ち絵のジオメトリ（カラム幅・padding・縦・レスポンシブ）を1箇所に集約し、
+   立ち絵が画面をまたいでも同じ位置に立つことを構造的に保証する（architecture.md §5）。
+   画面ごとの差は align（水平寄せ）と mode（縦挙動）だけ。装飾・グローもここが敷く。 */
+
+.cscreen {
+  position: relative; /* 背景装飾（.char-decor）・戻るボタン（position:fixed は別）の基準 */
+  display: flex;
+  flex-direction: column;
+  padding: 2vh 2rem; /* 左右は固定幅（画面幅で立ち絵の左位置を動かさない） */
+  background:
+    radial-gradient(
+      55% 50% at 26% 89%,
+      color-mix(in srgb, var(--char-glow) 35%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      70% 55% at 86% 6%,
+      color-mix(in srgb, var(--char-glow) 13%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(165deg, var(--color-bg-top), var(--color-bg) 58%),
+    var(--color-bg);
+}
+
+/* mode＝縦の挙動。grow：中身が収まる画面では 100dvh、横持ちで入りきらないときは伸びてページが
+   スクロール（メニューが切れない）。scroll：100dvh 固定で外周は overflow:hidden、右カラム内だけスクロール。 */
+.cscreen--grow {
+  min-height: 100dvh;
+}
+.cscreen--scroll {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* 立ち絵（左）とパネル（右）を横並び。装飾レイヤより前面。縦は align-items:stretch で両カラム全高
+   （立ち絵は下端揃え、パネルはタイトル＋中身を縦に組む）。 */
+.cscreen__body {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  gap: clamp(1.5rem, 5vw, 4rem);
+}
+
+/* 立ち絵カラム＝共有トークンの clamp 幅（480〜640px）。この幅が伸び縮みを決める（flex:0 0 auto）。
+   640超の余白は右パネルが吸い、480未満の幅では下の @media が2段で受ける。立ち絵は下端揃え。 */
+.cscreen__figure {
+  flex: 0 0 auto;
+  width: clamp(var(--standee-min), 55vw, var(--standee-max));
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+}
+.cscreen__figure--center {
+  justify-content: center;
+}
+.cscreen__figure--end {
+  justify-content: flex-end; /* 立ち絵を右（設定側）へ寄せて余白を詰める */
+}
+
+/* 立ち絵はカラム幅いっぱい。縦が短い画面でだけ max-height で頭打ち。 */
+.cscreen__standee,
+.cscreen__standee-ph {
+  width: 100%;
+  max-height: 94vh;
+  object-fit: contain;
+  object-position: bottom center;
+}
+
+.cscreen__standee-ph {
+  width: clamp(10rem, 24vw, 17rem);
+  height: 70vh;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(160deg, #3a3550, #211f2e);
+  border: 1px solid #4a4663;
+  border-radius: 0.8rem;
+  color: #b9b3d4;
+  letter-spacing: 0.1em;
+}
+
+/* 右カラム：余った横幅を全部吸う（flex:1 1 auto）。中身の縦の置き方は mode で切り替える。 */
+.cscreen__panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* grow（メニュー）：タイトル＋メニューを上下・左右中央に浮かす。 */
+.cscreen--grow .cscreen__panel {
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.2rem, 3vh, 2.2rem);
+}
+/* scroll（設定）：タイトルを上に固定し、中の一覧だけがスクロールできるよう縦に潰れられる。 */
+.cscreen--scroll .cscreen__panel {
+  min-height: 0;
+}
+
+/* 立ち絵が下限(480px)に達する幅で縦積みへ（立ち絵を上、パネルを下）。しきい値 54rem は
+   共有トークンの可変係数 55vw と対（index.css）。立ち絵は高さ基準で小さめに。 */
+@media (max-width: 54rem) {
+  .cscreen__body {
+    flex-direction: column;
+    align-items: center; /* 縦積みでは横方向の中央寄せ */
+    gap: 1.2rem;
+  }
+  .cscreen__figure {
+    flex: 0 0 auto;
+    width: auto; /* 縦積みでは clamp 幅を解除し、立ち絵を高さ基準にする */
+    justify-content: center;
+  }
+  .cscreen__standee,
+  .cscreen__standee-ph {
+    width: auto;
+    max-height: 46vh;
+  }
+  /* scroll は固定高なので立ち絵の高さも固定して、残りを一覧のスクロールに回す。 */
+  .cscreen--scroll .cscreen__standee,
+  .cscreen--scroll .cscreen__standee-ph {
+    height: 46vh;
+  }
+  /* grow：パネルは中身ぶんの高さで読みやすい幅に頭打ち。scroll：残り全部を使って中でスクロール。 */
+  .cscreen--grow .cscreen__panel {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 22rem;
+  }
+  .cscreen--scroll .cscreen__panel {
+    flex: 1 1 auto;
+  }
+}
