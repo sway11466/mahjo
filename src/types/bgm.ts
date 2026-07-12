@@ -7,8 +7,8 @@
  * スケジューリングは ui 層（src/ui/audio）＝architecture §2。
  */
 
-/** 楽器（音色）。すべて Web Audio で合成（撥弦=Karplus-Strong／鐘=FM／木琴・笛・弓=OSC）。 */
-export type Instrument = 'pluck' | 'bell' | 'mallet' | 'flute' | 'bowed';
+/** 楽器（音色）。すべて Web Audio で合成（撥弦=Karplus-Strong／鐘=FM／木琴・笛・弓=OSC／揚琴=KS弦+金属アタック）。 */
+export type Instrument = 'pluck' | 'bell' | 'mallet' | 'flute' | 'bowed' | 'yangqin';
 
 /** モード（調＝音階の色合い）。宮＝明るい 〜 羽＝翳り。主音からの半音オフセットは notation.ts。 */
 export type Mode = '宮' | '商' | '角' | '徵' | '羽';

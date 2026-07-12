@@ -1,84 +1,6 @@
-/* スタート画面（screens.md §2）。背景は .screen と同系のキャラ色グロー。
-   構造は TSX、装飾は CSS（architecture.md §5）。寸法は相対単位。 */
-.start {
-  position: relative; /* 背景装飾レイヤ（.char-decor）の基準 */
-  /* 中身が収まる画面では従来どおり100dvh（見た目不変）。横持ちで縦が低く入りきらないときは
-     min-height で伸びてページがスクロールする（メニューが切れて選べないのを防ぐ）。 */
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  padding: 2vh 2rem; /* 左右は固定幅（画面幅で立ち絵の左位置を動かさない）。設定画面と共通。 */
-  background:
-    radial-gradient(
-      55% 50% at 28% 88%,
-      color-mix(in srgb, var(--char-glow) 36%, transparent),
-      transparent 70%
-    ),
-    radial-gradient(
-      70% 55% at 85% 5%,
-      color-mix(in srgb, var(--char-glow) 14%, transparent),
-      transparent 60%
-    ),
-    linear-gradient(165deg, var(--color-bg-top), var(--color-bg) 58%),
-    var(--color-bg);
-}
-
-/* 立ち絵（左）とタイトル＋メニュー（右）を横並び。設定画面と同じ法則で全幅を使う
-   （立ち絵は左に固定幅で立ち、広げた分は右の panel が吸う）。装飾レイヤより前面。 */
-.start__body {
-  position: relative;
-  z-index: 1;
-  flex: 1 1 auto;
-  min-height: 0;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: clamp(1.5rem, 5vw, 4rem);
-}
-
-/* 立ち絵カラム＝共有トークンの clamp 幅（480〜640px・設定画面と同サイズ）。伸びも縮みもこの幅が決める
-   （flex:0 0 auto）。640超の余白は中央寄せ（body）が、480未満の幅では下の @media が2段で受ける。 */
-.start__figure {
-  flex: 0 0 auto;
-  width: clamp(var(--standee-min), 55vw, var(--standee-max));
-  min-width: 0;
-  height: 100%;
-  display: flex;
-  align-items: flex-end; /* 立ち絵は下端揃え（足元を下に）。設定画面と縦位置をそろえる。 */
-  justify-content: center;
-}
-
-/* 立ち絵はカラム幅いっぱい。縦が短い画面でだけ max-height で頭打ち。 */
-.start__standee,
-.start__standee-ph {
-  width: 100%;
-  max-height: 94vh;
-  object-fit: contain;
-  object-position: bottom center;
-}
-
-.start__standee-ph {
-  width: clamp(11rem, 26vw, 18rem);
-  height: 70vh;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(160deg, #3a3550, #211f2e);
-  border: 1px solid #4a4663;
-  border-radius: 0.8rem;
-  color: #b9b3d4;
-  letter-spacing: 0.1em;
-}
-
-/* 右カラム：広げた幅を吸って埋める（設定画面と同じ法則）。中身（タイトル＋メニュー）は
-   読みやすい幅に保ったまま中央寄せ（設定の一覧が margin:0 auto で中央寄せなのと同じ）。 */
-.start__panel {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(1.2rem, 3vh, 2.2rem);
-}
+/* スタート画面の右カラム中身（タイトル＋メニュー）の見た目。
+   画面の土台（立ち絵・装飾・グロー・2カラムのジオメトリ）は CharacterScreenFrame.css が持つ
+   （設定画面と共通）。ここは grow モードのパネルに載る中身だけを飾る（architecture.md §5）。 */
 
 .start__title {
   margin: 0;
@@ -126,33 +48,10 @@
   border-color: #79808f;
 }
 
-
-/* 立ち絵が下限(480px)に達する幅で縦積みへ（立ち絵を上、タイトル＋メニューを下）。立ち絵は高さ基準で小さめに。 */
+/* 縦積み（立ち絵の下にメニュー）ではメニューを panel(最大22rem)いっぱいに、タイトルは小さめに。 */
 @media (max-width: 54rem) {
-  .start__body {
-    flex-direction: column;
-    gap: 1.2rem;
-  }
-
-  .start__figure {
-    flex: 1 1 auto;
-    width: auto; /* 縦積みでは clamp 幅を解除し、立ち絵を高さ基準にする */
-  }
-
-  .start__standee,
-  .start__standee-ph {
-    width: auto;
-    max-height: 46vh;
-  }
-
-  .start__panel {
-    flex: 0 0 auto; /* 縦積みでは縦に伸ばさない（中身ぶんの高さ） */
-    width: 100%;
-    max-width: 22rem;
-  }
-
   .start__menu {
-    width: 100%; /* 縦積みでは panel(最大22rem)いっぱい */
+    width: 100%;
   }
 
   .start__title {

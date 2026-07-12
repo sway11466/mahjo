@@ -1,5 +1,5 @@
 /**
- * BGM の音色合成（Web Audio）。5楽器＝撥弦(Karplus-Strong)／鐘(FM)／木琴／笛／弓。
+ * BGM の音色合成（Web Audio）。6楽器＝撥弦(Karplus-Strong)／鐘(FM)／木琴／笛／弓／揚琴(KS弦+金属アタック)。
  * 移植元は tools/melody-authoring（ADR-0003：ツールとは当面コピー二重）。IO 層＝人手で音を確認する
  * （testing.md §6）。純ロジック（音高・配置）は notation.ts／improv.ts に分離済み。
  */
@@ -138,12 +138,62 @@ const bowed: InstrumentVoice = (ctx, freq, when, { bus, vel, len, hold }) => {
   vib.stop(end);
 };
 
+/** 揚琴（ヤンチン）＝竹のばちで叩く金属弦。撥弦（爪弾く琴）との差は「叩いた立ち上がり」。 */
+const yangqin: InstrumentVoice = (ctx, freq, when, { bus, vel, len }) => {
+  const damping = 0.99 + len * 0.008;
+  const dur = 2.6 + len * 3.4;
+  // ① 弦の胴＝Karplus-Strong を course で3本、微妙にずらして重ね、伸びと煌めき（シャン…）を出す。
+  // ループフィルタを明るめ（0.8/0.2）にして金属的に伸ばす。
+  (
+    [
+      [1, 0.42],
+      [1.0012, 0.34],
+      [0.9991, 0.3],
+    ] as const
+  ).forEach(([dt, amp]) => {
+    const f = freq * dt;
+    const N = Math.max(2, Math.round(ctx.sampleRate / f));
+    const L = Math.floor(ctx.sampleRate * dur);
+    const buf = ctx.createBuffer(1, L, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < N; i++) d[i] = Math.random() * 2 - 1;
+    for (let i = N; i < L; i++) d[i] = damping * (0.8 * d[i - N]! + 0.2 * d[i - N + 1]!);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, when);
+    g.gain.linearRampToValueAtTime(vel * amp, when + 0.002);
+    src.connect(g).connect(bus);
+    src.start(when);
+    src.stop(when + dur);
+  });
+  // ② 打撃の金属アタック（ばちが弦を叩くチン）。非整数倍音を短い減衰で重ね、撥弦との差を出す。
+  (
+    [
+      [4.1, 0.12, 0.14],
+      [6.7, 0.07, 0.1],
+    ] as const
+  ).forEach(([mult, v, dd]) => {
+    const o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = freq * mult;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, when);
+    g.gain.linearRampToValueAtTime(vel * v, when + 0.002);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + dd);
+    o.connect(g).connect(bus);
+    o.start(when);
+    o.stop(when + dd + 0.05);
+  });
+};
+
 const INSTRUMENTS: Record<Instrument, InstrumentVoice> = {
   pluck,
   bell,
   mallet,
   flute,
   bowed,
+  yangqin,
 };
 
 /** 楽器名 → 合成関数（未知は撥弦にフォールバック）。 */
