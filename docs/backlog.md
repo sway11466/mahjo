@@ -4,7 +4,7 @@
 
 ## index
 
-次回採番: bug=9 / feature=21 / refactoring=19
+次回採番: bug=9 / feature=21 / refactoring=20
 
 項目（バグ bug / 機能追加 feature / リファクタリング refactoring）を追加するときは、該当カテゴリの採番を +1 して ID を継ぐ。完了した項目は本書から削除し、番号は再利用しない（過去の使用済み番号は `git log -p -- docs/backlog.md | grep -oE '(feature|refactoring)-[0-9]+' | sort -u` で確認できる）。状態は「本書に載っていれば未完了／消えていれば完了」で表す（状態列は持たない）。優先度は各エントリ見出しに 高（設計の背骨に関わる）／中／低（飾り・潜在）で記す。
 
@@ -79,6 +79,15 @@
 - 対応：(1) 繰り返し使われる装飾値を `index.css` の `:root` にセマンティックなトークンとして集約（例 `--panel-border`・`--text-muted`・`--card-bg`・`--badge-bg`/`--badge-text`・`--btn-border`/`--btn-border-hover`）し、各 CSS は直値をやめてトークン参照に置換する。(2) 同型の繰り返しパターン（カード／パネル枠・サブ画面のメニューボタン・くすみ見出し等）が複数画面で重複しているものは、`.subscreen` と同じ発想で共有クラス化できるか検討（ただし「無駄を消すだけのために公開クラス/抽象を増やして意図がぼやけるなら不採用」＝[architecture](./design/architecture.md) 冒頭の指針に従う。トークン集約を主、クラス共有は意図が明確になる範囲に留める）。スート色（`--color-man` 等の意味づけ＝§5）は壊さない。見た目は不変（リファクタなので回帰なし＝目視確認）。
   - **キャラクター固有のスタイル定義は、アプリ共通トークンに混ぜず、キャラクターごとに持つ**（キャラ追加＝データ＋そのキャラのアセット／スタイルで完結し、共通 `:root` の編集を要しない＝[character-guide](./characters/character-guide.md)「キャラを足してもロジック不変」の精神）。キャラの世界観に属する装飾値（御札の朱 `#c0392b`・墨 `#2a2320`＝`character/items/Ofuda.css`、月・装飾モチーフ＝`character/decor/`、法具ホバー＝`character/RitualHoverMark.css`、立ち絵ステージ＝`character/CharacterStage.css` のキャラ寄り装飾）は、共通トークンへ吸い上げず各キャラのスコープ（当面は当該 `ui/character/**` CSS、将来はキャラ別テーマ）に閉じる。テーマ色・差し色は既存どおり `--char-glow`/`--char-accent` 等の CSS 変数で App がキャラ値を流す（[architecture](./design/architecture.md) §5・[character-guide](./characters/character-guide.md) §2「テーマ色／差し色」）＝共通トークンは「中立な器」、具体色は「キャラが注ぐ」分担を保つ。
 - 該当：`src/ui/index.css`（中立トークン追加）・`src/ui/**/*.css` 全般（直値→トークン置換。とくに `main/score-table`・`main/yaku-list`・`main/fu-counting`・`common/ReferenceOverlay`・`common/BackButton`・`start`・`settings`・`main/quiz/ChoicePanel`）。キャラ固有スタイルは `src/ui/character/**`（`items/Ofuda.css`・`decor/`・`RitualHoverMark.css`・`CharacterStage.css`）にキャラ単位で保持（共通トークンへ移さない）。指針は [architecture](./design/architecture.md) §5・[character-guide](./characters/character-guide.md)。
+
+### refactoring-19
+
+**generate.ts のシード構築器（SEEDS）の切り出し**（優先度：低）
+
+- 背景：`src/engine/generate.ts`（約650行）に性格の違う責務が同居している——出題オーケストレーション（難易度帯・プール・生成後ガード）、和了状況の付与（`applyContext`）、実体化（`realize`＝BuildPlan→Tile 割当・ドラ表示牌・赤ドラ計画）、構築 DSL ヘルパ（`sh`/`ko`/`pr` 等）、そして役ごとの構築器テーブル `SEEDS`（約330行）。肥大化の主因は `SEEDS` で、ここはロジックというより「役ごとの構築レシピ」というデータ性の強い部分。役満シード生成（parking lot）に対応するとさらに十数役ぶん伸びるのが確実で、engine が parse/yaku/fu/score へモジュール分割済み（[architecture](./design/architecture.md) §3）である慣行に照らしても1ファイル同居が浮いている。
+- 対応：`SEEDS` テーブル＋構築 DSL ヘルパを別ファイル（例 `src/engine/generate-seeds.ts`。名前は着手時に確定）へ移す。境界は既存の `SetSpec`/`BuildPlan` インターフェースをそのまま使い、新しい抽象は作らない（[architecture](./design/architecture.md) 冒頭の指針）。チューニング値の正本として [architecture](./design/architecture.md) が名指しする `BAND_THRESHOLD`・`P_KAN` は generate.ts 本体に残す（doc の参照を変えない）。挙動不変＝既存の生成テスト（[testing](./dev/testing.md) §7）で回帰確認。役満シード生成（parking lot）の着手前に済ませると効果が大きい。
+- 該当：`src/engine/generate.ts`（分割元）・新規ファイル（分割先）。仕様は不変（[generation.md](./spec/generation.md)）。
+- 関連（今回は起票せず様子見と判断したもの・2026-07-19 調査）：`src/ui/main/MainScreen.tsx`（約330行。進行ハンドラ・計測・提示組み立て・オーバーレイ開閉が同居＝画面責務の上限近く。次に状態・演出を足す時に進行系のフック切り出しを検討）／`src/engine/score.ts`（約350行。ドラ計算一式〔約100行〕は `fu.ts` と同格の独立関心事＝伸びるなら `dora.ts` へ）。
 
 ## parking lot
 
