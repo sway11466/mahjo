@@ -4,10 +4,10 @@ import type { Character } from '../../types/index.ts';
  * サポートキャラ「りん」（魔女・まおの自称ライバル）。定義は docs/characters/rin/character-rin.md、
  * セリフは character-rin-script.md が正。ここはそのデータ化（ロジックは持たない）。
  *
- * 画像アセットは rin-full-stand-a.webp（立ち絵）＋ rin-portrait-{neutral,smug,thinking,troubled,happy}-a.webp を配置済み。
- * 残りの表情（insight/smile/mischievous）は未配置で、配置されしだい同名（characters/rin/rin-portrait-<expr>-<variant>.webp）
- * で有効化される（expressions は全表情を宣言済み）。未配置の表情は portraitUrl があいさつ表情（greeting＝smug）→
- * neutral の順にフォールバックする（avatarAssets.portraitUrl ①②・data-model §13）。
+ * 画像アセットは rin-full-stand-a.webp（立ち絵）＋ 宣言した全表情のポートレートを配置済み
+ * （characters/rin/rin-portrait-<expr>-<variant>.webp）。表情差分の variant を足すときも同名規則で並べる。
+ * 万一アセットが欠けた表情は portraitUrl があいさつ表情（greeting＝smug）→ neutral の順に
+ * フォールバックする（avatarAssets.portraitUrl ①②・data-model §13）。
  * motif（鈴・蝶）は ui の resolver 未登録のため描画されない（未登録キーは適用なし＝data-model §10）。
  */
 
@@ -24,17 +24,16 @@ export const rin: Character = {
   themeColor: '#7d2c5c', // 濃い赤紫（ワインマゼンタ）。character-rin.md §3（暫定・要微調整）
   accentColor: '#cfd2dc', // 銀（鈴・髪飾りに呼応）。装飾モチーフ（蝶）の色
   motif: { ritual: 'suzu', decor: 'butterfly' }, // 法具＝銀鈴・装飾＝蝶（resolver は順次・未登録の間は非表示）
-  // りんが持つ表情（全表情を宣言。未配置は portraitUrl が greeting=smug→neutral へフォールバック）。
-  // 配置済み＝neutral/smug/thinking/troubled/happy、未配置＝insight/smile/mischievous（画像できたら同名で有効化）。
+  // りんが持つ表情（練習モードのリアクション全場面ぶん。すべて画像配置済み）。
   expressions: [
-    { expression: 'neutral', srcs: PORTRAITS('neutral', 'a') }, // 配置済み（ベース顔・最終フォールバック先）
-    { expression: 'smug', srcs: PORTRAITS('smug', 'a') }, // 配置済み（あいさつ＝greeting 上書き）
-    { expression: 'mischievous', srcs: PORTRAITS('mischievous', 'a') }, // 未配置（正解＝correct 上書き）
-    { expression: 'thinking', srcs: PORTRAITS('thinking', 'a') }, // 配置済み
-    { expression: 'insight', srcs: PORTRAITS('insight', 'a') }, // 未配置
-    { expression: 'smile', srcs: PORTRAITS('smile', 'a') }, // 未配置
-    { expression: 'troubled', srcs: PORTRAITS('troubled', 'a') }, // 配置済み
-    { expression: 'happy', srcs: PORTRAITS('happy', 'a') }, // 配置済み
+    { expression: 'neutral', srcs: PORTRAITS('neutral', 'a') }, // ベース顔・最終フォールバック先
+    { expression: 'smug', srcs: PORTRAITS('smug', 'a') }, // あいさつ＝greeting 上書き
+    { expression: 'mischievous', srcs: PORTRAITS('mischievous', 'a') }, // 正解＝correct 上書き
+    { expression: 'thinking', srcs: PORTRAITS('thinking', 'a') }, // 出題中＝dealing
+    { expression: 'insight', srcs: PORTRAITS('insight', 'a') }, // ヒント中＝hinting
+    { expression: 'smile', srcs: PORTRAITS('smile', 'a') }, // 解説中＝explaining
+    { expression: 'troubled', srcs: PORTRAITS('troubled', 'a') }, // ミス＝wrong
+    { expression: 'happy', srcs: PORTRAITS('happy', 'a') }, // 終了＝finished
   ],
   // 小悪魔ゆえ既定マップから上書き（character-rin.md §1・§3）：あいさつ＝得意げ／正解＝いたずら。
   // それ以外（dealing/hinting/explaining/wrong/finished）は既定マップどおり。
