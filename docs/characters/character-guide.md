@@ -347,11 +347,13 @@ plain solid white background.
 |---|---|---|---|---|
 | 定義 doc | `docs/characters/<id>/character-<id>.md` | — | 基本情報・ペルソナ・ビジュアル（identity）・好きな役 | §2 |
 | セリフ doc | `docs/characters/<id>/character-<id>-script.md` | — | 場面別＋ヒント＋解説＋誤答の全セリフ（hint-base 全キー網羅） | §2「セリフ」 |
-| サウンド doc | `docs/characters/<id>/character-<id>-sound.md` | — | キャラの BGM（主旋律の度数記法＋即興音のセグメント配列）。定義 doc §5 はここへのポインタ | sound.md「BGM の実現方式」・[ADR-0003](../adr/ADR-0003-bgm-code-generation.md) |
+| サウンド doc | `docs/characters/<id>/character-<id>-sound.md` | — | キャラの BGM の制作ノート（曲の狙い・調・テンポ・小節数・ループ長・ラウドネス・たたき台の出所）。定義 doc §5 はここへのポインタ | sound.md「BGM の制作」・[ADR-0004](../adr/ADR-0004-bgm-audio-files.md) |
 | 画像プロンプト doc | `docs/characters/<id>/character-<id>-image-prompts.md` | — | master・派生・使い魔の生成プロンプト集 | §4 |
 | 制作ソース | `docs/characters/<id>/`（加工後 PNG）／`original/`（生t2i＋master のみ） | `<id>-portrait-<expr>-<variant>.png` 等。master は `<id>-master-bustup.png`・`<id>-master-full.png`（original 限定） | master・加工後 PNG（クロップ＋透過済み・リサイズ前。i2i の種。ビルド非搭載） | §3・§4 |
+| BGM 原本 | `docs/characters/<id>/`（たたき台は `original/`） | `<id>-bgm.mscz`（たたき台 `.musicxml`/`.mid` は original） | MuseScore の編曲原本（必ず残す）。WAV 中間物はコミットしない。ビルド非搭載 | sound.md「BGM の制作」 |
 | 配布アバター | `src/assets/characters/<id>/` | `<id>-portrait-<expr>-<variant>.webp`・`<id>-avatar.webp`・`<id>-full-<kind>-<variant>.webp`・`<id>-familiar.webp` | アプリで使う表情差分・サムネ・立ち絵・使い魔 | §3 |
 | 配布 看板牌 | `src/assets/characters/<id>/`（既定は `src/assets/tiles/`） | `<id>-tile-pin1.webp`・`<id>-tile-sou1.webp`（既定 `pin1.webp`・`sou1.webp`） | キャラ別/既定の看板牌（1筒/1索） | §3「看板牌」・architecture §5 |
+| 配布 BGM | `src/assets/characters/<id>/` | `<id>-bgm.m4a` | キャラの BGM（AAC・ループ加工済み・-23 LUFS 目安）。precache 外＝ランタイムキャッシュ。`Character.bgm` がこのパスを指す | sound.md「BGM の実現方式」・[ADR-0004](../adr/ADR-0004-bgm-audio-files.md) |
 | キャラデータ | `src/characters/<id>/index.ts` | — | `Character` 定義（ペルソナ・`reactions`・script 等のデータ化） | data-model §13 |
 | 中立ヒント | `src/hints/` | — | ヒント素（hint-base・HintProvider）＝キャラ非依存・全キャラ共有 | hint-base・hints |
 | キャラ描画 | `src/ui/character/`（`selectionMark.tsx`・`items/`・`decor/`） | — | 法具/装飾モチーフの resolver・SVG（皮＝二層分離） | architecture §5 |
@@ -369,7 +371,7 @@ export const characters: Character[] = [mao /*, …順次追加 */];
 export const defaultCharacterId = 'mao';
 ```
 
-新キャラは「まお」一式（定義 doc＋セリフ doc＋サウンド doc＋画像プロンプト doc＋配布アバター＋キャラデータ）に倣って作り、レジストリに足す。
+新キャラは「まお」一式（定義 doc＋セリフ doc＋サウンド doc＋画像プロンプト doc＋配布アバター＋キャラデータ）に倣って作り、レジストリに足す。BGM（`<id>-bgm.m4a`）は任意＝無いキャラは無音で成立する。
 
 
 ## 6. 参考ドキュメント
