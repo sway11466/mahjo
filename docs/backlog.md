@@ -4,7 +4,7 @@
 
 ## index
 
-次回採番: bug=9 / feature=21 / refactoring=20
+次回採番: bug=9 / feature=22 / refactoring=20
 
 項目（バグ bug / 機能追加 feature / リファクタリング refactoring）を追加するときは、該当カテゴリの採番を +1 して ID を継ぐ。完了した項目は本書から削除し、番号は再利用しない（過去の使用済み番号は `git log -p -- docs/backlog.md | grep -oE '(feature|refactoring)-[0-9]+' | sort -u` で確認できる）。状態は「本書に載っていれば未完了／消えていれば完了」で表す（状態列は持たない）。優先度は各エントリ見出しに 高（設計の背骨に関わる）／中／低（飾り・潜在）で記す。
 
@@ -17,6 +17,14 @@
 ## 機能追加
 
 実装済みコードに足す機能。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す。
+
+### feature-21
+
+**BGM の音源ファイル方式への移行（実装）**（優先度：中）
+
+- 背景：BGM の方式を コード生成（Web Audio 合成の二層構成＝[ADR-0003](./adr/ADR-0003-bgm-code-generation.md)・Superseded）から、MuseScore で自作アレンジした音源ファイル（AAC `.m4a`・キャラ別1曲・precache 外）へ変えた（[ADR-0004](./adr/ADR-0004-bgm-audio-files.md)・[sound](./design/sound.md)「BGM の実現方式」「BGM の制作」）。doc は新方式に書き換え済みで、コードは旧方式のまま動いている（まお・りんの合成曲が鳴る）。
+- 対応：(1) 再生の置き換え＝`src/ui/audio` を `fetch → decodeAudioData → AudioBufferSourceNode(loop)` に書き直す（autoplay 解禁・キャラ切替クロスフェード・トグル停止の挙動は現行 `useBgm`/`player` を引き継ぐ。`loopEnd` に楽譜由来のループ長）。(2) `Character.bgm` を楽譜データ `BgmData` からアセットパス `string` へ（[data-model](./design/data-model.md) §13）。`assetUrl` の glob に `m4a` を追加。(3) PWA＝`vite.config.ts` の `workbox.globIgnores` に `**/*.m4a`、`runtimeCaching`（CacheFirst）を追加。(4) 旧方式の撤去＝`src/ui/audio` の notation/improv/synth とテスト・`src/types/bgm.ts`・`tools/melody-authoring`・まお／りんの `bgm` 楽譜データ。(5) 加工スクリプト（Senaris の `gen_bgm.ps1` 相当。WAV→ループ加工→AAC・ラウドネス報告）を `tools/` に置く。(6) 曲の制作＝まお・りんの `.mscz` → `<id>-bgm.m4a`（各 `character-<id>-sound.md` を制作ノートへ書き直す）。曲が無い間は無音で成立する（1〜5 だけ先に済ませてよい）。
+- 該当：`src/ui/audio/`・`src/types/bgm.ts`・`src/types/character.ts`・`src/characters/mao/index.ts`・`src/characters/rin/index.ts`・`src/ui/character/avatarAssets.ts`・`vite.config.ts`・`tools/melody-authoring/`（削除）・`tools/`（新スクリプト）・`docs/characters/{mao,rin}/character-*-sound.md`。
 
 ### feature-20
 
@@ -43,7 +51,7 @@
   - 呼び方（`playerName`）：プレイヤーの呼び名を Persona のセリフに差し込む（[character-guide](./characters/character-guide.md) §2）。差し込みの仕組み（テンプレート）自体が未実装なので機構ごと用意する。
   - 牌のランダム並び（`randomTileOrder`）：手牌を正準順でなくシャッフルして描画する（Tile データは不変・表示側だけ＝[data-model](./design/data-model.md) §1）。
   - 後付け（`atozuke`）：生成・和了可否の判定に反映する（採点には影響しない。[scoring-rules](./spec/scoring-rules.md) §5）。
-  - 対象外（別項目で追跡）：効果音・音楽（`se`/`bgm`）＝parking lot「音（SE/BGM）の実装」＋[feature-9](#feature-9)／レア役（`rareYaku`）＝parking lot・[scoring-rules](./spec/scoring-rules.md) §1.3（未対応）。
+  - 対象外（別項目で追跡）：効果音・音楽（`se`/`bgm`）＝parking lot「音（SE/BGM）の実装」＋[feature-9](#feature-9)＋[feature-21](#feature-21)／レア役（`rareYaku`）＝parking lot・[scoring-rules](./spec/scoring-rules.md) §1.3（未対応）。
 - 該当：`src/ui/settings/RuleSettingsScreen.tsx`・`src/ui/settings/AppSettingsScreen.tsx`（`soon` 行の解除）・`src/engine/generate.ts`（後付け）・`src/characters/`＋`src/session/`（呼び方差し込み）・`src/ui/main/`（牌並び表示）。
 
 ### feature-14
@@ -101,7 +109,7 @@
 - LP／キャラ紹介ページからアプリへのキャラ指定ディープリンク（URL でキャラを選択状態にして起動）。ルーティング未整備（[screens.md](./design/screens.md) §6。旧 feature-1／feature-5 から引き継ぐ将来分）。
 - オフライン計測（GA4）：オフライン起動分は素の GTM/GA だと取りこぼす（`gtm.js` 未キャッシュで GTM 自体が起動しない）。取るなら Workbox の offline-google-analytics（`workbox-google-analytics`）で収集リクエストを横取りし Background Sync キュー→再接続時に元タイムスタンプで再送（GA4 のタイムスタンプ補正ウィンドウ〔約72h〕超過は破棄・再接続しない端末は不可）。precache 込みで導入するか判断。GTM の素の導入・オンライン計測は稼働済み。
 - 累計正答数による表情/衣装/特別セリフのアンロック・節目演出（好感度）。
-- 音の実装（[sound](./design/sound.md)）。**BGM は実装済み**＝コード生成（Web Audio・2層）を App ルートの1本のコントローラ（`src/ui/audio`：notation/improv/synth/player/useBgm）で鳴らす（`AppSettings.bgm`＋選択キャラの `Character.bgm` を見る／autoplay 解禁は初回操作／キャラ切替でクロスフェード）。まおの曲は投入済み。**残り**：(1) SE の再生配線（`AppSettings.se`／autoplay／precache。SE 素材の収集は [feature-9](#feature-9) が先）、(2) 他キャラの `bgm` データ（りん等＝各 `character-<id>-sound.md` 作成後）、(3) 音量スライダー等の拡張（任意）。
+- 音の実装（[sound](./design/sound.md)）。BGM は App ルートの1本のコントローラ（`src/ui/audio`）で鳴らす（`AppSettings.bgm`＋選択キャラの `Character.bgm` を見る／autoplay 解禁は初回操作／キャラ切替でクロスフェード）。音源ファイル方式への置き換えは [feature-21](#feature-21)。**残り**：(1) SE の再生配線（`AppSettings.se`／autoplay／precache。SE 素材の収集は [feature-9](#feature-9) が先）、(2) 音量スライダー等の拡張（任意）。
 - 連続正解などのゲーム要素。
 - **ストーリーモード（兼ハードモード｜将来・新ゲームモード）**：世界に厄災（＝人間の悪意を増幅する思念体。[characters/world.md](./characters/world.md) §3）が起こりかけるが、麻雀の和了を正しく読むと防げる物語モード。**通常の「プレッシャーをかけない」方針からの唯一の意図的な例外**＝ハードたるゆえん（[product-concept](./product-concept.md) §3 と緊張するが、下記の失敗演出で優しさを保つ）。舞台＝[characters/world.md](./characters/world.md)。
   - **システム（構想）**：練習と同じ手牌が出る→役/点数を当てる**タイムアタック**。**1ラン＝1ステージ**（タイマー全体一本・単位/閾値はステージ内固定）。

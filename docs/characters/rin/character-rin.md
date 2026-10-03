@@ -77,4 +77,4 @@
 
 ## 5. 音楽（BGM）
 
-主旋律・即興音の設定は [character-rin-sound.md](./character-rin-sound.md)。BGM はコード生成方式（Web Audio 合成・音源ファイルなし）の二層構成（主旋律＋即興音）で、記法の編集・試聴は開発ツール [tools/melody-authoring](../../../tools/melody-authoring/)。方向性＝小悪魔・軽やか＋上流の艶（徵調・揚琴〔ヤンチン〕）。対の動機で好きな役＝七対子＋名前⇄鈴を旋律の骨にし、まおの「まっすぐ元気（宮調・撥弦）」と対比する。
+曲の制作ノートは [character-rin-sound.md](./character-rin-sound.md)。BGM は MuseScore で自作アレンジした音源ファイル（`rin-bgm.m4a`・キャラ別1曲）方式（[sound.md](../../design/sound.md)「BGM の制作」・[ADR-0004](../../adr/ADR-0004-bgm-audio-files.md)）。現在の sound doc は旧方式（コード生成）の楽譜データで、新方式の曲を作る際に書き直す（旋律の狙いは引き継ぐ）。方向性＝小悪魔・軽やか＋上流の艶（徵調・揚琴〔ヤンチン〕）。対の動機で好きな役＝七対子＋名前⇄鈴を旋律の骨にし、まおの「まっすぐ元気（宮調・撥弦）」と対比する。
