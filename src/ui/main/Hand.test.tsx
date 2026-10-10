@@ -12,7 +12,33 @@ function makeHand(over: Partial<HandModel> = {}): HandModel {
   };
 }
 
+// 門前牌の表示順（ラベル列）。あがり牌・副露は除く。
+function concealedLabels(container: HTMLElement): string[] {
+  return [...container.querySelectorAll('.hand > .hand__tile:not(.hand__tile--winning) svg')].map(
+    (svg) => svg.getAttribute('aria-label') ?? '',
+  );
+}
+
 describe('Hand', () => {
+  it('並びは既定で正準順（id 昇順）', () => {
+    const hand = makeHand({ concealed: [suited('man', 3), suited('man', 1), suited('man', 2)] });
+    const sorted = render(<Hand hand={makeHand({ concealed: [suited('man', 1), suited('man', 2), suited('man', 3)] })} />);
+    const expected = concealedLabels(sorted.container);
+    sorted.unmount();
+    const { container } = render(<Hand hand={hand} />);
+    expect(concealedLabels(container)).toEqual(expected);
+  });
+
+  it('shuffleWith 指定時は rng でシャッフルした順に並べる（randomTileOrder）', () => {
+    const tiles = [suited('man', 1), suited('man', 2), suited('man', 3)];
+    const canonical = render(<Hand hand={makeHand({ concealed: tiles })} />);
+    const [m1, m2, m3] = concealedLabels(canonical.container);
+    canonical.unmount();
+    // rng=0 の Fisher–Yates：[1,2,3] → [3,2,1] → [2,3,1]
+    const { container } = render(<Hand hand={makeHand({ concealed: tiles })} shuffleWith={() => 0} />);
+    expect(concealedLabels(container)).toEqual([m2, m3, m1]);
+  });
+
   it('renders concealed tiles plus a separated winning tile', () => {
     const { container } = render(<Hand hand={makeHand()} />);
     // 門前2枚＋あがり牌1枚

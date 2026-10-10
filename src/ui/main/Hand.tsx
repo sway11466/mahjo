@@ -1,8 +1,10 @@
+import { useMemo } from 'react';
 import type {
   Hand as HandModel,
   Meld,
   HighlightTarget,
 } from '../../types/index.ts';
+import { shuffle, type Rng } from '../../engine/rng.ts';
 import { TileSvg } from '../common/tiles/TileSvg.tsx';
 import { tileLit, meldLit, kindLit } from './highlights.ts';
 import './Hand.css';
@@ -14,6 +16,9 @@ interface HandProps {
   win?: 'tsumo' | 'ron';
   /** いま光らせる対象（解説・ヒント連携。data-model §10）。既定は無し。 */
   highlights?: HighlightTarget[];
+  /** 指定時は門前を正準順でなく、この rng でシャッフルして並べる（AppSettings.randomTileOrder。
+   *  表示側だけ＝Tile データは不変・data-model §1）。同じ手の間は並びを保つ（再描画で並び替えない）。 */
+  shuffleWith?: Rng | undefined;
 }
 
 /** 副露面子の鳴き種別（初心者向けラベル）。順子＝チー・刻子＝ポン・槓子＝カン。 */
@@ -31,11 +36,17 @@ function callLabel(meld: Meld): string {
 }
 
 /**
- * 手牌を横一列に並べる。門前は正準順（id 昇順）、あがり牌は1枚分あけて分離、
+ * 手牌を横一列に並べる。門前は正準順（id 昇順。shuffleWith 指定時はランダム順）、あがり牌は1枚分あけて分離、
  * 副露面子はさらに離して別グループで示す（uxui §1。横向き表現は今後の改良）。
  */
-export function Hand({ hand, win, highlights = [] }: HandProps) {
-  const concealed = [...hand.concealed].sort((a, b) => a.id - b.id);
+export function Hand({ hand, win, highlights = [], shuffleWith }: HandProps) {
+  const concealed = useMemo(
+    () =>
+      shuffleWith
+        ? shuffle(shuffleWith, hand.concealed)
+        : [...hand.concealed].sort((a, b) => a.id - b.id),
+    [hand.concealed, shuffleWith],
+  );
   // あがり牌のハイライト：winningTile マーカー、または上がり牌そのものの tile 指定。
   const winningLit =
     kindLit(highlights, 'winningTile') || tileLit(highlights, hand.winningTile.id);
