@@ -16,8 +16,8 @@ interface AppSettingsScreenProps {
  * アプリ設定（screens.md §5・AppSettings）。採点に効かない UX 設定。
  *
  * 配線が入った項目から編集可へ昇格する（値は保存・復元される＝feature-2 の方針）。
- * 現状：BGM は配線済み（再生＝src/ui/audio・sound.md「BGM の実現方式」）＝編集可。
- * 効果音・呼び方・牌のランダム並びは未実装なので操作不可にし「機能追加予定」を添える。
+ * 現状：BGM（再生＝src/ui/audio・sound.md「BGM の実現方式」）・牌のランダム並び（表示＝ui/main/Hand）は配線済み＝編集可。
+ * 効果音・呼び方は未実装なので操作不可にし「機能追加予定」を添える。
  * キャラ選択（selectedCharacterId）はキャラクター選択画面が持つ（§4・feature-1）。
  */
 export function AppSettingsScreen({
@@ -54,6 +54,22 @@ export function AppSettingsScreen({
         </section>
 
         <section className="settings__section">
+          <h2 className="settings__section-title">表示</h2>
+
+          <SettingRow
+            title="牌のランダム並び"
+            description="手牌を萬子・筒子・索子・字牌の順に並べず、ランダムな順で表示します（既定オフ）。"
+            control={
+              <ToggleSwitch
+                label="牌のランダム並び"
+                checked={appSettings.randomTileOrder}
+                onChange={(v) => onChange({ ...appSettings, randomTileOrder: v })}
+              />
+            }
+          />
+        </section>
+
+        <section className="settings__section">
           <h2 className="settings__section-title">機能追加予定</h2>
 
           <SettingRow
@@ -64,19 +80,6 @@ export function AppSettingsScreen({
               <span className="setting-value">
                 {appSettings.playerName || '（未設定）'}
               </span>
-            }
-          />
-          <SettingRow
-            soon
-            title="牌のランダム並び"
-            description="手牌を正準順でなくランダムに並べて表示（実装後に有効化予定）。"
-            control={
-              <ToggleSwitch
-                label="牌のランダム並び"
-                checked={appSettings.randomTileOrder}
-                disabled
-                onChange={() => {}}
-              />
             }
           />
         </section>

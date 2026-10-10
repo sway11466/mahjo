@@ -53,6 +53,8 @@ interface MainScreenProps {
   recordMiss: (record: MissRecord) => void;
   rng: Rng;
   rules: RuleSettings;
+  /** 牌のランダム並び表示（AppSettings.randomTileOrder）。門前の並びだけを変える表示設定 */
+  randomTileOrder: boolean;
   /** スタート画面へ戻る */
   onExit: () => void;
 }
@@ -69,6 +71,7 @@ export function MainScreen({
   recordMiss,
   rng,
   rules,
+  randomTileOrder,
   onExit,
 }: MainScreenProps) {
   const [session, setSession] = useState<QuizSession>(() =>
@@ -348,6 +351,7 @@ export function MainScreen({
                   hand={session.hand}
                   win={session.winContext.win}
                   highlights={highlights}
+                  shuffleWith={randomTileOrder ? rng : undefined}
                 />
               </div>
             </div>

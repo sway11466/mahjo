@@ -69,6 +69,7 @@ export function App() {
         recordMiss={recordMiss}
         rng={rng}
         rules={rules}
+        randomTileOrder={appSettings.randomTileOrder}
         onExit={goStart}
       />
     );
