@@ -4,9 +4,7 @@
 
 > まお個別の素性・ビジュアル・セリフは [character-mao.md](./character-mao.md)。本書はまおの BGM（主旋律・即興音）を持つ。
 
-まおの BGM。コード生成方式（Web Audio 合成・音源ファイルなし）の二層構成＝主旋律（キャラごとの決まった旋律・度数記法）＋即興音（主旋律の合間を飾る毎回ちがう音・セグメント配列）。記法の編集・試聴は開発ツール [tools/melody-authoring](../../../tools/melody-authoring/) で行う（各設定値の意味・取り得る値もツールに集約）。
-
-> BGM の実現方式・度数記法・即興音のセグメント配列の正は [sound.md](../../design/sound.md)「BGM の実現方式」。判断の記録は [ADR-0003](../../adr/ADR-0003-bgm-code-generation.md)。本書はまおの曲データを持つ。
+まおの BGM の旧楽譜（主旋律＝度数記法＋即興音＝セグメント配列）。旧方式のコードとオーサリングツール（tools/melody-authoring）は撤去済みで、本書の記法は読み物としてだけ残る。
 
 ## 主旋律
 
@@ -26,7 +24,7 @@ melody:     1 2 3 2 3 5 3:2 5 3 2 1 2 3 1:2 1 2 3 5 5 1' 5:2 3 5 3 2 1 2 1:2 5, 
 
 ## 即興音
 
-即興音（主旋律の合間を飾る毎回ちがう音）。セグメント配列＝`{ start, length, instrument, density, octave, offset, volume, brightness, sustain }`（`start`＝開始小節・`start+length` で配置、同じ `start` に重ねると声部が重なる）。主旋律の起伏に合わせ、前半は疎（density 1）、中盤（8〜24小節）でやや密（density 2）、終盤で疎に戻す、控えめな撥弦（琴）。各項目の意味・取り得る値は開発ツール（冒頭リンク）に集約。
+即興音（主旋律の合間を飾る毎回ちがう音）。セグメント配列＝`{ start, length, instrument, density, octave, offset, volume, brightness, sustain }`（`start`＝開始小節・`start+length` で配置、同じ `start` に重ねると声部が重なる）。主旋律の起伏に合わせ、前半は疎（density 1）、中盤（8〜24小節）でやや密（density 2）、終盤で疎に戻す、控えめな撥弦（琴）。
 
 ```
 即興音 = [

@@ -1,6 +1,6 @@
 # 効果音・音楽（音まわり）
 
-SE（効果音）と BGM（音楽）の方針。設定の型は [data-model](./data-model.md) §15 `AppSettings`。**BGM は音源ファイル方式**（MuseScore で自作アレンジした AAC を再生＝下記「BGM の実現方式」「BGM の制作」・[ADR-0004](../adr/ADR-0004-bgm-audio-files.md)）。実装は旧方式（コード生成＝[ADR-0003](../adr/ADR-0003-bgm-code-generation.md)・Superseded）が `src/ui/audio` に残っており、置き換えは [backlog](../backlog.md) feature-21。**SE は未実装**（素材収集＝[backlog](../backlog.md) feature-9・再生配線＝parking lot「音の実装」）で、SE 無しでもアプリは成立する。
+SE（効果音）と BGM（音楽）の方針。設定の型は [data-model](./data-model.md) §15 `AppSettings`。**BGM は音源ファイル方式**（MuseScore で自作アレンジした AAC を再生＝下記「BGM の実現方式」「BGM の制作」・[ADR-0004](../adr/ADR-0004-bgm-audio-files.md)）。旧方式（コード生成＝[ADR-0003](../adr/ADR-0003-bgm-code-generation.md)・Superseded）の実装は撤去済みで、新方式の再生部は未実装（曲が無い間は無音。実装は [backlog](../backlog.md) feature-21）。**SE は未実装**（素材収集＝[backlog](../backlog.md) feature-9・再生配線＝parking lot「音の実装」）で、SE 無しでもアプリは成立する。
 
 ## 設定
 
