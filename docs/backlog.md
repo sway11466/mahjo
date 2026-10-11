@@ -87,15 +87,6 @@
   - **キャラクター固有のスタイル定義は、アプリ共通トークンに混ぜず、キャラクターごとに持つ**（キャラ追加＝データ＋そのキャラのアセット／スタイルで完結し、共通 `:root` の編集を要しない＝[character-guide](./characters/character-guide.md)「キャラを足してもロジック不変」の精神）。キャラの世界観に属する装飾値（御札の朱 `#c0392b`・墨 `#2a2320`＝`character/items/Ofuda.css`、月・装飾モチーフ＝`character/decor/`、法具ホバー＝`character/RitualHoverMark.css`、立ち絵ステージ＝`character/CharacterStage.css` のキャラ寄り装飾）は、共通トークンへ吸い上げず各キャラのスコープ（当面は当該 `ui/character/**` CSS、将来はキャラ別テーマ）に閉じる。テーマ色・差し色は既存どおり `--char-glow`/`--char-accent` 等の CSS 変数で App がキャラ値を流す（[architecture](./design/architecture.md) §5・[character-guide](./characters/character-guide.md) §2「テーマ色／差し色」）＝共通トークンは「中立な器」、具体色は「キャラが注ぐ」分担を保つ。
 - 該当：`src/ui/index.css`（中立トークン追加）・`src/ui/**/*.css` 全般（直値→トークン置換。とくに `main/score-table`・`main/yaku-list`・`main/fu-counting`・`common/ReferenceOverlay`・`common/BackButton`・`start`・`settings`・`main/quiz/ChoicePanel`）。キャラ固有スタイルは `src/ui/character/**`（`items/Ofuda.css`・`decor/`・`RitualHoverMark.css`・`CharacterStage.css`）にキャラ単位で保持（共通トークンへ移さない）。指針は [architecture](./design/architecture.md) §5・[character-guide](./characters/character-guide.md)。
 
-### refactoring-19
-
-**generate.ts のシード構築器（SEEDS）の切り出し**（優先度：低）
-
-- 背景：`src/engine/generate.ts`（約650行）に性格の違う責務が同居している——出題オーケストレーション（難易度帯・プール・生成後ガード）、和了状況の付与（`applyContext`）、実体化（`realize`＝BuildPlan→Tile 割当・ドラ表示牌・赤ドラ計画）、構築 DSL ヘルパ（`sh`/`ko`/`pr` 等）、そして役ごとの構築器テーブル `SEEDS`（約330行）。肥大化の主因は `SEEDS` で、ここはロジックというより「役ごとの構築レシピ」というデータ性の強い部分。役満シード生成（parking lot）に対応するとさらに十数役ぶん伸びるのが確実で、engine が parse/yaku/fu/score へモジュール分割済み（[architecture](./design/architecture.md) §3）である慣行に照らしても1ファイル同居が浮いている。
-- 対応：`SEEDS` テーブル＋構築 DSL ヘルパを別ファイル（例 `src/engine/generate-seeds.ts`。名前は着手時に確定）へ移す。境界は既存の `SetSpec`/`BuildPlan` インターフェースをそのまま使い、新しい抽象は作らない（[architecture](./design/architecture.md) 冒頭の指針）。チューニング値の正本として [architecture](./design/architecture.md) が名指しする `BAND_THRESHOLD`・`P_KAN` は generate.ts 本体に残す（doc の参照を変えない）。挙動不変＝既存の生成テスト（[testing](./dev/testing.md) §7）で回帰確認。役満シード生成（parking lot）の着手前に済ませると効果が大きい。
-- 該当：`src/engine/generate.ts`（分割元）・新規ファイル（分割先）。仕様は不変（[generation.md](./spec/generation.md)）。
-- 関連（今回は起票せず様子見と判断したもの・2026-07-19 調査）：`src/ui/main/MainScreen.tsx`（約330行。進行ハンドラ・計測・提示組み立て・オーバーレイ開閉が同居＝画面責務の上限近く。次に状態・演出を足す時に進行系のフック切り出しを検討）／`src/engine/score.ts`（約350行。ドラ計算一式〔約100行〕は `fu.ts` と同格の独立関心事＝伸びるなら `dora.ts` へ）。
-
 ## parking lot
 
 後回し・いつかやる候補の置き場（特定の作業に紐付かない将来アイデア）。着手が決まった段で機能追加・リファクタリングへ引き上げる。
@@ -131,3 +122,4 @@
 - Cloudflare への移行（DNS／配信／監視）：作者の他プロダクトを Cloudflare に寄せている流れに合わせ、管理を1か所にまとめる（配信費は GitHub Pages も無料で差はなく、削減は Route 53 の月額・クエリ課金＋登録移管できればドメイン更新費）。段階は (1) DNS を Route 53 → Cloudflare、(2) 配信を GitHub Pages → Cloudflare（Pages か Workers の静的アセット配信かは着手時に公式で確認。`production`→`mahjo.academy`・`preview`→`preview.mahjo.academy` のサブドメイン化で、`/preview/` サブパス＋base 出し分け＋両ブランチ束ねビルドが不要になり、PWA キャッシュも origin で分離）、(3) ドメイン登録の移管（Cloudflare Registrar が `.academy` に対応していれば）、(4) 死活監視＝Workers の Cron Triggers でプロダクト横断の監視スクリプト（落ちたら通知）。E2E（[feature-20](#feature-20)）を先に入れ、新配信先へスモークを流して確認してから DNS を切り替える。該当：[development](./dev/development.md)「配布」「デプロイ／ブランチ戦略」・`.github/workflows/deploy-pages.yml`・PWA の base 前提（[architecture](./design/architecture.md) §4）。
 - Error Boundary の導入（`src/ui/App.tsx`）：予期しない throw で白画面にせず復旧導線を出す一般防御。既知のクラッシュ経路（enabledYaku 全オフ＝旧 bug-7）は出題入口の無害化（`sanitizeForGeneration`）で塞ぎ済みで、残りは未知の例外への保険。
 - decisions.md 2026-06-10 エントリの整理（内容は hints / character-guide / character-mao-script へ移行済み。使い魔素材が入って未決が無くなったらエントリを削除）。
+- 肥大化の様子見（2026-07-19 調査・起票せず。旧 refactoring-19＝generate.ts の SEEDS 切り出しは完了）：`src/ui/main/MainScreen.tsx`（約330行。進行ハンドラ・計測・提示組み立て・オーバーレイ開閉が同居＝画面責務の上限近く。次に状態・演出を足す時に進行系のフック切り出しを検討）／`src/engine/score.ts`（約350行。ドラ計算一式〔約100行〕は `fu.ts` と同格の独立関心事＝伸びるなら `dora.ts` へ）。
