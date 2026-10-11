@@ -1,6 +1,5 @@
 import type { HintScript, ExplainScript } from './hint.ts';
 import type { MistakeScript } from './quiz.ts';
-import type { BgmData } from './bgm.ts';
 
 /**
  * 顔の全パレット（全キャラ合算。各キャラは持つ分だけ ExpressionAsset を用意する）。
@@ -88,9 +87,10 @@ export interface Character {
    */
   mistakes: MistakeScript;
   /**
-   * BGM の楽譜データ（主旋律＋即興音）。任意＝未指定キャラは無音（中立曲は持たない）。
-   * データのみ（合成・再生は ui 層 src/ui/audio）。正は character-<id>-sound.md・sound.md「BGM の実現方式」。
+   * BGM 音源のアセットパス（例 'characters/mao/mao-bgm.m4a'。avatar と同じ抽象パス）。任意＝未指定キャラは無音。
+   * 参照のみ＝取得・再生は ui 層（src/ui/audio。再生部は未実装＝backlog feature-21）。
+   * 方式の正は sound.md「BGM の実現方式」・ADR-0004、曲の制作ノートは character-<id>-sound.md。
    */
-  bgm?: BgmData;
+  bgm?: string;
   unlock?: { kind: 'correctCount'; threshold: number }; // 任意・未対応
 }
