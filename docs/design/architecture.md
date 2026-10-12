@@ -110,7 +110,7 @@ mahjo/
 
 - `vite.config.ts` の `build.rollupOptions.input` は **`app.html` のみ**。アプリの全画面はこの SPA 内（[screens.md](./screens.md) §1〜§5）。リポジトリ直下の `index.html` は **dev 専用のリダイレクト**（`npm run dev` で `/` が 404 にならないよう `app.html` へ転送）で、ビルド対象外＝dist には出ない。本番の `/` は `public/index.html`（LP）が担う。
 - `public/` はバンドラを通さず dist ルートへ素通しコピー＝ファイルパスがそのまま URL（素 HTML の LP・キャラ紹介・`site.css`・`img/`・`robots.txt`/`sitemap.xml`・`favicon`/`pwa-*.png`）。
-- PWA `start_url` は **`app.html`**。インストール起動・リピーターはアプリへ直行し、`/` 直アクセスだけが LP になる（LP も workbox 既定 glob で precache）。
+- PWA `start_url` は **`app.html`**。インストール起動・リピーターはアプリへ直行し、`/` 直アクセスだけが LP になる（LP も workbox の glob で precache。glob は `vite.config.ts` の `workbox.globPatterns` で明示＝js/css/html に加え ico/png/svg/webp＝キャラ画像・看板牌もオフライン対象。BGM `.m4a` は含めない＝[ADR-0004](../adr/ADR-0004-bgm-audio-files.md)）。
 
 各ページの構成・URL・画像方針・SEO の正は [screens.md](./screens.md) §6、デプロイ・base の扱いは [development.md](../dev/development.md)「デプロイ／ブランチ戦略」。
 

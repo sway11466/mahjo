@@ -17,6 +17,12 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        // 既定の glob は .webp を含まないため、キャラ画像（表情差分・立ち絵・サムネ）と看板牌が
+        // precache されず初回読込後のオフライン動作（architecture.md §1）が成立しない。webp を明示する。
+        // BGM（.m4a）は precache に入れない方針（ADR-0004）＝この glob に含めない。
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
+      },
       manifest: {
         name: 'Mahjo（マージョ）',
         short_name: 'Mahjo',
