@@ -75,7 +75,7 @@ ffmpeg -i looped.wav -c:a aac -b:a 96k src/assets/characters/<id>/<id>-bgm.m4a
 
 この一連は `tools/bgm/make-bgm.ps1`（Senaris の `gen_bgm.ps1` 相当）が実行する：`.\tools\bgm\make-bgm.ps1 -In <wav> -Id <id> -Bars <小節数> -Tempo <♩>`（または `-LoopSeconds L`）。先頭無音の警告・ループ加工・AAC 変換・入力/加工後の LUFS とピークの表を出し、既定で `src/assets/characters/<id>/<id>-bgm.m4a` に書く。
 
-たたき台（旧方式の主旋律を1パートに楽譜化した MusicXML）は `docs/characters/<id>/original/<id>-bgm-draft.musicxml`。MuseScore で開いて編曲の出発点にする（まお 32小節・♩=96＝L 80.000 秒／りん 16小節・♩=110＝L 34.909 秒。小節数やテンポを変えたら L も変わる）。
+たたき台を置く場合は `docs/characters/<id>/original/`（旧方式の主旋律を楽譜化した MusicXML は 2026-10-13 に破棄＝旧旋律に引きずられるため、曲は心機一転で作る。各 `character-<id>-sound.md` の「曲の狙い」TBD を先に埋める）。
 
 ### 音量 — 統合ラウドネス -23 LUFS 目安
 

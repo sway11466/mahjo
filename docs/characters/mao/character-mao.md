@@ -73,4 +73,4 @@
 
 ## 5. 音楽（BGM）
 
-曲の制作ノートは [character-mao-sound.md](./character-mao-sound.md)。BGM は MuseScore で自作アレンジした音源ファイル（`mao-bgm.m4a`・キャラ別1曲）方式（[sound.md](../../design/sound.md)「BGM の制作」・[ADR-0004](../../adr/ADR-0004-bgm-audio-files.md)）。現在の sound doc は旧方式（コード生成）の楽譜データで、新方式の曲を作る際に書き直す（旋律の狙い＝一気通貫のまっすぐ上るフック・明るく元気、は引き継ぐ）。
+曲の制作ノートは [character-mao-sound.md](./character-mao-sound.md)。BGM は MuseScore で自作アレンジした音源ファイル（`mao-bgm.m4a`・キャラ別1曲）方式（[sound.md](../../design/sound.md)「BGM の制作」・[ADR-0004](../../adr/ADR-0004-bgm-audio-files.md)）。曲は作り直し中（旧方式の旋律は破棄・2026-10-13）。曲の狙いは sound doc の **TBD** を埋めてから制作する。
