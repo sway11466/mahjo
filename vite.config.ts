@@ -23,7 +23,8 @@ export default defineConfig({
         // 既定の glob は .webp を含まないため、キャラ画像（表情差分・立ち絵・サムネ）と看板牌が
         // precache されず初回読込後のオフライン動作（architecture.md §1）が成立しない。webp を明示する。
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
-        globIgnores: ['**/*.m4a'],
+        // og.png は SNS のリンクプレビュー用（og:image）。ブラウザ側では使わないのでオフライン一覧に入れない。
+        globIgnores: ['**/*.m4a', '**/og.png'],
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.pathname.endsWith('.m4a'),
