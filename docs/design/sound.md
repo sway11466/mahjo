@@ -20,7 +20,7 @@ BGM は **MuseScore で自作アレンジした音源ファイル**を鳴らす�
 - **曲の単位** … キャラ別に1曲。`Character.bgm` が音源のアセットパス（例 `characters/mao/mao-bgm.m4a`）を指す（型は [data-model](./data-model.md) §13）。未指定のキャラは無音（中立曲は持たない）。
 - **形式** … AAC（`.m4a`）・96 kbps・44.1 kHz・ステレオ。全ブラウザ（Safari 含む）で再生でき、60〜90秒のループ1曲が 1 MB 前後。Ogg Vorbis は Safari で鳴らないため採らない。
 - **配布（precache に入れない）** … BGM は既定オフなので PWA のオフライン初回容量に乗せない。`vite-plugin-pwa` の `workbox.globIgnores` で `**/*.m4a` を precache から外し、`runtimeCaching`（CacheFirst）で「オンにして取得したら以後はオフラインでも鳴る」にする。
-- **再生** … `fetch → decodeAudioData → AudioBufferSourceNode`（`loop=true`）。継ぎ目なしでループし、下記の「ループ加工」をした音源がそのまま活きる。`loopEnd` には楽譜から求めたループ長 L（下記）を入れ、コーデックの末尾パディングに左右されないようにする。autoplay 解禁は最初のユーザー操作（AudioContext を resume）、キャラ切替は旧→新のクロスフェード、トグルオフ／曲なしキャラで停止。アプリ全体で1本（App ルートのコントローラ）。
+- **再生** … `fetch → decodeAudioData → AudioBufferSourceNode`（`loop=true`）。継ぎ目なしでループし、下記の「ループ加工」をした音源がそのまま活きる。`loopEnd` には楽譜から求めたループ長 L（下記）を入れ、コーデックの末尾パディングに左右されないようにする（**TBD**：`Character.bgm` は現状パス文字列のみで L を持たない。再生部は `loopEnd` を受け取れる口を持つがデータが無いためバッファ末尾でループしている。最初の曲で継ぎ目を実聴し、必要なら `Character.bgm` を `{ src, loopEnd }` に拡張する）。autoplay 解禁は最初のユーザー操作（AudioContext を resume）、キャラ切替は旧→新のクロスフェード、トグルオフ／曲なしキャラで停止。アプリ全体で1本（App ルートのコントローラ）。
 - **層の分担** … [architecture.md](./architecture.md) §2 のまま。**characters 層はアセットパス（データ）だけ**、**取得・デコード・再生の IO は ui 層**（`src/ui/audio`）。engine（麻雀計算）には入れない。アセットパス→実 URL の解決は画像と同じ `assetUrl`（`import.meta.glob` の対象に `m4a` を加える）。
 
 キャラ別の制作ノート（曲の狙い・調・テンポ・小節数・ループ長・ラウドネス）は各 `character-<id>-sound.md`（[character-guide.md](../characters/character-guide.md) §5「ファイル構成」）。

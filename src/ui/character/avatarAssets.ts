@@ -1,6 +1,7 @@
 /**
- * キャラの抽象アセットパス（例 'characters/mao/mao-portrait-happy-a.webp'）→
+ * キャラの抽象アセットパス（例 'characters/mao/mao-portrait-happy-a.webp'・'characters/mao/mao-bgm.m4a'）→
  * Vite がバンドルした実 URL の解決。表情→画像の解決は ui の責務（architecture.md §2）。
+ * BGM 音源（.m4a）も同じ経路で URL にする（取得・再生は src/ui/audio。sound.md「BGM の実現方式」）。
  *
  * characters 層はバンドラ非依存のデータ（パス文字列）だけを持ち、ここで URL へ橋渡しする。
  */
@@ -9,7 +10,7 @@ import type { Character, Expression } from '../../types/index.ts';
 import { expressionFor } from '../../session/index.ts';
 
 // src/assets 以下を一括取り込み（eager・url 取得）。キーは本ファイルからの相対パス。
-const modules = import.meta.glob('../../assets/characters/**/*.{webp,png}', {
+const modules = import.meta.glob('../../assets/characters/**/*.{webp,png,m4a}', {
   eager: true,
   query: '?url',
   import: 'default',
