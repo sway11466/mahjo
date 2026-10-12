@@ -17,6 +17,22 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // BGM（.m4a）は precache に入れず、オンにして取得したときだけランタイムキャッシュに残す
+      // （既定オフの機能でオフライン初回容量を増やさない。sound.md「BGM の実現方式」・ADR-0004）。
+      workbox: {
+        globIgnores: ['**/*.m4a'],
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.endsWith('.m4a'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'bgm',
+              expiration: { maxEntries: 8 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
+      },
       manifest: {
         name: 'Mahjo（マージョ）',
         short_name: 'Mahjo',
