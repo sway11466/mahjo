@@ -20,6 +20,9 @@ export default defineConfig({
       // BGM（.m4a）は precache に入れず、オンにして取得したときだけランタイムキャッシュに残す
       // （既定オフの機能でオフライン初回容量を増やさない。sound.md「BGM の実現方式」・ADR-0004）。
       workbox: {
+        // 既定の glob は .webp を含まないため、キャラ画像（表情差分・立ち絵・サムネ）と看板牌が
+        // precache されず初回読込後のオフライン動作（architecture.md §1）が成立しない。webp を明示する。
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
         globIgnores: ['**/*.m4a'],
         runtimeCaching: [
           {
