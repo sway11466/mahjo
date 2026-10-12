@@ -73,7 +73,9 @@ ffmpeg -i looped.wav -c:a aac -b:a 96k src/assets/characters/<id>/<id>-bgm.m4a
 
 `normalize=0` は必須（省略すると音量が半分になる）。確認すること：先頭に無音があれば加工前に落とす／加工後のピークが元と変わっていない（加算でクリップしていない）／ブラウザで継ぎ目を実聴し、ズレがあれば再生側の `loopStart`／`loopEnd` で合わせる。適用条件は 残響長 < ループ長（残響が長い曲は MuseScore で2周に複製して書き出し `[L, 2L]` を切り出す）。副作用として曲の頭に「前周の残響」が小さく入る（Senaris で実聴し違和感なしを確認済み）。
 
-この一連はコマンド数本なので、Senaris の `gen_bgm.ps1` に相当するスクリプトを `tools/` に置く（feature-21 の実装時）。
+この一連は `tools/bgm/make-bgm.ps1`（Senaris の `gen_bgm.ps1` 相当）が実行する：`.\tools\bgm\make-bgm.ps1 -In <wav> -Id <id> -Bars <小節数> -Tempo <♩>`（または `-LoopSeconds L`）。先頭無音の警告・ループ加工・AAC 変換・入力/加工後の LUFS とピークの表を出し、既定で `src/assets/characters/<id>/<id>-bgm.m4a` に書く。
+
+たたき台（旧方式の主旋律を1パートに楽譜化した MusicXML）は `docs/characters/<id>/original/<id>-bgm-draft.musicxml`。MuseScore で開いて編曲の出発点にする（まお 32小節・♩=96＝L 80.000 秒／りん 16小節・♩=110＝L 34.909 秒。小節数やテンポを変えたら L も変わる）。
 
 ### 音量 — 統合ラウドネス -23 LUFS 目安
 
