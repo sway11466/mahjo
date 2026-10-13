@@ -25,6 +25,7 @@ describe('MainScreen — 進捗の反映タイミング', () => {
         recordMiss={() => {}}
         rng={mulberry32(1)}
         rules={rules()}
+        randomTileOrder={false}
         onExit={() => {}}
       />,
     );
@@ -62,6 +63,7 @@ describe('MainScreen — 間違い履歴（data-model §16）', () => {
         recordMiss={(r) => misses.push(r)}
         rng={mulberry32(1)}
         rules={rules()}
+        randomTileOrder={false}
         onExit={() => {}}
       />,
     );
@@ -115,6 +117,7 @@ describe('MainScreen — リーチ脇の状況バッジ（feature-8）', () => {
         recordMiss={() => {}}
         rng={mulberry32(seed)}
         rules={rules()}
+        randomTileOrder={false}
         onExit={() => {}}
       />,
     );

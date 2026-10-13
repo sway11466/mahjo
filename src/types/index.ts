@@ -45,16 +45,9 @@ export type {
   ExpressionAsset,
   ReactionTrigger,
   Persona,
+  BgmTrack,
   Character,
 } from './character.ts';
-
-export type {
-  Instrument,
-  Mode,
-  BgmMelody,
-  ImprovSegment,
-  BgmData,
-} from './bgm.ts';
 
 // 設定
 export type { RuleSettings, AppSettings } from './settings.ts';

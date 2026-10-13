@@ -33,7 +33,6 @@ export function defaultAppSettings(): AppSettings {
     selectedCharacterId: 'mao',
     playerName: '',
     se: true,
-    bgm: false,
     randomTileOrder: false,
   };
 }

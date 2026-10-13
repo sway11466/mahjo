@@ -123,7 +123,7 @@ extra unspecified motifs, invented pattern elements, standalone star motifs, spa
 - クロップ枠：**`-crop 609x731+168+0 +repage`** を**全表情で固定**（中身ぴったりに合わせず neutral と同じ枠＝差し替えてもズレない）。
   - 幅609・X=168 ＝ neutral master bustup の中身横幅・左端（`original/mao-master-bustup.png` の trim `609x1122+168+14` 由来）。
   - 高さ731・Y=0 ＝ 5:6 になる高さ（609 × 6/5 ≈ 731）を上端 y=0 から採る（頭を切らない）。
-- **順序が肝**：① クロップ → ② 透過（Photopea・手作業）→ ③ リサイズ 640×768 → ④ WebP。⚠️ 白背景のままリサイズすると白フチ（フリンジ）が出るので**必ず透過してからリサイズ**。
+- **順序が肝**：① クロップ → ② 透過（スキル anime-cutout-defringe＝[character-guide.md](../character-guide.md) §4「表情差分の透過フロー」）→ ③ リサイズ 640×768 → ④ WebP。⚠️ 白背景のままリサイズすると白フチ（フリンジ）が出るので**必ず透過してからリサイズ**。
 
 **手順**
 
@@ -135,7 +135,7 @@ magick original/mao-portrait-<expr>-a.png -fuzz 5% -format "trim: %@  canvas: %w
 # ② クロップ（リサイズなし・native 609x731）
 magick original/mao-portrait-<expr>-a.png -crop 609x731+168+0 +repage mao-portrait-<expr>-a-cropped.png
 
-# ③ 透過：609x731 のまま Photopea で背景抜き（ここではリサイズしない）
+# ③ 透過：609x731 のまま anime-cutout-defringe スキルで背景抜き（ここではリサイズしない。手順は character-guide §4）
 
 # ④ 透過 PNG を 640×768 にリサイズ → WebP（配布先 src/assets へ）
 magick <透過cropped>.png -resize 640x768 -background none -gravity center -extent 640x768 mao-portrait-<expr>-a.png

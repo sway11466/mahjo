@@ -13,13 +13,13 @@
 |---|---|---|---|
 | Small | 1プロセス・IO/網/DOMなし・高速決定的 | engine（parse/yaku/fu/score/generate/mistakes）・hints | 最厚（正確性の本丸） |
 | Small〜Medium | jsdom＋Testing Library（実ブラウザ不要） | UIコンポーネント単体（描画・操作・条件分岐・状態反映） | 厚め |
-| Large/E2E | ブラウザで実アプリ通し | 主要ユーザーフロー数本＋PWA | 少数（安定重視） |
+| Large/E2E | ブラウザで実アプリ通し | 主要ユーザーフローの通し（§5） | 少数（安定重視） |
 
 軽量アーキ（バックエンド/DB/ネットワーク無し）なので「外部システム結合」の Medium 層がほぼ不要。Small を厚く＋E2E を薄く、中間が痩せた形でよい（普通の Web アプリより省力）。
 
 ## 2. ツールと配置
 
-- Vitest（Small・UI単体）、@testing-library/react ＋ jsdom（UI単体）、Playwright（E2E。未導入＝[backlog](../backlog.md) feature-20）。
+- Vitest（Small・UI単体）、@testing-library/react ＋ jsdom（UI単体）、Playwright（E2E。設定は `playwright.config.ts`、テストは `e2e/`。Vitest の対象からは除外）。
 - テストは実装ファイルの隣（`*.test.ts`）またはレイヤ直下の `__tests__/`。
 - 領域別の重み：
 
@@ -50,13 +50,23 @@
 
 ## 5. E2E（Large）
 
-ブラウザで実アプリを通し、主要フローが繋がることだけ確認（少数・安定重視）。**未導入**（Playwright の導入・シナリオ作成は [backlog](../backlog.md) feature-20。本節はその導入時のシナリオの正）。
+ブラウザで実アプリを通し、主要フローが繋がることだけ確認する（少数・安定重視）。Playwright（Chromium・ヘッドレス）で、ビルド成果物（`vite build` → `vite preview`）に対して流す。jsdom では見えない「入口（LP → `app.html`）・アセットの URL・実ブラウザでの画面遷移」を守るのが役割で、Small／UI単体で守れるもの（ヒントが答えを言わない・諭し文・ハイライトの対応・設定の保存と反映）は足さない。
 
-- 役モード：出題 → ヒント段階表示 → 回答 → 解説（成立役のウォークスルー）。
-- クイズ：回答 → キャラのリアクション → 解説へ。
-- 点数モード：解説の符・点数ステップ → ハイライト連携（通し1本）。
-- 設定：ルール変更が出題・採点に反映＋ localStorage 永続。
-- PWA：オフライン起動（precache）。
+シナリオは通しの1本（`e2e/smoke.spec.ts`）：
+
+- LP（`/`）→「ゲームを始める」→ スタート画面 → 練習開始 → 役モード → はじめる。
+- 8問（東1局〜南4局）を進める。1問目だけヒントを1段開き、回答後に解説を最後まで送る。2問目以降は回答して次へ。
+- 結果（「8問中 N問正解」）→ スタートへ。
+- 通しの間、同一オリジンの取得が 4xx/5xx にならないこと・ページ内で例外が出ないこと・立ち絵とポートレートの画像が読み込めることを確認する。
+
+書き方の約束：
+
+- 出題はランダムなので、手の中身・正誤には依存しない（どの選択肢を選んでも通る）。種の固定が要るときは `page.clock` で起動時刻を止める（アプリに種の口は足さない）。
+- 要素はボタン名・既存の `aria-label` で探す（`data-testid` は足さない）。
+- 外部への通信（GTM 等）は遮断する（計測を汚さず、外部要因で不安定にしない）。
+- 接続先は `E2E_BASE_URL` で切り替えられる（例 `https://mahjo.academy/preview/`。末尾 `/` 必須）。指定時はローカルのサーバーを立てない。デプロイ後のスモークへの流用を想定し、テスト名に `@smoke` を付ける（`--grep @smoke` で選べる）。
+
+足さなかったもの：設定の永続化（storage の単体テストで担保）、PWA のオフライン起動（Service Worker の待ち合わせで不安定になりやすい。壊れうるのは `vite.config.ts` の workbox 設定を触ったときで、そのときに手で確かめる。必要になったら追加する）。
 
 ## 6. 人手で確認する領域（感性・探索）
 
@@ -90,5 +100,6 @@
 
 ## 10. 実行
 
-- `npm test`（Vitest watch）／`npm run test:run`（CI/一回実行）。E2E は別コマンド（未導入＝[backlog](../backlog.md) feature-20。例 `npm run test:e2e`）。
+- `npm test`（Vitest watch）／`npm run test:run`（CI/一回実行）。E2E は `npm run test:e2e`（ビルド → プレビューサーバー起動 → 実行まで自動。初回のみ `npx playwright install chromium` でブラウザを入れる。OneDrive 配下で不安定なため直列＝workers 1）。失敗時は `test-results/` に trace・録画・スクリーンショットが残り、`npx playwright show-trace <trace.zip>` で再生できる。テストを書く・直すときは `npx playwright test --ui` が便利。
+- CI：`main` 向けの PR で `.github/workflows/ci.yml` が型チェック → Vitest → E2E を順に回す（GitHub Actions・ubuntu・Node 24）。E2E が落ちたときは trace・録画・HTML レポートを artifact `playwright-results` に残すので、ダウンロードして `npx playwright show-trace` で再生する。
 - カバレッジは engine を重点的に確認（数値の網羅が主目的でカバレッジ率自体は目安）。

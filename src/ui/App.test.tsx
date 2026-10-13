@@ -12,6 +12,22 @@ describe('App', () => {
     expect(screen.getByAltText('まお')).toBeInTheDocument();
   });
 
+  it('右上の音符ボタンはオフで始まり、設定画面の音楽トグルと同じ状態を共有する', () => {
+    render(<App />);
+    const note = () => screen.getByRole('button', { name: '音楽' });
+    expect(note()).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(note());
+    expect(note()).toHaveAttribute('aria-pressed', 'true');
+
+    // 画面が変わっても常駐し、設定トグルも同じ状態を出す
+    fireEvent.click(screen.getByRole('button', { name: 'アプリ設定' }));
+    expect(note()).toHaveAttribute('aria-pressed', 'true');
+    const toggle = screen.getByRole('switch', { name: '音楽' });
+    expect(toggle).toBeChecked();
+    fireEvent.click(toggle);
+    expect(note()).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('練習開始 → モード選択 → あいさつ → はじめる で和了形が出る', () => {
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: '練習開始' }));

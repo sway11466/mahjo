@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { configDefaults } from 'vitest/config';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -17,6 +18,26 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // BGM（.m4a）は precache に入れず、オンにして取得したときだけランタイムキャッシュに残す
+      // （既定オフの機能でオフライン初回容量を増やさない。sound.md「BGM の実現方式」・ADR-0004）。
+      workbox: {
+        // 既定の glob は .webp を含まないため、キャラ画像（表情差分・立ち絵・サムネ）と看板牌が
+        // precache されず初回読込後のオフライン動作（architecture.md §1）が成立しない。webp を明示する。
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
+        // og.png は SNS のリンクプレビュー用（og:image）。ブラウザ側では使わないのでオフライン一覧に入れない。
+        globIgnores: ['**/*.m4a', '**/og.png'],
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.endsWith('.m4a'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'bgm',
+              expiration: { maxEntries: 8 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
+      },
       manifest: {
         name: 'Mahjo（マージョ）',
         short_name: 'Mahjo',
@@ -56,5 +77,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     css: false,
+    // e2e/ は Playwright（npm run test:e2e）の担当。Vitest には拾わせない。
+    // .claude/ は worktree（リポジトリの丸ごとの写し）の置き場。拾うとテストが重複して何倍にもなる。
+    exclude: [...configDefaults.exclude, 'e2e/**', '.claude/**'],
   },
 });

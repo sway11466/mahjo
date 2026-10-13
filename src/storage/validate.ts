@@ -72,7 +72,6 @@ export function validateAppSettings(raw: unknown): AppSettings {
     selectedCharacterId: str(raw.selectedCharacterId, d.selectedCharacterId) || d.selectedCharacterId,
     playerName: str(raw.playerName, d.playerName),
     se: bool(raw.se, d.se),
-    bgm: bool(raw.bgm, d.bgm),
     randomTileOrder: bool(raw.randomTileOrder, d.randomTileOrder),
   };
 }

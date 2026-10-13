@@ -37,3 +37,10 @@ coverage/
 .env
 .env.*
 !.env.example
+
+# local work area (feature-9 sound collection etc. — not tracked)
+work/
+
+# Playwright (E2E) outputs
+test-results/
+playwright-report/

@@ -23,6 +23,9 @@ export const mao: Character = {
   // モチーフ（character-mao.md §3）：金の差し色＋法具＝御札・装飾＝月/星。描画は ui（selectionMark／decor）。
   accentColor: '#f5c451',
   motif: { ritual: 'ofuda', decor: 'moon' },
+  // BGM（character-mao-sound.md）。原本は docs/characters/mao/mao-bgm.mscz、再生は ui（src/ui/audio）。
+  // ♩=150・4/4：イントロ4小節＝6.4s を初回だけ鳴らし、Aメロ〜サビ32小節＝51.2s をループ（6.4〜57.6s）。
+  bgm: { src: 'characters/mao/mao-bgm.m4a', loopStart: 6.4, loopEnd: 57.6 },
   // まおが持つ表情（character-guide §2）。練習モードのリアクション6種を配置済み
   // （greeting:neutral / dealing:thinking / hinting:insight / explaining:smile / correct,finished:happy / wrong:troubled）。
   // 出番が増えたら variant 複数（b,c…）を先頭以外に足す。正は character-mao-script.md §1。
@@ -230,25 +233,5 @@ export const mao: Character = {
       '符（フ）の数え、どこかで食い違ったかも。待ちや刻子（コーツ）、雀頭（ジャントウ）をていねいに見てみましょう。',
     'han-miscount':
       '翻（ハン）の数え、ひとつ抜けたかもしれませんね。役をもう一度、かぞえてみましょう。',
-  },
-  // BGM（主旋律＋即興音）。正は character-mao-sound.md。方向性＝優しいけど元気（宮調・撥弦）。
-  // 駆け上がりに好きな役＝一気通貫のフック（まっすぐ上る 1 2 3 4 5）を織り込む。合成・再生は ui（src/ui/audio）。
-  bgm: {
-    melody: {
-      instrument: 'pluck',
-      tonic: 'C5',
-      mode: '宮',
-      tempo: 96,
-      brightness: 5300,
-      sustain: 0.25,
-      notes:
-        "1 2 3 2 3 5 3:2 5 3 2 1 2 3 1:2 1 2 3 5 5 1' 5:2 3 5 3 2 1 2 1:2 5, 1 2 3 2 3 2:2 3 2 1 2 3 2 1:2 1 2 3 2 3 5 3:2 2 3 5 3 3 2 1:2 1 2 3 4 5 1' 2' 3' 2' 1' 5 3 5 1' 2' 5 1 2 3 4 5 1' 2' 3' 3' 2' 1' 5 1' 5 3 5 3' 2' 1' 5 3 5 3:2 5 3 2 1 2 3 2:2 1 2 3 2 3 2 1 2 2 3 2 1 3 2 1:2",
-    },
-    improv: [
-      { start: 0, length: 8, instrument: 'pluck', density: 1, octave: 1, offset: 0, volume: 0.4, brightness: 3000, sustain: 0.4 },
-      { start: 8, length: 8, instrument: 'pluck', density: 2, octave: 1, offset: 0, volume: 0.4, brightness: 3000, sustain: 0.4 },
-      { start: 16, length: 8, instrument: 'pluck', density: 2, octave: 1, offset: 0, volume: 0.4, brightness: 3000, sustain: 0.4 },
-      { start: 24, length: 8, instrument: 'pluck', density: 1, octave: 1, offset: 0, volume: 0.4, brightness: 3000, sustain: 0.4 },
-    ],
   },
 };

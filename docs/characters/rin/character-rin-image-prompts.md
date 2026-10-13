@@ -174,7 +174,7 @@ holding bells, cluster of bells in hand, bells on a cord in hand, hands holding 
 - クロップ枠：**`-crop 640x768+155+16 +repage`** を全表情で固定。
   - 幅640・X=155 ＝中身をほぼ水平中央に置き、外側のツインテールは枠で自然にカット（中身中央 ≈ x=480 に対し 155..795）。
   - 高さ768・Y=16 ＝頭頂の少し上から。**640×768＝5:6 の最終寸そのものなのでリサイズ不要**（等倍＝線がネイティブの鮮明さのまま）。ツインテールが広く張るので窓を詰めず 640 幅で等倍に切る。
-- **順序**：① クロップ（640×768・等倍）→ ② 透過（Photopea・手作業）→ ③ そのまま WebP。リサイズが無いので白フチは出にくいが、透過は ① の後に行う。
+- **順序**：① クロップ（640×768・等倍）→ ② 透過（スキル anime-cutout-defringe＝[character-guide.md](../character-guide.md) §4「表情差分の透過フロー」）→ ③ そのまま WebP。リサイズが無いので白フチは出にくいが、透過は ① の後に行う。
 
 **手順**
 
@@ -186,7 +186,7 @@ magick original/rin-portrait-<expr>-a.png -fuzz 8% -format "trim: %@  canvas: %w
 # ② クロップ（640×768・等倍・リサイズなし）
 magick original/rin-portrait-<expr>-a.png -crop 640x768+155+16 +repage rin-portrait-<expr>-a-cropped.png
 
-# ③ 透過：640×768 のまま Photopea で背景抜き
+# ③ 透過：640×768 のまま anime-cutout-defringe スキルで背景抜き（手順は character-guide §4）
 
 # ④ そのまま WebP（配布先 src/assets へ。リサイズ不要）
 magick <透過cropped>.png -strip -define webp:method=6 -quality 90 rin-portrait-<expr>-a.webp
