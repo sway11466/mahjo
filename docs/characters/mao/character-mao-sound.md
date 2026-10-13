@@ -24,5 +24,46 @@
 | 調・テンポ | ニ短調／F長調・♩=150 |
 | 拍子・小節数 | 4/4・36小節 |
 | ループ長 L | 36 × 4 × 60 ÷ 150 = 57.600 秒（`make-bgm.ps1 -Bars 36 -Tempo 150`） |
-| 統合ラウドネス | -23.0 LUFS（ピーク -9.9 dBFS）。CLI 書き出しは -12.8 LUFS・ピーク 0.1 dBFS と大きすぎたため、加工前に ffmpeg で -10.1 dB 下げた暫定対応。仕上げ時は MuseScore の master で下げる（sound.md「音量」） |
+| 統合ラウドネス | -23.1 LUFS（ピーク -10.0 dBFS）。書き出し WAV は -12.8 LUFS で、`make-bgm.ps1` が -10.20 dB 補正した |
 | 配布 | `src/assets/characters/mao/mao-bgm.m4a`（`Character.bgm`） |
+
+## 作成レシピ
+
+共通の流れは [sound.md](../../design/sound.md)「BGM の制作」。まおで実際に回した手順と値（作り直すときはこのまま再現できる）。コマンドはリポジトリ直下の PowerShell。`<scratch>` は一時フォルダ（WAV・mp3 はコミットしない）。
+
+1. 方向決め：全体の方向性（中華風だけど華やか）を、まおの「王道・軽快・優しいけど元気」で受けると決めた（上記「曲の狙い」）。
+2. スケッチ：サビ8小節×2周を2案、♩=150 で聴き比べた。A＝F長調の王道進行、B＝ニ短調でAの属和音から和声的短音階で駆け上がる。まおは王道なのでAを採用（Bも好評＝他キャラ候補）。
+
+   ```
+   python -I docs\characters\mao\original\mao-bgm-draft.py <scratch>
+   ```
+
+   `mao-sketch-A.mid`／`mao-sketch-B.mid` が出る（`song` 引数なし）。mp3 化は手順3と同じ CLI。
+3. たたき台：Aをサビにして36小節を組んだ。第1稿は「最初からダルシマーが激しすぎて騒がしい」との指摘があり、ダルシマーの刻みをセクションで段階化して直した（イントロ＝4分、Aメロ＝8分、Bメロ・サビ＝16分）。
+
+   ```
+   python -I docs\characters\mao\original\mao-bgm-draft.py docs\characters\mao\original song
+   Start-Process -Wait -NoNewWindow "C:\Program Files\MuseScore 4\bin\MuseScore4.exe" -ArgumentList "-o <scratch>\mao-bgm.mp3 docs\characters\mao\original\mao-bgm-draft.mid"
+   ```
+
+   旋律・和音・伴奏型を直すときはスクリプトの `SONG_MAO`（セクションごとの和音と旋律）と `accomp_bar`（セクション別の伴奏の密度）を編集する。
+4. 原本化：`.mid` → `.mscz`（いまは基本音源のまま。Muse Sounds・ミックスの仕上げは未）。
+
+   ```
+   Start-Process -Wait -NoNewWindow "C:\Program Files\MuseScore 4\bin\MuseScore4.exe" -ArgumentList "-o docs\characters\mao\mao-bgm.mscz docs\characters\mao\original\mao-bgm-draft.mid"
+   ```
+
+5. 書き出し：
+
+   ```
+   Start-Process -Wait -NoNewWindow "C:\Program Files\MuseScore 4\bin\MuseScore4.exe" -ArgumentList "-o <scratch>\mao-bgm.wav docs\characters\mao\mao-bgm.mscz"
+   ```
+
+   基本音源の書き出しはピーク 0.1 dBFS（7サンプルが 0 dBFS に張り付く）で、スクリプトが入力ピークの警告を出す。聴感上は問題ないので第1版はそのまま。GUI で仕上げるときは master を少し下げて書き出す。
+6. 加工：
+
+   ```
+   .\tools\bgm\make-bgm.ps1 -In <scratch>\mao-bgm.wav -Id mao -Bars 36 -Tempo 150
+   ```
+
+7. 配線：`src/characters/mao/index.ts` の `bgm: 'characters/mao/mao-bgm.m4a'`。継ぎ目の実聴は未（サビ末尾の C7 からイントロ頭の F に戻る）。
