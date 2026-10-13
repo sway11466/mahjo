@@ -1,6 +1,6 @@
 # 効果音・音楽（音まわり）
 
-SE（効果音）と BGM（音楽）の方針。設定の型は [data-model](./data-model.md) §15 `AppSettings`。**BGM は音源ファイル方式**（MuseScore で自作アレンジした AAC を再生＝下記「BGM の実現方式」「BGM の制作」・[ADR-0004](../adr/ADR-0004-bgm-audio-files.md)）。旧方式（コード生成＝[ADR-0003](../adr/ADR-0003-bgm-code-generation.md)・Superseded）の実装は撤去済みで、新方式の再生部は未実装（曲が無い間は無音。実装は [backlog](../backlog.md) feature-21）。**SE は未実装**（素材収集＝[backlog](../backlog.md) feature-9・再生配線＝parking lot「音の実装」）で、SE 無しでもアプリは成立する。
+SE（効果音）と BGM（音楽）の方針。設定の型は [data-model](./data-model.md) §15 `AppSettings`。**BGM は音源ファイル方式**（MuseScore で自作アレンジした AAC を再生＝下記「BGM の実現方式」「BGM の制作」・[ADR-0004](../adr/ADR-0004-bgm-audio-files.md)）。旧方式（コード生成＝[ADR-0003](../adr/ADR-0003-bgm-code-generation.md)・Superseded）の実装は撤去済みで、新方式の再生部は実装済み（曲の無いキャラは無音。残作業は [backlog](../backlog.md) feature-21）。**SE は未実装**（素材収集＝[backlog](../backlog.md) feature-9・再生配線＝parking lot「音の実装」）で、SE 無しでもアプリは成立する。
 
 ## 設定
 
@@ -11,7 +11,15 @@ SE（効果音）と BGM（音楽）の方針。設定の型は [data-model](./d
 
 - 「プレッシャーをかけない」（[product-concept](../product-concept.md)）を音にも適用する。
 - 不正解音は“罰”にせず、やわらかい気づき音に。
-- BGM は集中を妨げない環境音的ループに。
+- BGM は罰や焦りを感じさせない明るさに（曲調は下記「BGM の方向性」）。
+
+## BGM の方向性（全キャラ共通・2026-10-14）
+
+- 中華風だけど華やか。手本は ZUN（東方Project）の中華風曲の作風（例「上海紅茶館 ~ Chinese Tea」）。作風を参考にするだけで、既存曲の旋律は借りない。
+- どのキャラの曲にも華やかなところ（サビ）を必ず作る。曲全体の明暗・テンポ・拍の感じはキャラの個性に合わせてよいが、華やかな山は外さない。
+- 情報量は控えなくてよい。集中しているときは気にならず、問題の合間にノれるくらいがちょうどよい（環境音的に薄めることはしない）。
+- 作り方の要点（旧旋律が「童謡／和風の既定曲」っぽくなった反省から）：中華らしさは旋律（五音音階寄り＋装飾音）で出し、和声は西洋の機能和声（王道進行・短調→平行長調 等）で華やかさを作る。リズムは8分のオクターブベース＋3+3+2 の食い込み＋16分の駆け上がりで駆動させる（4分の均等な歩みにしない）。中華楽器は使わなくてよい（ダルシマー／ハープのアルペジオで足りる）。
+- 楽曲の密度はセクションで段階的に上げる（イントロ・Aメロは薄く、サビで全部乗せ）＝頭から華やかにしすぎると騒がしい。
 
 ## BGM の実現方式（音源ファイル・キャラ別1曲）
 
@@ -27,20 +35,22 @@ BGM は **MuseScore で自作アレンジした音源ファイル**を鳴らす�
 
 ## BGM の制作（Senaris と同じ手順）
 
-ゼロから作曲はせず、AI 支援で出した旋律のたたき台を土台に MuseScore で編曲・仕上げをする。良し悪しの判断と仕上げは制作者が行う。
+ゼロから作曲はせず、AI 支援で出した旋律のたたき台を土台に MuseScore で編曲・仕上げをする。良し悪しの判断と仕上げは制作者が行う。本節は全キャラ共通の流れ。キャラ個別のレシピ（曲の設計・実際のコマンドと値）は各 `character-<id>-sound.md`（例 [character-mao-sound.md](../characters/mao/character-mao-sound.md)）。
 
 ### ツール
 
 - Muse Hub — Muse 社の配布・更新ランチャー。下記を入れる入口。
 - MuseScore Studio — 楽譜作成ソフト本体。制作・編集はこれ。
 - Muse Sounds — 高品質音源。Muse Hub 経由で入れる。
-- ffmpeg — WAV のループ加工と AAC への変換・ラウドネス測定。
+- ffmpeg — WAV のループ加工・音量合わせ・AAC への変換・ラウドネス測定。
+- Python — たたき台の生成スクリプト（MIDI を書く。標準ライブラリだけで動く）。
 
 ### データ形式と置き場
 
 | 形式 | 拡張子 | 役割 | 置き場 | 扱い |
 |---|---|---|---|---|
 | MuseScore 原本 | `.mscz` | 編曲の原本 | `docs/characters/<id>/<id>-bgm.mscz` | **必ず残す**（後で直せる）。ビルド非搭載 |
+| たたき台の生成スクリプト | `.py` | 旋律・和音・伴奏型をデータで書き、MIDI を出す | `docs/characters/<id>/original/<id>-bgm-draft.py` | 残す（作り直しの種） |
 | MusicXML / MIDI | `.musicxml` / `.mid` | たたき台の受け渡し | `docs/characters/<id>/original/` | 任意 |
 | WAV | `.wav` | 書き出し中間物（44.1 kHz／16 bit／ステレオ） | — | コミットしない（`.mscz` から再生成できる） |
 | AAC | `.m4a` | 最終成果物 | `src/assets/characters/<id>/<id>-bgm.m4a` | 生成物だが画像と同じくコミットする（置けば鳴る運用） |
@@ -50,13 +60,19 @@ MuseScore のバックアップ（`.mscbackup/`）はコミットしない。
 ### ワークフロー
 
 ```
-たたき台（AI支援で出した .musicxml / .mid）
-  → 編曲（MuseScore、原本 .mscz で保存）
-  → 書き出し（.wav＝44.1 kHz / 16 bit / ステレオ）
-  → ループ長 L の算出（小節数・拍子・テンポから）
-  → ループ加工（L で切り、切った残響を先頭に足す）
-  → 変換（ffmpeg で AAC → src/assets/characters/<id>/<id>-bgm.m4a）
+1. 方向決め … ブリーフ（テンポ・拍の感じ・調・形式・動機・楽器）を文章で合意
+2. スケッチ … 華やかなサビ8小節を2〜3案、生成スクリプト → MIDI → mp3 で聴き比べ
+3. たたき台 … 採用案をサビにして1曲（イントロ・Aメロ・Bメロ・サビ）を組み、mp3 で試聴・修正
+4. 原本化   … MuseScore CLI で MIDI → <id>-bgm.mscz（GUI 仕上げ＝Muse Sounds・ミックスはここ。任意）
+5. 書き出し … MuseScore CLI で .mscz → .wav（44.1 kHz / 16 bit / ステレオ。コミットしない）
+6. 加工     … make-bgm.ps1：ループ加工 → -23 LUFS へ音量合わせ → AAC
+7. 配線     … Character.bgm にパス、character-<id>-sound.md の制作ノートを埋め、アプリで継ぎ目を実聴
 ```
+
+- 1〜3 は短い往復で回す。最初からフルで作らず、サビの短いスケッチを並べて方向を決める（1案をフルで作って外すより早い）。試聴は MuseScore CLI の mp3 書き出しで、基本音源のままでよい（判断するのは旋律・和声・ノリ）。
+- 生成スクリプトは、旋律を `音名:長さ(16分単位)` の列、和音をコード名の列、伴奏型（ベース・刻み・アルペジオ・ドラム）をセクションごとの関数で書く。セクションごとに密度を変えられる形にしておく（上記「BGM の方向性」の段階的な密度）。雛形はまおの `original/mao-bgm-draft.py`。
+- MuseScore CLI は `MuseScore4.exe -o <出力> <入力>`。形式は拡張子で決まる（`.mid` → `.mscz`／`.mscz` → `.wav`・`.mp3`）。PowerShell からは `Start-Process -Wait -NoNewWindow` で呼ぶ（直接呼ぶと切り離されて完了を待てない）。
+- 4 の GUI 仕上げは後回しにしてよい。基本音源のまま配置して先に鳴らし、仕上げたら同名で `.mscz`／`.m4a` を上書きする（配線は変わらない）。
 
 ループ長は楽譜から求める：`L = 小節数 × 1小節の拍数 × 60 ÷ テンポ(♩)`（例：32小節・4/4・♩=96 → 80.000秒）。
 
@@ -73,9 +89,9 @@ ffmpeg -i looped.wav -c:a aac -b:a 96k src/assets/characters/<id>/<id>-bgm.m4a
 
 `normalize=0` は必須（省略すると音量が半分になる）。確認すること：先頭に無音があれば加工前に落とす／加工後のピークが元と変わっていない（加算でクリップしていない）／ブラウザで継ぎ目を実聴し、ズレがあれば再生側の `loopStart`／`loopEnd` で合わせる。適用条件は 残響長 < ループ長（残響が長い曲は MuseScore で2周に複製して書き出し `[L, 2L]` を切り出す）。副作用として曲の頭に「前周の残響」が小さく入る（Senaris で実聴し違和感なしを確認済み）。
 
-この一連は `tools/bgm/make-bgm.ps1`（Senaris の `gen_bgm.ps1` 相当）が実行する：`.\tools\bgm\make-bgm.ps1 -In <wav> -Id <id> -Bars <小節数> -Tempo <♩>`（または `-LoopSeconds L`）。先頭無音の警告・ループ加工・AAC 変換・入力/加工後の LUFS とピークの表を出し、既定で `src/assets/characters/<id>/<id>-bgm.m4a` に書く。
+この一連は `tools/bgm/make-bgm.ps1`（Senaris の `gen_bgm.ps1` 相当）が実行する：`.\tools\bgm\make-bgm.ps1 -In <wav> -Id <id> -Bars <小節数> -Tempo <♩>`（または `-LoopSeconds L`）。先頭無音と入力ピークの警告・ループ加工・音量合わせ（下記「音量」）・AAC 変換・入力/加工後の LUFS とピークの表を出し、既定で `src/assets/characters/<id>/<id>-bgm.m4a` に書く。
 
-たたき台を置く場合は `docs/characters/<id>/original/`（旧方式の主旋律を楽譜化した MusicXML は 2026-10-13 に破棄＝旧旋律に引きずられるため、曲は心機一転で作る。各 `character-<id>-sound.md` の「曲の狙い」TBD を先に埋める）。
+たたき台は `docs/characters/<id>/original/` に置く（旧方式の主旋律を楽譜化した MusicXML は 2026-10-13 に破棄＝旧旋律に引きずられるため、曲は心機一転で作る）。
 
 ### 音量 — 統合ラウドネス -23 LUFS 目安
 
@@ -85,7 +101,7 @@ ffmpeg -i looped.wav -c:a aac -b:a 96k src/assets/characters/<id>/<id>-bgm.m4a
 ffmpeg -i in.wav -af ebur128=peak=true -f null -     # I: が統合ラウドネス
 ```
 
-MuseScore 側は、パート間のバランスを各トラックのフェーダーで作り、曲全体の音量は master 1本で決める（master は書き出しに 1:1 で反映される）。ブーストは出口の余裕を食うので、バランスは下げる方向で組む。
+曲全体の音量合わせは ffmpeg で行う。`make-bgm.ps1` が入力 WAV の統合ラウドネスを測り、`-TargetLufs`（既定 -23）との差を一定ゲインとしてループ加工の最後に掛ける（動的な圧縮はしないので曲の抑揚は変わらない）。MuseScore 側はパート間のバランスを各トラックのフェーダーで作るだけでよい。ただし書き出しの時点でクリップしていると後から下げても戻らないので、スクリプトが入力ピークの警告（> -0.1 dBFS）を出したら MuseScore の master を下げて書き出し直すのが確実（数サンプル程度なら聴感上は問題ない）。
 
 ### 権利・台帳
 

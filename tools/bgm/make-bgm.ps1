@@ -6,6 +6,7 @@
   docs/design/sound.md「BGM の制作」の手順をそのまま実行する（Senaris の gen_bgm.ps1 相当）。
     1. 先頭の無音を検出して報告する（あれば MuseScore 側で落としてから再実行）。
     2. ループ長 L で切り、切り落とした残響の尾を先頭に足し込む（amix normalize=0）。
+       同時に、入力の統合ラウドネスを測って -TargetLufs（既定 -23）へ一定ゲインで合わせる（動的圧縮はしない）。
     3. AAC 96 kbps / 44.1 kHz / ステレオで src/assets/characters/<id>/<id>-bgm.m4a に書き出す。
     4. 入力・加工後の 統合ラウドネス（LUFS）とピークを ebur128 で測って表にする。
   L は -LoopSeconds で直接渡すか、-Bars / -Tempo（/ -BeatsPerBar）から求める：L = 小節数 × 拍数 × 60 ÷ テンポ。
@@ -25,7 +26,8 @@ param(
   [double] $Tempo = 0,
   [int]    $BeatsPerBar = 4,
   [string] $Out = '',                             # 省略時は src/assets/characters/<id>/<id>-bgm.m4a
-  [string] $Bitrate = '96k'
+  [string] $Bitrate = '96k',
+  [double] $TargetLufs = -23                      # 統合ラウドネスの目標。0 なら音量を変えない
 )
 
 $ErrorActionPreference = 'Stop'
@@ -70,7 +72,18 @@ if ($sil -match 'silence_start:\s+0(\.0+)?\s' -and $sil -match 'silence_end:\s+(
 }
 
 # 2. ループ加工：[0,L) を本体、[L,末尾) の残響を先頭へ折り返して加算（normalize=0 必須）。
-$filter = "[0]atrim=0:${L},asetpts=PTS-STARTPTS[body];[1]atrim=${L},asetpts=PTS-STARTPTS,apad=whole_dur=${L}[tail];[body][tail]amix=inputs=2:normalize=0:duration=first[out]"
+#    音量は入力の統合ラウドネスから一定ゲインを求めて最後に掛ける（MuseScore の master を触らずに済む）。
+$inMeasure = Measure-Loudness $In
+if ($inMeasure.TruePeak_dBFS -ne '?' -and [double]::Parse($inMeasure.TruePeak_dBFS, [Globalization.CultureInfo]::InvariantCulture) -gt -0.1) {
+  Write-Warning ("入力のピークが {0} dBFS。書き出しの時点でクリップしている疑い（MuseScore の master を下げて書き出し直すと確実）。" -f $inMeasure.TruePeak_dBFS)
+}
+$gain = '0.00'
+if ($TargetLufs -ne 0 -and $inMeasure.LUFS -ne '?') {
+  $gainDb = $TargetLufs - [double]::Parse($inMeasure.LUFS, [Globalization.CultureInfo]::InvariantCulture)
+  $gain = [string]::Format([Globalization.CultureInfo]::InvariantCulture, '{0:0.00}', $gainDb)
+  Write-Host "音量補正 $gain dB（$($inMeasure.LUFS) → $TargetLufs LUFS）" -ForegroundColor Cyan
+}
+$filter = "[0]atrim=0:${L},asetpts=PTS-STARTPTS[body];[1]atrim=${L},asetpts=PTS-STARTPTS,apad=whole_dur=${L}[tail];[body][tail]amix=inputs=2:normalize=0:duration=first,volume=${gain}dB[out]"
 & ffmpeg -hide_banner -loglevel error -y -i $In -i $In -filter_complex $filter -map '[out]' -ar 44100 -ac 2 $looped
 if ($LASTEXITCODE -ne 0) { throw 'ループ加工に失敗しました' }
 
@@ -78,8 +91,8 @@ if ($LASTEXITCODE -ne 0) { throw 'ループ加工に失敗しました' }
 & ffmpeg -hide_banner -loglevel error -y -i $looped -c:a aac -b:a $Bitrate -ar 44100 -ac 2 $Out
 if ($LASTEXITCODE -ne 0) { throw 'AAC 変換に失敗しました' }
 
-# 4. 報告。ピークが入力より上がっていたら折り返しの加算でクリップしている疑い。目安は -23 LUFS。
-@( (Measure-Loudness $In), (Measure-Loudness $looped), (Measure-Loudness $Out) ) | Format-Table -AutoSize
+# 4. 報告。加工後のピークが（音量補正ぶんを除いて）入力より上がっていたら折り返しの加算でクリップしている疑い。
+@( $inMeasure, (Measure-Loudness $looped), (Measure-Loudness $Out) ) | Format-Table -AutoSize
 Remove-Item $looped -ErrorAction SilentlyContinue
 Write-Host ("出力: {0}  ({1:N0} bytes)" -f $Out, (Get-Item $Out).Length) -ForegroundColor Green
 Write-Host '次：ブラウザで継ぎ目を実聴。Character.bgm にパスを設定し、character-<id>-sound.md を制作ノートへ。'
