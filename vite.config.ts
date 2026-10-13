@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { configDefaults } from 'vitest/config';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -76,5 +77,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     css: false,
+    // e2e/ は Playwright（npm run test:e2e）の担当。Vitest には拾わせない。
+    exclude: [...configDefaults.exclude, 'e2e/**'],
   },
 });
