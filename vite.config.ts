@@ -78,6 +78,7 @@ export default defineConfig({
     setupFiles: ['./vitest.setup.ts'],
     css: false,
     // e2e/ は Playwright（npm run test:e2e）の担当。Vitest には拾わせない。
-    exclude: [...configDefaults.exclude, 'e2e/**'],
+    // .claude/ は worktree（リポジトリの丸ごとの写し）の置き場。拾うとテストが重複して何倍にもなる。
+    exclude: [...configDefaults.exclude, 'e2e/**', '.claude/**'],
   },
 });
