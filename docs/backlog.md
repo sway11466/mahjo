@@ -30,9 +30,9 @@
 
 **E2E テスト（Large）の導入**（優先度：中）
 
-- 背景：[testing](./dev/testing.md) §5 は E2E 層（ブラウザで実アプリ通し・少数・安定重視）を定義するが、ランナー未導入・テスト未作成（`package.json` に E2E コマンドなし＝仕様にだけ存在する状態）。現状の回帰は Small＋UI単体（jsdom）と人手確認（§6）が担っており、「主要フローがブラウザで繋がる」ことと PWA のオフライン起動は実ブラウザでしか検証できない。
-- 対応：Playwright を導入し、シナリオは [testing](./dev/testing.md) §5 の5本（役モード通し／クイズ 回答→リアクション→解説／点数モードのハイライト連携／設定の反映と localStorage 永続／PWA オフライン起動）。実行は別コマンド（例 `npm run test:e2e`。コマンド名・CI 組み込みは導入時に確定し testing.md §2/§5/§10 へ反映）。少数・安定重視＝Small で守れるものは E2E に足さない（§1 の SML 方針）。
-- 該当：新規（`e2e/` 等の置き場＋ Playwright 設定）・`package.json`（devDependencies・スクリプト）・[testing](./dev/testing.md) §2/§5/§10（確定内容の反映）。
+- 背景：[testing](./dev/testing.md) §5 の E2E 層（ブラウザで実アプリ通し・少数・安定重視）。「主要フローがブラウザで繋がる」ことと、入口・アセットの URL が生きていることは実ブラウザでしか検証できない。
+- 対応：(1) **済（2026-10-14）** ローカル導入＝Playwright（Chromium・ヘッドレス）で通しの1本（LP → 役モード8問 → 結果）を `npm run test:e2e` で回す（[testing](./dev/testing.md) §5）。(2) CI 組み込み＝`main` 向け PR で typecheck・Vitest・E2E を回すワークフローを新設（現状テストの CI は無い＝Vitest も未実行）。失敗時は trace・録画を artifact に残す。Node のバージョン（ローカル 24／`deploy-pages.yml` 22）をここで揃える。
+- 該当：`.github/workflows/`（新規）・[testing](./dev/testing.md) §2/§10・[development](./dev/development.md)。関連：デプロイ直後のスモーク（`E2E_BASE_URL` で本番／preview へ流す）は parking lot「Cloudflare への移行」と合わせて検討。
 
 ### feature-9
 
