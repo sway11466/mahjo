@@ -73,4 +73,4 @@
 
 ## 5. 音楽（BGM）
 
-主旋律・即興音の設定は [character-mao-sound.md](./character-mao-sound.md)。BGM はコード生成方式（Web Audio 合成・音源ファイルなし）の二層構成（主旋律＋即興音）で、記法の編集・試聴は開発ツール [tools/melody-authoring](../../../tools/melody-authoring/)。
+曲の制作ノートは [character-mao-sound.md](./character-mao-sound.md)。BGM は MuseScore で自作アレンジした音源ファイル（`mao-bgm.m4a`・キャラ別1曲）方式（[sound.md](../../design/sound.md)「BGM の制作」・[ADR-0004](../../adr/ADR-0004-bgm-audio-files.md)）。曲は 2026-10-14 に作り直した第1版（中華風×王道。音色の仕上げは未）。

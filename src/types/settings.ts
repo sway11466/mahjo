@@ -20,10 +20,10 @@ export interface RuleSettings {
  * アプリ/UX 設定。RuleSettings と違い採点に影響しない（engine には渡さない）。
  * 即時反映・localStorage 保存。
  */
+// BGM のオンオフはここに持たない（保存しない UI 状態＝App が持つ。sound.md「設定」）。
 export interface AppSettings {
   selectedCharacterId: string; // 選択中サポートキャラ（characters レジストリの id）。既定 'mao'
   playerName: string; // プレイヤーの呼び方（Persona のセリフに差し込む）。既定 ''＝呼びかけなし
   se: boolean; // 効果音の有無。既定 true
-  bgm: boolean; // BGM（音楽）の有無。既定 false（学習中ずっと鳴るため）
   randomTileOrder: boolean; // 牌のランダム並び表示。既定 false
 }

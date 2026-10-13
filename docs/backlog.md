@@ -4,7 +4,7 @@
 
 ## index
 
-次回採番: bug=9 / feature=21 / refactoring=20
+次回採番: bug=9 / feature=22 / refactoring=20
 
 項目（バグ bug / 機能追加 feature / リファクタリング refactoring）を追加するときは、該当カテゴリの採番を +1 して ID を継ぐ。完了した項目は本書から削除し、番号は再利用しない（過去の使用済み番号は `git log -p -- docs/backlog.md | grep -oE '(feature|refactoring)-[0-9]+' | sort -u` で確認できる）。状態は「本書に載っていれば未完了／消えていれば完了」で表す（状態列は持たない）。優先度は各エントリ見出しに 高（設計の背骨に関わる）／中／低（飾り・潜在）で記す。
 
@@ -18,13 +18,13 @@
 
 実装済みコードに足す機能。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す。
 
-### feature-20
+### feature-21
 
-**E2E テスト（Large）の導入**（優先度：中）
+**BGM の音源ファイル方式への移行（実装）**（優先度：中）
 
-- 背景：[testing](./dev/testing.md) §5 は E2E 層（ブラウザで実アプリ通し・少数・安定重視）を定義するが、ランナー未導入・テスト未作成（`package.json` に E2E コマンドなし＝仕様にだけ存在する状態）。現状の回帰は Small＋UI単体（jsdom）と人手確認（§6）が担っており、「主要フローがブラウザで繋がる」ことと PWA のオフライン起動は実ブラウザでしか検証できない。
-- 対応：Playwright を導入し、シナリオは [testing](./dev/testing.md) §5 の5本（役モード通し／クイズ 回答→リアクション→解説／点数モードのハイライト連携／設定の反映と localStorage 永続／PWA オフライン起動）。実行は別コマンド（例 `npm run test:e2e`。コマンド名・CI 組み込みは導入時に確定し testing.md §2/§5/§10 へ反映）。少数・安定重視＝Small で守れるものは E2E に足さない（§1 の SML 方針）。
-- 該当：新規（`e2e/` 等の置き場＋ Playwright 設定）・`package.json`（devDependencies・スクリプト）・[testing](./dev/testing.md) §2/§5/§10（確定内容の反映）。
+- 背景：BGM の方式を コード生成（Web Audio 合成の二層構成＝[ADR-0003](./adr/ADR-0003-bgm-code-generation.md)・Superseded）から、MuseScore で自作アレンジした音源ファイル（AAC `.m4a`・キャラ別1曲・precache 外）へ変えた（[ADR-0004](./adr/ADR-0004-bgm-audio-files.md)・[sound](./design/sound.md)「BGM の実現方式」「BGM の制作」）。doc は新方式に書き換え済みで、コードは旧方式のまま動いている（まお・りんの合成曲が鳴る）。
+- 対応：(1) **済（2026-10-12）** 再生の置き換え＝`src/ui/audio` を `fetch → decodeAudioData → AudioBufferSourceNode(loop)` に書き直す（autoplay 解禁・キャラ切替クロスフェード・トグル停止の挙動は旧 `useBgm`/`player` を引き継ぐ。`loopEnd` は口だけ＝データに L が無い。[sound](./design/sound.md)「BGM の実現方式」の TBD）。(2) **済（2026-10-12）** `Character.bgm` を楽譜データ `BgmData` からアセットパス `string` へ（[data-model](./design/data-model.md) §13）。`assetUrl` の glob に `m4a` を追加。(3) **済（2026-10-12）** PWA＝`vite.config.ts` の `workbox.globIgnores` に `**/*.m4a`、`runtimeCaching`（CacheFirst）を追加。(4) **済（2026-10-11）** 旧方式の撤去＝`src/ui/audio` の notation/improv/synth とテスト・`src/types/bgm.ts`・`tools/melody-authoring`・まお／りんの `bgm` 楽譜データ（`Character.bgm` の `string` 化も同時に実施＝(2) の前半）。(5) **済（2026-10-12）** 加工スクリプト（Senaris の `gen_bgm.ps1` 相当。WAV→ループ加工→AAC・ラウドネス報告）＝`tools/bgm/make-bgm.ps1`。たたき台 MusicXML（旧主旋律の楽譜化）は一度置いたが、旧旋律に引きずられるため 2026-10-13 に破棄（曲は心機一転で作る）。(6) 曲の制作＝まお・りんの `.mscz` → `<id>-bgm.m4a`（各 `character-<id>-sound.md` を制作ノートへ書き直す）。まおは2026-10-14に第1版を配置（基本音源のたたき台。イントロは初回だけ鳴らし以後は Aメロ〜サビをループ＝`Character.bgm` を `{ src, loopStart, loopEnd }` に拡張して loopEnd TBD も決着。残り＝Muse Sounds での音色・ミックス仕上げ、アプリでの継ぎ目の実聴）。方向性は全キャラ共通で「中華風だけど華やか」（[sound](./design/sound.md)「BGM の方向性」）。りんは未着手。曲が無い間は無音で成立する（1〜5 だけ先に済ませてよい）。
+- 該当：`src/ui/audio/`・`src/types/bgm.ts`・`src/types/character.ts`・`src/characters/mao/index.ts`・`src/characters/rin/index.ts`・`src/ui/character/avatarAssets.ts`・`vite.config.ts`・`tools/melody-authoring/`（削除済）・`tools/`（新スクリプト）・`docs/characters/{mao,rin}/character-*-sound.md`。
 
 ### feature-9
 
@@ -39,12 +39,11 @@
 **設定画面に並べただけで未実装の項目を、実際に動くよう配線する**（優先度：低）
 
 - 背景：設定画面とその保存（`src/storage/`）は実装済みで、設定項目は2種類ある。**すでに採点エンジンに効くもの**（`kuitan`・`kiriageMangan`・`kazoeYakuman`・`doubleYakuman`・`enabledYaku`）は動作する。一方**挙動が未実装のもの**は、設定画面に項目だけ並べて「機能追加予定」表示でグレーアウトし（コード上は `RuleSettingsScreen.tsx`・`AppSettingsScreen.tsx` の `soon` 行）、値の保存だけ通している＝操作しても何も起きない。この「保存はされるが挙動が無い」項目を1つずつ「設定 → 実際の挙動」に繋ぐのが本項。配線できた項目から `soon` を外して編集可へ昇格する。
-- 対応：項目ごとに独立して着手できる（赤ドラ〔`akaDoraCount`〕は対応済み＝生成・表示・設定UI とも稼働）。
+- 対応：項目ごとに独立して着手できる（赤ドラ〔`akaDoraCount`〕・牌のランダム並び〔`randomTileOrder`〕は対応済み）。
   - 呼び方（`playerName`）：プレイヤーの呼び名を Persona のセリフに差し込む（[character-guide](./characters/character-guide.md) §2）。差し込みの仕組み（テンプレート）自体が未実装なので機構ごと用意する。
-  - 牌のランダム並び（`randomTileOrder`）：手牌を正準順でなくシャッフルして描画する（Tile データは不変・表示側だけ＝[data-model](./design/data-model.md) §1）。
   - 後付け（`atozuke`）：生成・和了可否の判定に反映する（採点には影響しない。[scoring-rules](./spec/scoring-rules.md) §5）。
-  - 対象外（別項目で追跡）：効果音・音楽（`se`/`bgm`）＝parking lot「音（SE/BGM）の実装」＋[feature-9](#feature-9)／レア役（`rareYaku`）＝parking lot・[scoring-rules](./spec/scoring-rules.md) §1.3（未対応）。
-- 該当：`src/ui/settings/RuleSettingsScreen.tsx`・`src/ui/settings/AppSettingsScreen.tsx`（`soon` 行の解除）・`src/engine/generate.ts`（後付け）・`src/characters/`＋`src/session/`（呼び方差し込み）・`src/ui/main/`（牌並び表示）。
+  - 対象外（別項目で追跡）：効果音・音楽（`se`/`bgm`）＝parking lot「音（SE/BGM）の実装」＋[feature-9](#feature-9)＋[feature-21](#feature-21)／レア役（`rareYaku`）＝parking lot・[scoring-rules](./spec/scoring-rules.md) §1.3（未対応）。
+- 該当：`src/ui/settings/RuleSettingsScreen.tsx`・`src/ui/settings/AppSettingsScreen.tsx`（`soon` 行の解除）・`src/engine/generate.ts`（後付け）・`src/characters/`＋`src/session/`（呼び方差し込み）。
 
 ### feature-14
 
@@ -80,15 +79,6 @@
   - **キャラクター固有のスタイル定義は、アプリ共通トークンに混ぜず、キャラクターごとに持つ**（キャラ追加＝データ＋そのキャラのアセット／スタイルで完結し、共通 `:root` の編集を要しない＝[character-guide](./characters/character-guide.md)「キャラを足してもロジック不変」の精神）。キャラの世界観に属する装飾値（御札の朱 `#c0392b`・墨 `#2a2320`＝`character/items/Ofuda.css`、月・装飾モチーフ＝`character/decor/`、法具ホバー＝`character/RitualHoverMark.css`、立ち絵ステージ＝`character/CharacterStage.css` のキャラ寄り装飾）は、共通トークンへ吸い上げず各キャラのスコープ（当面は当該 `ui/character/**` CSS、将来はキャラ別テーマ）に閉じる。テーマ色・差し色は既存どおり `--char-glow`/`--char-accent` 等の CSS 変数で App がキャラ値を流す（[architecture](./design/architecture.md) §5・[character-guide](./characters/character-guide.md) §2「テーマ色／差し色」）＝共通トークンは「中立な器」、具体色は「キャラが注ぐ」分担を保つ。
 - 該当：`src/ui/index.css`（中立トークン追加）・`src/ui/**/*.css` 全般（直値→トークン置換。とくに `main/score-table`・`main/yaku-list`・`main/fu-counting`・`common/ReferenceOverlay`・`common/BackButton`・`start`・`settings`・`main/quiz/ChoicePanel`）。キャラ固有スタイルは `src/ui/character/**`（`items/Ofuda.css`・`decor/`・`RitualHoverMark.css`・`CharacterStage.css`）にキャラ単位で保持（共通トークンへ移さない）。指針は [architecture](./design/architecture.md) §5・[character-guide](./characters/character-guide.md)。
 
-### refactoring-19
-
-**generate.ts のシード構築器（SEEDS）の切り出し**（優先度：低）
-
-- 背景：`src/engine/generate.ts`（約650行）に性格の違う責務が同居している——出題オーケストレーション（難易度帯・プール・生成後ガード）、和了状況の付与（`applyContext`）、実体化（`realize`＝BuildPlan→Tile 割当・ドラ表示牌・赤ドラ計画）、構築 DSL ヘルパ（`sh`/`ko`/`pr` 等）、そして役ごとの構築器テーブル `SEEDS`（約330行）。肥大化の主因は `SEEDS` で、ここはロジックというより「役ごとの構築レシピ」というデータ性の強い部分。役満シード生成（parking lot）に対応するとさらに十数役ぶん伸びるのが確実で、engine が parse/yaku/fu/score へモジュール分割済み（[architecture](./design/architecture.md) §3）である慣行に照らしても1ファイル同居が浮いている。
-- 対応：`SEEDS` テーブル＋構築 DSL ヘルパを別ファイル（例 `src/engine/generate-seeds.ts`。名前は着手時に確定）へ移す。境界は既存の `SetSpec`/`BuildPlan` インターフェースをそのまま使い、新しい抽象は作らない（[architecture](./design/architecture.md) 冒頭の指針）。チューニング値の正本として [architecture](./design/architecture.md) が名指しする `BAND_THRESHOLD`・`P_KAN` は generate.ts 本体に残す（doc の参照を変えない）。挙動不変＝既存の生成テスト（[testing](./dev/testing.md) §7）で回帰確認。役満シード生成（parking lot）の着手前に済ませると効果が大きい。
-- 該当：`src/engine/generate.ts`（分割元）・新規ファイル（分割先）。仕様は不変（[generation.md](./spec/generation.md)）。
-- 関連（今回は起票せず様子見と判断したもの・2026-07-19 調査）：`src/ui/main/MainScreen.tsx`（約330行。進行ハンドラ・計測・提示組み立て・オーバーレイ開閉が同居＝画面責務の上限近く。次に状態・演出を足す時に進行系のフック切り出しを検討）／`src/engine/score.ts`（約350行。ドラ計算一式〔約100行〕は `fu.ts` と同格の独立関心事＝伸びるなら `dora.ts` へ）。
-
 ## parking lot
 
 後回し・いつかやる候補の置き場（特定の作業に紐付かない将来アイデア）。着手が決まった段で機能追加・リファクタリングへ引き上げる。
@@ -101,7 +91,7 @@
 - LP／キャラ紹介ページからアプリへのキャラ指定ディープリンク（URL でキャラを選択状態にして起動）。ルーティング未整備（[screens.md](./design/screens.md) §6。旧 feature-1／feature-5 から引き継ぐ将来分）。
 - オフライン計測（GA4）：オフライン起動分は素の GTM/GA だと取りこぼす（`gtm.js` 未キャッシュで GTM 自体が起動しない）。取るなら Workbox の offline-google-analytics（`workbox-google-analytics`）で収集リクエストを横取りし Background Sync キュー→再接続時に元タイムスタンプで再送（GA4 のタイムスタンプ補正ウィンドウ〔約72h〕超過は破棄・再接続しない端末は不可）。precache 込みで導入するか判断。GTM の素の導入・オンライン計測は稼働済み。
 - 累計正答数による表情/衣装/特別セリフのアンロック・節目演出（好感度）。
-- 音の実装（[sound](./design/sound.md)）。**BGM は実装済み**＝コード生成（Web Audio・2層）を App ルートの1本のコントローラ（`src/ui/audio`：notation/improv/synth/player/useBgm）で鳴らす（`AppSettings.bgm`＋選択キャラの `Character.bgm` を見る／autoplay 解禁は初回操作／キャラ切替でクロスフェード）。まおの曲は投入済み。**残り**：(1) SE の再生配線（`AppSettings.se`／autoplay／precache。SE 素材の収集は [feature-9](#feature-9) が先）、(2) 他キャラの `bgm` データ（りん等＝各 `character-<id>-sound.md` 作成後）、(3) 音量スライダー等の拡張（任意）。
+- 音の実装（[sound](./design/sound.md)）。BGM は App ルートの1本のコントローラ（`src/ui/audio`）で鳴らす（`右上の音符ボタン（保存しない BGM オンオフ）＋選択キャラの `Character.bgm` を見る／押した操作が autoplay 解禁を兼ねる／キャラ切替でクロスフェード）。音源ファイル方式への置き換えは [feature-21](#feature-21)。**残り**：(1) SE の再生配線（`AppSettings.se`／autoplay／precache。SE 素材の収集は [feature-9](#feature-9) が先）、(2) 音量スライダー等の拡張（任意）。
 - 連続正解などのゲーム要素。
 - **ストーリーモード（兼ハードモード｜将来・新ゲームモード）**：世界に厄災（＝人間の悪意を増幅する思念体。[characters/world.md](./characters/world.md) §3）が起こりかけるが、麻雀の和了を正しく読むと防げる物語モード。**通常の「プレッシャーをかけない」方針からの唯一の意図的な例外**＝ハードたるゆえん（[product-concept](./product-concept.md) §3 と緊張するが、下記の失敗演出で優しさを保つ）。舞台＝[characters/world.md](./characters/world.md)。
   - **システム（構想）**：練習と同じ手牌が出る→役/点数を当てる**タイムアタック**。**1ラン＝1ステージ**（タイマー全体一本・単位/閾値はステージ内固定）。
@@ -121,5 +111,7 @@
 - 頻出表情の差分バリアント（`<id>-portrait-<expr>-b.webp` 等）の用意（`srcs` ローテーションは配線済み＝旧 refactoring-8・素材待ちで休眠。各キャラ `expressions[].srcs` に追記すれば有効化。[character-guide](./characters/character-guide.md) §4）。
 - りんの「照れ隠し」表情：ストーリー用 `bashful` を作成済み（[story/episode-01.md](./story/episode-01.md)・素材は `original/`）。リアクション系でも 照れ隠し が要るかは rin 実装時に判断（既存 `flustered` 兼用か、専用キー追加か。[character-rin](./characters/rin/character-rin.md)）。
 - 実機での感性チェック（hinting=insight の強さ・ヒントの“気づきビート”（「…あ。」等）の単調さ・smile↔happy の見分け）。[testing](./dev/testing.md) §6 のチェックリストで回す。
+- Cloudflare への移行（DNS／配信／監視）：作者の他プロダクトを Cloudflare に寄せている流れに合わせ、管理を1か所にまとめる（配信費は GitHub Pages も無料で差はなく、削減は Route 53 の月額・クエリ課金＋登録移管できればドメイン更新費）。段階は (1) DNS を Route 53 → Cloudflare、(2) 配信を GitHub Pages → Cloudflare（Pages か Workers の静的アセット配信かは着手時に公式で確認。`production`→`mahjo.academy`・`preview`→`preview.mahjo.academy` のサブドメイン化で、`/preview/` サブパス＋base 出し分け＋両ブランチ束ねビルドが不要になり、PWA キャッシュも origin で分離）、(3) ドメイン登録の移管（Cloudflare Registrar が `.academy` に対応していれば）、(4) 死活監視＝Workers の Cron Triggers でプロダクト横断の監視スクリプト（落ちたら通知）。新配信先へ E2E のスモーク（`E2E_BASE_URL` で接続先を指定＝[testing](./dev/testing.md) §5）を流して確認してから DNS を切り替える。デプロイ直後に本番／preview へスモークを流す仕組みもこのとき合わせて検討。該当：[development](./dev/development.md)「配布」「デプロイ／ブランチ戦略」・`.github/workflows/deploy-pages.yml`・PWA の base 前提（[architecture](./design/architecture.md) §4）。
 - Error Boundary の導入（`src/ui/App.tsx`）：予期しない throw で白画面にせず復旧導線を出す一般防御。既知のクラッシュ経路（enabledYaku 全オフ＝旧 bug-7）は出題入口の無害化（`sanitizeForGeneration`）で塞ぎ済みで、残りは未知の例外への保険。
 - decisions.md 2026-06-10 エントリの整理（内容は hints / character-guide / character-mao-script へ移行済み。使い魔素材が入って未決が無くなったらエントリを削除）。
+- 肥大化の様子見（2026-07-19 調査・起票せず。旧 refactoring-19＝generate.ts の SEEDS 切り出しは完了）：`src/ui/main/MainScreen.tsx`（約330行。進行ハンドラ・計測・提示組み立て・オーバーレイ開閉が同居＝画面責務の上限近く。次に状態・演出を足す時に進行系のフック切り出しを検討）／`src/engine/score.ts`（約350行。ドラ計算一式〔約100行〕は `fu.ts` と同格の独立関心事＝伸びるなら `dora.ts` へ）。

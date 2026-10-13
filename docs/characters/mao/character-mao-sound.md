@@ -1,36 +1,73 @@
 # キャラクター音楽（BGM）：まお
 
-> まお個別の素性・ビジュアル・セリフは [character-mao.md](./character-mao.md)。本書はまおの BGM（主旋律・即興音）を持つ。
+> まお個別の素性・ビジュアル・セリフは [character-mao.md](./character-mao.md)。本書はまおの BGM の制作ノート（曲の狙い・調・テンポ・小節数・ループ長・ラウドネス・たたき台の出所）。方式は MuseScore で自作アレンジした音源ファイル（`mao-bgm.m4a`）＝[sound.md](../../design/sound.md)「BGM の実現方式」「BGM の制作」・[ADR-0004](../../adr/ADR-0004-bgm-audio-files.md)。
 
-まおの BGM。コード生成方式（Web Audio 合成・音源ファイルなし）の二層構成＝主旋律（キャラごとの決まった旋律・度数記法）＋即興音（主旋律の合間を飾る毎回ちがう音・セグメント配列）。記法の編集・試聴は開発ツール [tools/melody-authoring](../../../tools/melody-authoring/) で行う（各設定値の意味・取り得る値もツールに集約）。
+> 旧方式（コード生成・[ADR-0003](../../adr/ADR-0003-bgm-code-generation.md) Superseded）の旋律データは、新方式の曲を心機一転で作り直す判断（2026-10-13）に伴い本書から削除した。現行の曲は 2026-10-14 に作り直した第1版（たたき台＝MuseScore 基本音源のまま）。音色・ミックスの仕上げは MuseScore で行い、同名上書きで差し替える。
 
-> BGM の実現方式・度数記法・即興音のセグメント配列の正は [sound.md](../../design/sound.md)「BGM の実現方式」。判断の記録は [ADR-0003](../../adr/ADR-0003-bgm-code-generation.md)。本書はまおの曲データを持つ。
+## 曲の狙い
 
-## 主旋律
+全キャラ共通の方向性「中華風だけど華やか」（[sound.md](../../design/sound.md)「BGM の方向性」）を、まおの「王道・優しいけど元気」で受ける。
 
-方向性＝優しいけど元気。前半16小節は落ち着いた素直な歌、中盤8小節で一気に駆け上がり、後半8小節でまた落ち着く（全32小節でループ）。駆け上がりには好きな役＝一気通貫のフック（まっすぐ上る `1 2 3 4 5`）を織り込み、まっすぐで前向きな性格を出す。明るい宮調・歯切れよい撥弦（琴）で元気さを、中庸すぎない起伏で優しさを両立させる。
+- 王道の明るさ：サビは F長調の王道進行（B♭–C–Am–Dm）から Gm–C–F で着地。五音音階寄りの旋律に装飾音を添えて中華風に。
+- 優しい入り：イントロ・Aメロはニ短調で薄め（ダルシマーは4分→8分、ドラムは半分のノリ）。Bメロで同音連打の動機を3段に上げて、サビで全部乗せ（ダルシマー16分・2周目はバイオリンが旋律を重ねる）。
+- 好きな役のフック：サビ末尾（とイントロ末尾）に一気通貫＝ファから高いソまで9音を16分で一直線に駆け上がる。
+- 駆動：♩=150、8分のオクターブベース＋3+3+2 の食い込み。
 
-```
-instrument: pluck        // 撥弦（琴）
-tonic:      C5           // 主音
-mode:       宮           // 明るい（長音階ペンタ）。音程 0,2,4,7,9（主音からの半音）
-tempo:      96           // BPM
-brightness: 5300         // Hz（明るさ＝ローパス）
-sustain:    0.25         // 余韻（歯切れ）
-melody:     1 2 3 2 3 5 3:2 5 3 2 1 2 3 1:2 1 2 3 5 5 1' 5:2 3 5 3 2 1 2 1:2 5, 1 2 3 2 3 2:2 3 2 1 2 3 2 1:2 1 2 3 2 3 5 3:2 2 3 5 3 3 2 1:2 1 2 3 4 5 1' 2' 3' 2' 1' 5 3 5 1' 2' 5 1 2 3 4 5 1' 2' 3' 3' 2' 1' 5 1' 5 3 5 3' 2' 1' 5 3 5 3:2 5 3 2 1 2 3 2:2 1 2 3 2 3 2 1 2 2 3 2 1 3 2 1:2
-```
+## 制作ノート
 
-度数記法：度数 `1`〜`5`（音階の低い方から・主音=1）／オクターブ `'` 上 `,` 下／長さ `:拍`（既定1）／休符 `0`／空白区切り。モード（調）は同じ度数でも実音程が変わる（宮＝明るい／羽＝翳り 等）。
+| 項目 | 値 |
+|---|---|
+| 原本 | `docs/characters/mao/mao-bgm.mscz`（必ず残す）。現状はたたき台 MIDI を MuseScore CLI で読み込んだだけ（基本音源） |
+| たたき台の出所 | `original/mao-bgm-draft.mid`。Claude が生成スクリプト `original/mao-bgm-draft.py`（旋律・和音・伴奏型をデータで記述）から書き出し、mp3 試聴で方向を決めた（サビ2案＝F長調の王道／ニ短調のドラマチックからF長調を採用。ニ短調案は他キャラ候補として保留） |
+| 構成 | イントロ4（F–C–Dm–C7）→ Aメロ8（Dm–B♭–C–F–Dm–B♭–Gm–A）→ Bメロ8（B♭–C–Am–Dm–Gm–Gm–C–C7）→ サビ8×2（B♭–C–Am–Dm–Gm–C–F–C7） |
+| 楽器 | フルート（旋律）・バイオリン（サビ2周目の重ね）・ピアノ（3+3+2 の刻み）・ダルシマー（アルペジオ）・ストリングス（和音）・ベース・ドラム |
+| 調・テンポ | ニ短調／F長調・♩=150 |
+| 拍子・小節数 | 4/4・36小節（イントロ4＋ループ32） |
+| ループ範囲 | イントロ I＝4 × 4 × 60 ÷ 150 = 6.400 秒は初回だけ。ループ L＝32 × 4 × 60 ÷ 150 = 51.200 秒（Aメロ頭〜サビ末尾）。`Character.bgm` は `loopStart: 6.4`・`loopEnd: 57.6`。継ぎ目はサビ末尾の C7 → Aメロ頭の Dm |
+| 統合ラウドネス | -23.0 LUFS（ピーク -10.0 dBFS）。書き出し WAV は -12.8 LUFS で、`make-bgm.ps1` が -10.20 dB 補正した |
+| 配布 | `src/assets/characters/mao/mao-bgm.m4a`（`Character.bgm.src`） |
 
-## 即興音
+## 作成レシピ
 
-即興音（主旋律の合間を飾る毎回ちがう音）。セグメント配列＝`{ start, length, instrument, density, octave, offset, volume, brightness, sustain }`（`start`＝開始小節・`start+length` で配置、同じ `start` に重ねると声部が重なる）。主旋律の起伏に合わせ、前半は疎（density 1）、中盤（8〜24小節）でやや密（density 2）、終盤で疎に戻す、控えめな撥弦（琴）。各項目の意味・取り得る値は開発ツール（冒頭リンク）に集約。
+共通の流れは [sound.md](../../design/sound.md)「BGM の制作」。まおで実際に回した手順と値（作り直すときはこのまま再現できる）。コマンドはリポジトリ直下の PowerShell。`<scratch>` は一時フォルダ（WAV・mp3 はコミットしない）。
 
-```
-即興音 = [
-  { start: 0,  length: 8, instrument: pluck, density: 1, octave: 1, offset: 0, volume: 0.4, brightness: 3000, sustain: 0.40 },
-  { start: 8,  length: 8, instrument: pluck, density: 2, octave: 1, offset: 0, volume: 0.4, brightness: 3000, sustain: 0.40 },
-  { start: 16, length: 8, instrument: pluck, density: 2, octave: 1, offset: 0, volume: 0.4, brightness: 3000, sustain: 0.40 },
-  { start: 24, length: 8, instrument: pluck, density: 1, octave: 1, offset: 0, volume: 0.4, brightness: 3000, sustain: 0.40 },
-]
-```
+1. 方向決め：全体の方向性（中華風だけど華やか）を、まおの「王道・軽快・優しいけど元気」で受けると決めた（上記「曲の狙い」）。
+2. スケッチ：サビ8小節×2周を2案、♩=150 で聴き比べた。A＝F長調の王道進行、B＝ニ短調でAの属和音から和声的短音階で駆け上がる。まおは王道なのでAを採用（Bも好評＝他キャラ候補）。
+
+   ```
+   python -I docs\characters\mao\original\mao-bgm-draft.py <scratch>
+   ```
+
+   `mao-sketch-A.mid`／`mao-sketch-B.mid` が出る（`song` 引数なし）。mp3 化は手順3と同じ CLI。
+3. たたき台：Aをサビにして36小節を組んだ。第1稿は「最初からダルシマーが激しすぎて騒がしい」との指摘があり、ダルシマーの刻みをセクションで段階化して直した（イントロ＝4分、Aメロ＝8分、Bメロ・サビ＝16分）。
+
+   ```
+   python -I docs\characters\mao\original\mao-bgm-draft.py docs\characters\mao\original song
+   Start-Process -Wait -NoNewWindow "C:\Program Files\MuseScore 4\bin\MuseScore4.exe" -ArgumentList "-o <scratch>\mao-bgm.mp3 docs\characters\mao\original\mao-bgm-draft.mid"
+   ```
+
+   旋律・和音・伴奏型を直すときはスクリプトの `SONG_MAO`（セクションごとの和音と旋律）と `accomp_bar`（セクション別の伴奏の密度）を編集する。
+4. 原本化：`.mid` → `.mscz`（いまは基本音源のまま。Muse Sounds・ミックスの仕上げは未）。
+
+   ```
+   Start-Process -Wait -NoNewWindow "C:\Program Files\MuseScore 4\bin\MuseScore4.exe" -ArgumentList "-o docs\characters\mao\mao-bgm.mscz docs\characters\mao\original\mao-bgm-draft.mid"
+   ```
+
+5. 書き出し：
+
+   ```
+   Start-Process -Wait -NoNewWindow "C:\Program Files\MuseScore 4\bin\MuseScore4.exe" -ArgumentList "-o <scratch>\mao-bgm.wav docs\characters\mao\mao-bgm.mscz"
+   ```
+
+   基本音源の書き出しはピーク 0.1 dBFS（7サンプルが 0 dBFS に張り付く）で、スクリプトが入力ピークの警告を出す。聴感上は問題ないので第1版はそのまま。GUI で仕上げるときは master を少し下げて書き出す。
+6. 加工：
+
+   ```
+   .\tools\bgm\make-bgm.ps1 -In <scratch>\mao-bgm.wav -Id mao -IntroBars 4 -Bars 32 -Tempo 150
+   ```
+
+7. 配線：`src/characters/mao/index.ts` の `bgm: { src: 'characters/mao/mao-bgm.m4a', loopStart: 6.4, loopEnd: 57.6 }`。初版はイントロごとループしていたが、「ループのときは先頭部分が無い方が良い」との指摘でイントロを初回だけにした（2026-10-14）。継ぎ目の確認は、1周目＋2周目（6.4秒〜）を ffmpeg で連結した mp3 で行える：
+
+   ```
+   ffmpeg -i src\assets\characters\mao\mao-bgm.m4a -i src\assets\characters\mao\mao-bgm.m4a -filter_complex "[0]atrim=0:57.6,asetpts=PTS-STARTPTS[a];[1]atrim=6.4:57.6,asetpts=PTS-STARTPTS[b];[a][b]concat=n=2:v=0:a=1[o]" -map "[o]" <scratch>\mao-loop-preview.mp3
+   ```

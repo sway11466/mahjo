@@ -1,6 +1,5 @@
 import type { HintScript, ExplainScript } from './hint.ts';
 import type { MistakeScript } from './quiz.ts';
-import type { BgmData } from './bgm.ts';
 
 /**
  * 顔の全パレット（全キャラ合算。各キャラは持つ分だけ ExpressionAsset を用意する）。
@@ -43,6 +42,16 @@ export interface Persona {
   correct: string[]; // 正解時のセリフプール
   wrong: string[]; // ミス時のセリフプール
   finished: string[]; // 全クイズ終了（結果）のお祝いプール
+}
+
+/**
+ * キャラの BGM 1曲。初回は先頭（イントロ）から鳴らし、以後は [loopStart, loopEnd) を繰り返す（sound.md「BGM の実現方式」）。
+ * 秒は楽譜から求める（loopStart＝イントロ長、loopEnd＝イントロ長＋ループ長 L）。イントロ無しの曲は loopStart: 0。
+ */
+export interface BgmTrack {
+  src: string;       // 音源のアセットパス（例 'characters/mao/mao-bgm.m4a'。avatar と同じ抽象パス）
+  loopStart: number; // ループで戻る位置（秒）
+  loopEnd: number;   // ループの折り返し位置（秒）
 }
 
 export interface Character {
@@ -88,9 +97,9 @@ export interface Character {
    */
   mistakes: MistakeScript;
   /**
-   * BGM の楽譜データ（主旋律＋即興音）。任意＝未指定キャラは無音（中立曲は持たない）。
-   * データのみ（合成・再生は ui 層 src/ui/audio）。正は character-<id>-sound.md・sound.md「BGM の実現方式」。
+   * BGM（音源パス＋ループ範囲）。任意＝未指定キャラは無音。参照のみ＝取得・再生は ui 層（src/ui/audio）。
+   * 方式の正は sound.md「BGM の実現方式」・ADR-0004、値（ループ範囲）の出所は character-<id>-sound.md。
    */
-  bgm?: BgmData;
+  bgm?: BgmTrack;
   unlock?: { kind: 'correctCount'; threshold: number }; // 任意・未対応
 }

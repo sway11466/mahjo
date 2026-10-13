@@ -1,24 +1,9 @@
 /**
- * BGM プレイヤー（Web Audio・IO 層）。楽譜データ（主旋律＋即興音）を先読みスケジューリングで鳴らす。
- * 音高・配置の純ロジックは notation.ts／improv.ts、音色は synth.ts。ここは AudioContext 上の
- * グラフ構築・ループ・クロスフェード用ゲインを持つ。移植元は tools/melody-authoring（ADR-0003）。
+ * BGM プレイヤー（Web Audio・IO 層）。音源ファイル（AAC `.m4a`）を取得・デコードし、
+ * AudioBufferSourceNode の loop で継ぎ目なく鳴らす（sound.md「BGM の実現方式」・ADR-0004）。
+ * ここは AudioContext 上のノード構築・ループ・クロスフェード用ゲインだけを持つ。
+ * 「何を鳴らすか」（キャラ→音源パス）は characters のデータ＝architecture §2。
  */
-import type { BgmData } from '../../types/index.ts';
-import {
-  BEATS_PER_BAR,
-  degreeToMidi,
-  midiToFreq,
-  parseMelody,
-  tonicToMidi,
-  totalBars,
-} from './notation.ts';
-import { SLOTS, improvSlots, nextWalkMidi } from './improv.ts';
-import { reverbIR, voiceFor } from './synth.ts';
-
-/** 先読み窓（秒）とスケジューラの起動間隔（ms）。 */
-const LOOKAHEAD = 0.2;
-const TICK_MS = 25;
-const DEFAULT_TONIC_MIDI = 72; // C5（tonic 解決に失敗したときの保険）
 
 export interface Player {
   /** クロスフェード：ゲインを target（0〜1）へ dur 秒で寄せる。 */
@@ -28,24 +13,51 @@ export interface Player {
 }
 
 /**
- * 楽譜データを鳴らすプレイヤーを起動する。出力は専用のクロスフェード用ゲイン→destination。
- * rng は即興音のランダムウォーク用（既定 Math.random）。同じ ctx に複数プレイヤーを重ねられる
- * （キャラ切替のクロスフェード）。有効な音符が無ければ無音のプレイヤーを返す。
+ * 音源 URL を取得してデコードする。失敗（404・デコード不可）は例外のまま投げる＝呼び出し側が無音にする。
+ * fetch は注入可能（テスト用。既定は globalThis.fetch）。
+ */
+export async function loadBuffer(
+  ctx: AudioContext,
+  url: string,
+  fetchFn: typeof fetch = (...args) => globalThis.fetch(...args),
+): Promise<AudioBuffer> {
+  const res = await fetchFn(url);
+  if (!res.ok) throw new Error(`BGM fetch failed: ${res.status} ${url}`);
+  const bytes = await res.arrayBuffer();
+  return ctx.decodeAudioData(bytes);
+}
+
+/** ループ範囲（秒）。初回は先頭から鳴らし、loopEnd に達したら loopStart へ戻る（イントロを2周目以降は飛ばす）。 */
+export interface LoopRange {
+  start: number;
+  end: number;
+}
+
+/**
+ * デコード済みバッファをループ再生するプレイヤーを起動する。出力は専用のクロスフェード用ゲイン→destination
+ * （0 から始めて fadeTo で上げる）。同じ ctx に複数プレイヤーを重ねられる（キャラ切替のクロスフェード）。
+ * loop を渡すとその範囲で繰り返す（楽譜由来。省略時・範囲が不正ならバッファ全体をループ）。
  */
 export function createPlayer(
   ctx: AudioContext,
-  bgm: BgmData,
-  rng: () => number = Math.random,
+  buffer: AudioBuffer,
+  loop?: LoopRange,
 ): Player {
-  const { melody, improv } = bgm;
-  const notes = parseMelody(melody.notes);
-  const tonicMidi = tonicToMidi(melody.tonic) ?? DEFAULT_TONIC_MIDI;
-  const bars = totalBars(notes);
-
-  // クロスフェード用の最終ゲイン（0 から始めて fadeTo で上げる）。
   const out = ctx.createGain();
   out.gain.value = 0;
   out.connect(ctx.destination);
+
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  source.loop = true;
+  // デコード後の長さはコーデックの都合で楽譜の秒とわずかにずれうるので、終端はバッファ長で頭打ちにする。
+  const end = loop ? Math.min(loop.end, buffer.duration) : 0;
+  if (loop && loop.start >= 0 && loop.start < end) {
+    source.loopStart = loop.start;
+    source.loopEnd = end;
+  }
+  source.connect(out);
+  source.start();
 
   const fadeTo = (target: number, dur: number) => {
     const now = ctx.currentTime;
@@ -55,103 +67,16 @@ export function createPlayer(
     out.gain.linearRampToValueAtTime(target, now + Math.max(0.001, dur));
   };
 
-  // 音符が無ければ鳴らさない（グラフだけ返す）。
-  if (!notes.some((n) => n.deg !== 0)) {
-    return { fadeTo, stop: () => out.disconnect() };
-  }
-
-  // オーディオグラフ（tools/melody-authoring の buildGraph 相当。master は out）。
-  const master = ctx.createGain();
-  master.gain.value = 0.9;
-  master.connect(out);
-  const lowpass = ctx.createBiquadFilter();
-  lowpass.type = 'lowpass';
-  lowpass.frequency.value = melody.brightness;
-  const dryG = ctx.createGain();
-  dryG.gain.value = 0.85;
-  const wetG = ctx.createGain();
-  wetG.gain.value = 0.4;
-  const conv = ctx.createConvolver();
-  conv.buffer = reverbIR(ctx, 3.5, 2.6);
-  const melBus = ctx.createGain();
-  melBus.gain.value = 0.9;
-  melBus.connect(lowpass);
-  lowpass.connect(dryG).connect(master);
-  lowpass.connect(conv).connect(wetG).connect(master);
-
-  const playImprovNote = (
-    midi: number,
-    when: number,
-    seg: (typeof improv)[number],
-  ) => {
-    const lp = ctx.createBiquadFilter();
-    lp.type = 'lowpass';
-    lp.frequency.value = seg.brightness;
-    const pan = ctx.createStereoPanner();
-    pan.pan.value = (Math.random() * 2 - 1) * 0.6;
-    lp.connect(pan);
-    pan.connect(dryG);
-    pan.connect(conv);
-    voiceFor(seg.instrument)(ctx, midiToFreq(midi), when, {
-      bus: lp,
-      vel: seg.volume,
-      len: seg.sustain,
-      hold: 0.5,
-    });
-  };
-
-  const beat = 60 / melody.tempo;
-  const barDur = beat * BEATS_PER_BAR;
-  const t0 = ctx.currentTime + 0.12;
-  const mel = { next: t0, step: 0 };
-  const imp = { next: t0, bar: 0 };
-  const walks: Record<number, { idx: number }> = {};
-
-  const tick = () => {
-    const limit = ctx.currentTime + LOOKAHEAD;
-    // 主旋律（無限ループ）。
-    while (mel.next < limit) {
-      const n = notes[mel.step % notes.length]!;
-      if (n.deg !== 0) {
-        voiceFor(melody.instrument)(
-          ctx,
-          midiToFreq(degreeToMidi(tonicMidi, melody.mode, n.deg, n.oct)),
-          mel.next,
-          { bus: melBus, vel: 0.6, len: melody.sustain, hold: n.beats * beat },
-        );
-      }
-      mel.next += n.beats * beat;
-      mel.step++;
-    }
-    // 即興音（主旋律の小節範囲に整列してループ）。
-    if (bars > 0) {
-      while (imp.next < limit) {
-        const bi = imp.bar % bars;
-        improv.forEach((seg, si) => {
-          if (bi < seg.start || bi >= seg.start + seg.length) return;
-          const walk = walks[si] ?? (walks[si] = { idx: 2 });
-          for (const slot of improvSlots(seg.density, seg.offset)) {
-            const r = nextWalkMidi(walk.idx, tonicMidi, melody.mode, seg.octave, rng);
-            walk.idx = r.idx;
-            playImprovNote(r.midi, imp.next + (slot / SLOTS) * barDur, seg);
-          }
-        });
-        imp.next += barDur;
-        imp.bar++;
-      }
-    }
-  };
-
-  tick();
-  const timer = setInterval(tick, TICK_MS);
-
   return {
     fadeTo,
     stop: (fadeSec = 0.3) => {
-      clearInterval(timer);
       fadeTo(0, fadeSec);
-      // フェード後にグラフを解放（残響の尾は無音なので切ってよい）。
-      setTimeout(() => out.disconnect(), Math.ceil((fadeSec + 0.1) * 1000));
+      // フェードが終わってから止めて解放する。
+      source.stop(ctx.currentTime + fadeSec + 0.05);
+      setTimeout(() => {
+        source.disconnect();
+        out.disconnect();
+      }, Math.ceil((fadeSec + 0.1) * 1000));
     },
   };
 }

@@ -182,7 +182,7 @@ MVPの最小構成：ベース顔＋セレクト用サムネ＋セリフ数種�
 - **セッションは master から「再構築」できる（まおで確認＝鍵）。** 生成セッションが切れた／長く回して品質が濁ったら、新セッション冒頭で **master 画像を添付し「これがキャラの正準リファレンス。以降この設計を厳密に維持」＋固定する identity を箇条書き（顔造形・髪・髪飾り・衣装・配色・画風＝crisp lineart）＋「塗り替え i2i ではなく毎回この画風で“新規に t2i”して（線をくっきり保つ）」** と宣言する（テンプレは下記「セッションを master から再構築する」）。これで新セッションが元と同じ一貫性＋鮮明さで描ける（実例：再構築セッションで出した困り顔が、master と**模様まで一致**した）。＝**master さえ残っていればセッションは作り直せる**ので、「master を作ったセッションを大事に」はベストだが切れても致命ではない。
 - **画質は t2i が上。i2i を重ねると線が眠くなる。** i2i は1回ごとに画像全体を再生成するため、模様替え→ポーズ→鮮明化…と重ねるほど線が甘く（もやっと）なる＝世代劣化。**master は t2i で気合を入れて出す。** 表情差分・ポーズ違いも、上記のとおり**同一 or 再構築したセッションの t2i を優先**。i2i は「ごく小さな表情差分だけ」の局所手段に絞り、その場合も master から「1ホップだけ」（多ホップ厳禁。崩れたら master を貼り直して1ホップに戻す）。
 - **くっきり線は新規生成（t2i）由来。ツールでも差が出る。** 消費者向けアプリ（例 Gemini アプリ）は後処理（アップスケール／スムージング／プロンプト自動増補）で線が甘くなることがあり、素の出力に近い経路（例 AI Studio の nanobanana）は線が立ちやすい。**「i2i で“くっきりにして”」は効きにくい**（添付画像のソフトさに引っぱられて相殺する）。positive に `clean crisp anime lineart, sharp clean outlines`、negative に `blurry, soft focus, sketchy lineart` を積む。
-- **抜き（透過）の綺麗さは元絵の品質が上限。** Photopea の手順（Anti-alias 維持＋`Contract 1px`＋`Defringe`）が同じでも、元がもやっとだと白フチ・ギザつきが残る。きれいな抜けは「くっきりした元絵」からしか得られない。
+- **抜き（透過）の綺麗さは元絵の品質が上限。** 透過の手順（スキル anime-cutout-defringe、あるいは Photopea の Anti-alias 維持＋`Contract 1px`＋`Defringe`）が同じでも、元がもやっとだと白フチ・ギザつきが残る。きれいな抜けは「くっきりした元絵」からしか得られない。
 - **同じファイル名で上書き → 配線変更不要。** 絵や画風を作り直しても、`<id>-portrait-<expr>-<variant>.webp` 等の命名・パスが同じなら、定義（`src/characters/<id>/index.ts`）は触らず差し替えできる。仮素材で先に配線し、確定したらファイルだけ入れ替える運用が安全。
 
 #### 柄・塗り・ポーズの指定（再現性と見栄え）
@@ -271,21 +271,27 @@ smile (greeting base face), plain solid white background, no watermark, no text.
 - Photopea（ブラウザ内処理）… 白背景を透過にする・モデルシートから部位を切り出す・PNG で書き出す。
 - Squoosh（ブラウザ内処理）… 表示サイズの2x へリサイズし WebP に書き出す（透過維持）。
 
-流れ：Photopea で透過＆切り出し → 可逆ソースを `docs/characters/<id>/` に保管（i2i の種。切り抜き前の生成画像は同フォルダの `original/`）→ Squoosh で 2x・WebP 化 → 配布用を `src/assets/characters/<id>/` へ（命名は共通仕様）。共通仕様（透過・同一フレーミング・2x・WebP）は §3「画像アセット」を正とする。これで「マスター画像」が確定する。
+流れ：Photopea で透過＆切り出し（表情差分のポートレートは下記「表情差分の透過フロー」のスキルで透過する）→ 可逆ソースを `docs/characters/<id>/` に保管（i2i の種。切り抜き前の生成画像は同フォルダの `original/`）→ Squoosh で 2x・WebP 化 → 配布用を `src/assets/characters/<id>/` へ（命名は共通仕様）。共通仕様（透過・同一フレーミング・2x・WebP）は §3「画像アセット」を正とする。これで「マスター画像」が確定する。
 
 WebP 化は Squoosh の代わりに ImageMagick でもよい（透過を維持・コマンドで再現可能）。透過済み PNG から `magick in.png -strip -define webp:method=6 -quality 90 out.webp`。立ち絵 `<id>-full-stand-a.webp`（全身）は元の透過 PNG が既に 3:4 ならリサイズ不要でそのまま encode（まおの `mao-full-stand-a.webp` ＝ 896×1200・61KB／りん 165KB が目安）。`<id>-portrait-<expr>` はクロップ→透過→`-resize 640x768`（上の手順ノート）まで済ませてから encode。`<id>-avatar.webp` はポートレートを 1:1 にクロップ→透過→`-resize 192x192` で encode。リサイズは必ず透過後（白地でリサイズすると白フチが出る）。
 
-#### 表情差分の透過フロー（外周手作業 → 1px収縮 → 細部手作業）
+#### 表情差分の透過フロー（スキル anime-cutout-defringe）
 
-ポートレート表情差分の透過（背景除去）は、白背景を一括で自動キー（連結白フラッドフィル等）すると、**腕・手が写る絵で「腕と体の間の囲まれた白」を誤爆**して余計な所まで抜ける。表情差分は手が入る絵（指さし・頬杖・口元の指 等）が多いので、自動一括は不採用とし、次のフローで固定する（mao/rin で確立。手順を絵ごとに変えず全絵で統一）。〔手作業〕＝Photopea 等／〔コマンド〕＝ImageMagick：
+ポートレート表情差分の透過（背景除去）は、プロジェクトスキル **anime-cutout-defringe**（`.claude/skills/anime-cutout-defringe/`。公開の正は [skills-public](https://github.com/sway11466/skills-public)）で行う。白背景のクロップ PNG から、縁の帯の α を背景色（白）から逆算して**白フチを出さずに**抜く（α を収縮しないので線の太さも保たれる）。同じフォルダにある**完成済みの neutral**（同フレーミング）を参照に使い、以前は人の判断が要った**囲まれた白**（髪の隙間＝抜く／歯・白目・汗＝残す）と、**髪の房が分かれる根元の細い筋**（白と髪の混色で、白キーのフラッドが届かない所）を自動で判定する。以前の手作業フロー（Photopea で外周抜き → α1px収縮 → デフリンジ＋細部手作業）はこれで置き換え（mao/rin の表情計9枚で検証済み）。〔コマンド〕＝ImageMagick / uv：
 
-1. **クロップ（白背景のまま）**〔コマンド〕… 各キャラの確定枠で切る（枠の値は各 `character-<id>-image-prompts.md`「確定枠」）。ここでは透過しない。
-2. **外周のみ手作業透過**〔手作業〕… figure の外側の輪郭だけ抜く（背景の大部分＝一番フリンジ〔白フチ〕が出る所）。腕の隙間など細部はこの段では残す。
-3. **アルファ1px収縮**〔コマンド〕… 外周のフチを1px削ってフリンジ掃除：`magick in.png -channel A -morphology Erode Diamond:1 +channel out.png`。背景に触れず figure 輪郭を均一に1px内側へ削るだけ＝腕の囲まれた所を誤爆しない。線画なら1pxでほぼ足りる（削った先が濃い輪郭線）。足りなければ `Diamond:2` 等。
-4. **デフリンジ＋細部の手作業透過**〔手作業〕… 残ったフチの色を内側色へ補正（デフリンジ）し、腕と体の隙間など人の判断が要る細部を手で抜く。
+1. **クロップ（白背景のまま）**〔コマンド〕… 各キャラの確定枠で切る（枠の値は各 `character-<id>-image-prompts.md`「確定枠」）。ここでは透過しない。出力は `docs/characters/<id>/<id>-portrait-<expr>-a-cropped.png`。
+2. **スキルで透過**〔コマンド〕… リポジトリ直下で：
+
+   ```
+   uv run --no-project .claude/skills/anime-cutout-defringe/scripts/defringe.py docs/characters/<id>/<id>-portrait-<expr>-a-cropped.png <出力.png> --preview
+   ```
+
+   参照は自動検出（同フォルダの `<id>-portrait-neutral-a.png`）。標準出力に穴の一覧（番号付き・cut/keep の判定）と「残った白の疑い」が出る。
+3. **確認**〔目視〕… `<出力>_preview.png`（右：黄＝抜いた穴、橙＝判定が不確かで残した穴、水色＝筋として抜いた所、マゼンタ＝残った白の疑い、赤＝参照との差）と、**結果を黒背景に重ねた拡大**（白フチ・白い筋が一番目立つ確認方法）を見る。問題があれば `--cut N`／`--keep N`（穴の上書き）、`--seed x,y`（残った筋を指して抜く）、`--protect x,y,w,h`（抜かれて困る所＝1px の隙間が明るい縁取りを横切る等）を付けて再実行。オプションの正はスキルの `SKILL.md`。
+4. **保管**〔コマンド〕… 確定した出力を `docs/characters/<id>/<id>-portrait-<expr>-a.png`（透過済み・リサイズ前）に置き、`-cropped.png` は消す。
 5. **リサイズ → WebP**〔コマンド〕… 配布寸へ（まお＝640×768 へ拡大／りん＝等倍で既に 640×768）→ WebP（上の encode）。⚠️ リサイズは必ず透過後。
 
-> 収縮（③）とデフリンジ（④）を分け、順は **収縮 → デフリンジ**（先に最外周の汚れリングを削ってから、残ったフチを色補正する。逆だと消す予定のリングを無駄に色補正し、汚れ色を内側へ引き込む）。自動の連結白フラッドフィル＋収縮は**腕なしの絵だけ**なら綺麗だが、腕入りで誤爆するため、絵ごとの出し分けはせず全絵をこの手作業フローに統一する（ユーザー決定）。
+> 参照が無い初回（新キャラの neutral）は、縁の白フチ除去は同じく自動だが、囲まれた白は判定されず一覧されるだけなので、プレビューを見て `--cut N` で指定する（細い筋は `--seed`）。白キーの連結フラッドを一括で使わない理由は従来と同じ＝腕と体の間の囲まれた白を誤爆する。スキルはそこを「参照が背景と言う所だけ抜く」で解決している。
 
 #### ステップ3：マスターから表情差分を生成（i2i・Gemini）
 
@@ -347,11 +353,13 @@ plain solid white background.
 |---|---|---|---|---|
 | 定義 doc | `docs/characters/<id>/character-<id>.md` | — | 基本情報・ペルソナ・ビジュアル（identity）・好きな役 | §2 |
 | セリフ doc | `docs/characters/<id>/character-<id>-script.md` | — | 場面別＋ヒント＋解説＋誤答の全セリフ（hint-base 全キー網羅） | §2「セリフ」 |
-| サウンド doc | `docs/characters/<id>/character-<id>-sound.md` | — | キャラの BGM（主旋律の度数記法＋即興音のセグメント配列）。定義 doc §5 はここへのポインタ | sound.md「BGM の実現方式」・[ADR-0003](../adr/ADR-0003-bgm-code-generation.md) |
+| サウンド doc | `docs/characters/<id>/character-<id>-sound.md` | — | キャラの BGM の制作ノート（曲の狙い・調・テンポ・小節数・ループ長・ラウドネス・たたき台の出所）。定義 doc §5 はここへのポインタ | sound.md「BGM の制作」・[ADR-0004](../adr/ADR-0004-bgm-audio-files.md) |
 | 画像プロンプト doc | `docs/characters/<id>/character-<id>-image-prompts.md` | — | master・派生・使い魔の生成プロンプト集 | §4 |
 | 制作ソース | `docs/characters/<id>/`（加工後 PNG）／`original/`（生t2i＋master のみ） | `<id>-portrait-<expr>-<variant>.png` 等。master は `<id>-master-bustup.png`・`<id>-master-full.png`（original 限定） | master・加工後 PNG（クロップ＋透過済み・リサイズ前。i2i の種。ビルド非搭載） | §3・§4 |
+| BGM 原本 | `docs/characters/<id>/`（たたき台は `original/`） | `<id>-bgm.mscz`（たたき台 `.musicxml`/`.mid` は original） | MuseScore の編曲原本（必ず残す）。WAV 中間物はコミットしない。ビルド非搭載 | sound.md「BGM の制作」 |
 | 配布アバター | `src/assets/characters/<id>/` | `<id>-portrait-<expr>-<variant>.webp`・`<id>-avatar.webp`・`<id>-full-<kind>-<variant>.webp`・`<id>-familiar.webp` | アプリで使う表情差分・サムネ・立ち絵・使い魔 | §3 |
 | 配布 看板牌 | `src/assets/characters/<id>/`（既定は `src/assets/tiles/`） | `<id>-tile-pin1.webp`・`<id>-tile-sou1.webp`（既定 `pin1.webp`・`sou1.webp`） | キャラ別/既定の看板牌（1筒/1索） | §3「看板牌」・architecture §5 |
+| 配布 BGM | `src/assets/characters/<id>/` | `<id>-bgm.m4a` | キャラの BGM（AAC・ループ加工済み・-23 LUFS 目安）。precache 外＝ランタイムキャッシュ。`Character.bgm.src` がこのパスを指す（ループ範囲 `loopStart`/`loopEnd` も同じ `Character.bgm` に持つ） | sound.md「BGM の実現方式」・[ADR-0004](../adr/ADR-0004-bgm-audio-files.md) |
 | キャラデータ | `src/characters/<id>/index.ts` | — | `Character` 定義（ペルソナ・`reactions`・script 等のデータ化） | data-model §13 |
 | 中立ヒント | `src/hints/` | — | ヒント素（hint-base・HintProvider）＝キャラ非依存・全キャラ共有 | hint-base・hints |
 | キャラ描画 | `src/ui/character/`（`selectionMark.tsx`・`items/`・`decor/`） | — | 法具/装飾モチーフの resolver・SVG（皮＝二層分離） | architecture §5 |
@@ -369,7 +377,7 @@ export const characters: Character[] = [mao /*, …順次追加 */];
 export const defaultCharacterId = 'mao';
 ```
 
-新キャラは「まお」一式（定義 doc＋セリフ doc＋サウンド doc＋画像プロンプト doc＋配布アバター＋キャラデータ）に倣って作り、レジストリに足す。
+新キャラは「まお」一式（定義 doc＋セリフ doc＋サウンド doc＋画像プロンプト doc＋配布アバター＋キャラデータ）に倣って作り、レジストリに足す。BGM（`<id>-bgm.m4a`）は任意＝無いキャラは無音で成立する。
 
 
 ## 6. 参考ドキュメント

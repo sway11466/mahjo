@@ -1,6 +1,6 @@
 # ADR-0003: BGM はコード生成方式（Web Audio 合成・2層）で実現する
 
-- ステータス: Accepted
+- ステータス: Superseded（2026-10-03。[ADR-0004](./ADR-0004-bgm-audio-files.md) で音源ファイル方式へ移行。本書は判断の経緯として残す）
 - 日付: 2026-07-11
 - 決定者: （プロジェクトオーナー）
 - 関連: [sound.md](../design/sound.md)、[architecture.md](../design/architecture.md)（§1 技術スタック・§2 レイヤ分離）、[character-guide.md](../characters/character-guide.md)、[ADR-0001](./ADR-0001-no-state-management-library.md)

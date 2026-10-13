@@ -7,6 +7,9 @@ import './settings.css';
 interface AppSettingsScreenProps {
   appSettings: AppSettings;
   onChange: (next: AppSettings) => void;
+  /** BGM のオンオフ（保存しない UI 状態。右上の音符ボタンと同じもの＝sound.md「設定」）。 */
+  bgmOn: boolean;
+  onBgmChange: (on: boolean) => void;
   /** 左に立ち続ける選択中キャラ。 */
   character: Character;
   onBack: () => void;
@@ -16,13 +19,16 @@ interface AppSettingsScreenProps {
  * アプリ設定（screens.md §5・AppSettings）。採点に効かない UX 設定。
  *
  * 配線が入った項目から編集可へ昇格する（値は保存・復元される＝feature-2 の方針）。
- * 現状：BGM は配線済み（再生＝src/ui/audio・sound.md「BGM の実現方式」）＝編集可。
- * 効果音・呼び方・牌のランダム並びは未実装なので操作不可にし「機能追加予定」を添える。
+ * 現状：BGM（再生＝src/ui/audio・sound.md「BGM の実現方式」。オンオフは保存せず右上の音符ボタンと共有）・
+ * 牌のランダム並び（表示＝ui/main/Hand）は配線済み＝編集可。
+ * 効果音・呼び方は未実装なので操作不可にし「機能追加予定」を添える。
  * キャラ選択（selectedCharacterId）はキャラクター選択画面が持つ（§4・feature-1）。
  */
 export function AppSettingsScreen({
   appSettings,
   onChange,
+  bgmOn,
+  onBgmChange,
   character,
   onBack,
 }: AppSettingsScreenProps) {
@@ -34,12 +40,12 @@ export function AppSettingsScreen({
 
           <SettingRow
             title="音楽（BGM）"
-            description="学習中に、選択中のキャラクターの BGM を流します（既定オフ）。"
+            description="選択中のキャラクターの BGM を流します。右上の音符ボタンと同じです（アプリを開くたびにオフから始まります）。"
             control={
               <ToggleSwitch
                 label="音楽"
-                checked={appSettings.bgm}
-                onChange={(v) => onChange({ ...appSettings, bgm: v })}
+                checked={bgmOn}
+                onChange={onBgmChange}
               />
             }
           />
@@ -49,6 +55,22 @@ export function AppSettingsScreen({
             description="正解・不正解・牌を置く音など（再生実装後に有効化予定）。"
             control={
               <ToggleSwitch label="効果音" checked={appSettings.se} disabled onChange={() => {}} />
+            }
+          />
+        </section>
+
+        <section className="settings__section">
+          <h2 className="settings__section-title">表示</h2>
+
+          <SettingRow
+            title="牌のランダム並び"
+            description="手牌を萬子・筒子・索子・字牌の順に並べず、ランダムな順で表示します（既定オフ）。"
+            control={
+              <ToggleSwitch
+                label="牌のランダム並び"
+                checked={appSettings.randomTileOrder}
+                onChange={(v) => onChange({ ...appSettings, randomTileOrder: v })}
+              />
             }
           />
         </section>
@@ -64,19 +86,6 @@ export function AppSettingsScreen({
               <span className="setting-value">
                 {appSettings.playerName || '（未設定）'}
               </span>
-            }
-          />
-          <SettingRow
-            soon
-            title="牌のランダム並び"
-            description="手牌を正準順でなくランダムに並べて表示（実装後に有効化予定）。"
-            control={
-              <ToggleSwitch
-                label="牌のランダム並び"
-                checked={appSettings.randomTileOrder}
-                disabled
-                onChange={() => {}}
-              />
             }
           />
         </section>
