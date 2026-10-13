@@ -100,5 +100,6 @@
 
 ## 10. 実行
 
-- `npm test`（Vitest watch）／`npm run test:run`（CI/一回実行）。E2E は `npm run test:e2e`（ビルド → プレビューサーバー起動 → 実行まで自動。初回のみ `npx playwright install chromium` でブラウザを入れる。OneDrive 配下で不安定なため直列＝workers 1）。失敗時は `test-results/` に trace・録画・スクリーンショットが残り、`npx playwright show-trace <trace.zip>` で再生できる。テストを書く・直すときは `npx playwright test --ui` が便利。CI への組み込みは未対応（[backlog](../backlog.md) feature-20 (2)）。
+- `npm test`（Vitest watch）／`npm run test:run`（CI/一回実行）。E2E は `npm run test:e2e`（ビルド → プレビューサーバー起動 → 実行まで自動。初回のみ `npx playwright install chromium` でブラウザを入れる。OneDrive 配下で不安定なため直列＝workers 1）。失敗時は `test-results/` に trace・録画・スクリーンショットが残り、`npx playwright show-trace <trace.zip>` で再生できる。テストを書く・直すときは `npx playwright test --ui` が便利。
+- CI：`main` 向けの PR で `.github/workflows/ci.yml` が型チェック → Vitest → E2E を順に回す（GitHub Actions・ubuntu・Node 24）。E2E が落ちたときは trace・録画・HTML レポートを artifact `playwright-results` に残すので、ダウンロードして `npx playwright show-trace` で再生する。
 - カバレッジは engine を重点的に確認（数値の網羅が主目的でカバレッジ率自体は目安）。
