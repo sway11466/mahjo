@@ -359,7 +359,7 @@ plain solid white background.
 | BGM 原本 | `docs/characters/<id>/`（たたき台は `original/`） | `<id>-bgm.mscz`（たたき台 `.musicxml`/`.mid` は original） | MuseScore の編曲原本（必ず残す）。WAV 中間物はコミットしない。ビルド非搭載 | sound.md「BGM の制作」 |
 | 配布アバター | `src/assets/characters/<id>/` | `<id>-portrait-<expr>-<variant>.webp`・`<id>-avatar.webp`・`<id>-full-<kind>-<variant>.webp`・`<id>-familiar.webp` | アプリで使う表情差分・サムネ・立ち絵・使い魔 | §3 |
 | 配布 看板牌 | `src/assets/characters/<id>/`（既定は `src/assets/tiles/`） | `<id>-tile-pin1.webp`・`<id>-tile-sou1.webp`（既定 `pin1.webp`・`sou1.webp`） | キャラ別/既定の看板牌（1筒/1索） | §3「看板牌」・architecture §5 |
-| 配布 BGM | `src/assets/characters/<id>/` | `<id>-bgm.m4a` | キャラの BGM（AAC・ループ加工済み・-23 LUFS 目安）。precache 外＝ランタイムキャッシュ。`Character.bgm` がこのパスを指す | sound.md「BGM の実現方式」・[ADR-0004](../adr/ADR-0004-bgm-audio-files.md) |
+| 配布 BGM | `src/assets/characters/<id>/` | `<id>-bgm.m4a` | キャラの BGM（AAC・ループ加工済み・-23 LUFS 目安）。precache 外＝ランタイムキャッシュ。`Character.bgm.src` がこのパスを指す（ループ範囲 `loopStart`/`loopEnd` も同じ `Character.bgm` に持つ） | sound.md「BGM の実現方式」・[ADR-0004](../adr/ADR-0004-bgm-audio-files.md) |
 | キャラデータ | `src/characters/<id>/index.ts` | — | `Character` 定義（ペルソナ・`reactions`・script 等のデータ化） | data-model §13 |
 | 中立ヒント | `src/hints/` | — | ヒント素（hint-base・HintProvider）＝キャラ非依存・全キャラ共有 | hint-base・hints |
 | キャラ描画 | `src/ui/character/`（`selectionMark.tsx`・`items/`・`decor/`） | — | 法具/装飾モチーフの resolver・SVG（皮＝二層分離） | architecture §5 |

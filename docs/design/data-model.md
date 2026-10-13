@@ -374,6 +374,14 @@ export interface Persona {
   finished: string[];          // 全クイズ終了（結果）のお祝いプール
 }
 
+// キャラの BGM 1曲。初回は先頭（イントロ）から鳴らし、以後は [loopStart, loopEnd) を繰り返す（イントロは初回だけ）。
+// 秒は楽譜から求める（loopStart＝イントロ長、loopEnd＝イントロ長＋ループ長 L）。イントロ無しの曲は loopStart: 0。
+export interface BgmTrack {
+  src: string;       // 音源のアセットパス（例 'characters/mao/mao-bgm.m4a'。avatar と同じ抽象パス）
+  loopStart: number; // ループで戻る位置（秒）
+  loopEnd: number;   // ループの折り返し位置（秒）
+}
+
 export interface Character {
   id: string;                  // 例 'mao'
   displayName: string;         // 表示名
@@ -400,10 +408,10 @@ export interface Character {
   /** 誤答の諭し文言（キャラの声）。MistakeScript＝MistakeKind→1文（§12）。誤答時にそっと諭す（screens.md §3）。
    *  答え（正解値）は言わない。全 MistakeKind を網羅（Record で強制）。中立基準は hint-base.md「誤答の諭し素」、文言は character-<id>-script.md §4 が正。 */
   mistakes: MistakeScript;
-  /** BGM 音源のアセットパス（例 'characters/mao/mao-bgm.m4a'。avatar と同じ抽象パス）。参照のみ＝取得・再生は ui（`src/ui/audio`）。
-   *  方式の正は sound.md「BGM の実現方式」・ADR-0004、曲の制作ノートは character-<id>-sound.md。未指定キャラは無音（中立曲は持たない）。
-   *  （旧方式＝楽譜データ `BgmData` は ADR-0003 Superseded。コードの置き換えは backlog feature-21） */
-  bgm?: string;
+  /** BGM 1曲（音源パス＋ループ範囲）。参照のみ＝取得・再生は ui（`src/ui/audio`）。未指定キャラは無音（中立曲は持たない）。
+   *  方式の正は sound.md「BGM の実現方式」・ADR-0004、ループ範囲の値の出所は character-<id>-sound.md。
+   *  （旧方式＝楽譜データ `BgmData` は ADR-0003 Superseded） */
+  bgm?: BgmTrack;
   unlock?: { kind: 'correctCount'; threshold: number }; // 任意・未対応
 }
 ```

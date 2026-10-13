@@ -45,6 +45,7 @@ export type {
   ExpressionAsset,
   ReactionTrigger,
   Persona,
+  BgmTrack,
   Character,
 } from './character.ts';
 

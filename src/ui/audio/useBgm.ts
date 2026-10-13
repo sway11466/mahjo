@@ -10,12 +10,14 @@
  * - トグル off / 曲なしキャラ（url なし）/ 取得失敗で停止（無音）。
  */
 import { useEffect, useRef } from 'react';
-import { createPlayer, loadBuffer, type Player } from './player.ts';
+import { createPlayer, loadBuffer, type LoopRange, type Player } from './player.ts';
 
 const FADE_IN = 0.8;
 const FADE_OUT = 0.4;
 
-export function useBgm(enabled: boolean, url: string | undefined): void {
+export function useBgm(enabled: boolean, url: string | undefined, loop?: LoopRange): void {
+  const loopStart = loop?.start;
+  const loopEnd = loop?.end;
   const ctxRef = useRef<AudioContext | null>(null);
   // デコード済みバッファのキャッシュ（url → Promise）。キャラを行き来しても再デコードしない。
   const buffersRef = useRef<Map<string, Promise<AudioBuffer>>>(new Map());
@@ -55,7 +57,11 @@ export function useBgm(enabled: boolean, url: string | undefined): void {
       p.then(
         (buffer) => {
           if (canceled) return;
-          player = createPlayer(ctx, buffer);
+          const range =
+            loopStart !== undefined && loopEnd !== undefined
+              ? { start: loopStart, end: loopEnd }
+              : undefined;
+          player = createPlayer(ctx, buffer, range);
           player.fadeTo(1, FADE_IN);
         },
         (err: unknown) => {
@@ -98,5 +104,6 @@ export function useBgm(enabled: boolean, url: string | undefined): void {
       removeGestureListeners();
       player?.stop(FADE_OUT);
     };
-  }, [enabled, url]);
+    // loop はオブジェクトなので値（秒）で依存を取る（毎レンダーの新しい参照で鳴らし直さない）。
+  }, [enabled, url, loopStart, loopEnd]);
 }

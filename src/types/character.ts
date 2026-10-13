@@ -44,6 +44,16 @@ export interface Persona {
   finished: string[]; // 全クイズ終了（結果）のお祝いプール
 }
 
+/**
+ * キャラの BGM 1曲。初回は先頭（イントロ）から鳴らし、以後は [loopStart, loopEnd) を繰り返す（sound.md「BGM の実現方式」）。
+ * 秒は楽譜から求める（loopStart＝イントロ長、loopEnd＝イントロ長＋ループ長 L）。イントロ無しの曲は loopStart: 0。
+ */
+export interface BgmTrack {
+  src: string;       // 音源のアセットパス（例 'characters/mao/mao-bgm.m4a'。avatar と同じ抽象パス）
+  loopStart: number; // ループで戻る位置（秒）
+  loopEnd: number;   // ループの折り返し位置（秒）
+}
+
 export interface Character {
   id: string; // 例 'mao'
   displayName: string; // 表示名
@@ -87,10 +97,9 @@ export interface Character {
    */
   mistakes: MistakeScript;
   /**
-   * BGM 音源のアセットパス（例 'characters/mao/mao-bgm.m4a'。avatar と同じ抽象パス）。任意＝未指定キャラは無音。
-   * 参照のみ＝取得・再生は ui 層（src/ui/audio。再生部は未実装＝backlog feature-21）。
-   * 方式の正は sound.md「BGM の実現方式」・ADR-0004、曲の制作ノートは character-<id>-sound.md。
+   * BGM（音源パス＋ループ範囲）。任意＝未指定キャラは無音。参照のみ＝取得・再生は ui 層（src/ui/audio）。
+   * 方式の正は sound.md「BGM の実現方式」・ADR-0004、値（ループ範囲）の出所は character-<id>-sound.md。
    */
-  bgm?: string;
+  bgm?: BgmTrack;
   unlock?: { kind: 'correctCount'; threshold: number }; // 任意・未対応
 }

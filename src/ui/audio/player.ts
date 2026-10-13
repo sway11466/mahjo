@@ -27,15 +27,21 @@ export async function loadBuffer(
   return ctx.decodeAudioData(bytes);
 }
 
+/** ループ範囲（秒）。初回は先頭から鳴らし、loopEnd に達したら loopStart へ戻る（イントロを2周目以降は飛ばす）。 */
+export interface LoopRange {
+  start: number;
+  end: number;
+}
+
 /**
  * デコード済みバッファをループ再生するプレイヤーを起動する。出力は専用のクロスフェード用ゲイン→destination
  * （0 から始めて fadeTo で上げる）。同じ ctx に複数プレイヤーを重ねられる（キャラ切替のクロスフェード）。
- * loopEnd（秒）を渡すとそこで折り返す（楽譜由来のループ長 L。省略時はバッファ末尾まで）。
+ * loop を渡すとその範囲で繰り返す（楽譜由来。省略時・範囲が不正ならバッファ全体をループ）。
  */
 export function createPlayer(
   ctx: AudioContext,
   buffer: AudioBuffer,
-  loopEnd?: number,
+  loop?: LoopRange,
 ): Player {
   const out = ctx.createGain();
   out.gain.value = 0;
@@ -44,8 +50,11 @@ export function createPlayer(
   const source = ctx.createBufferSource();
   source.buffer = buffer;
   source.loop = true;
-  if (loopEnd !== undefined && loopEnd > 0 && loopEnd < buffer.duration) {
-    source.loopEnd = loopEnd;
+  // デコード後の長さはコーデックの都合で楽譜の秒とわずかにずれうるので、終端はバッファ長で頭打ちにする。
+  const end = loop ? Math.min(loop.end, buffer.duration) : 0;
+  if (loop && loop.start >= 0 && loop.start < end) {
+    source.loopStart = loop.start;
+    source.loopEnd = end;
   }
   source.connect(out);
   source.start();
