@@ -1,10 +1,11 @@
 /**
- * BGM コントローラ（React フック）。App ルートで動き、AppSettings.bgm と選択キャラの音源 URL だけを見て、
+ * BGM コントローラ（React フック）。App ルートで動き、BGM のオンオフ（App が持つ保存しない状態）と選択キャラの音源 URL だけを見て、
  * アプリ全体で1本の BGM を鳴らす（画面遷移の外側なので通し再生）。architecture §2：
  * 「どう鳴らすか」は ui、「何を鳴らすか」は characters のデータ。sound.md「BGM の実現方式」・ADR-0004。
  *
  * 挙動：
- * - 開始点は最初のユーザー操作（autoplay 制限）。AudioContext は suspended で作り resume する。
+ * - 開始は enabled になったとき（右上の音符ボタン／設定トグルを押した操作が autoplay の解禁を兼ねる）。
+ *   解禁できていなければ次の操作で resume を試し直す。
  * - 音源は fetch → decodeAudioData（デコード済みはキャッシュ。取得は Service Worker のランタイムキャッシュが担う）。
  * - キャラ切替（url が変わる）で旧→新をクロスフェード。
  * - トグル off / 曲なしキャラ（url なし）/ 取得失敗で停止（無音）。
@@ -71,32 +72,31 @@ export function useBgm(enabled: boolean, url: string | undefined, loop?: LoopRan
       );
     };
 
-    // resume 済みなら即開始。まだなら最初のユーザー操作を待つ（autoplay 解禁）。
-    const onGesture = () => {
-      ctx.resume().then(() => {
-        if (!canceled) start();
-      });
-      removeGestureListeners();
+    // 解禁（resume）を試し、鳴らせる状態になったら開始する。ふつうは音符ボタンを押した操作の直後なので
+    // すぐ running になる。Chrome は操作前の resume を拒否して promise を保留のまま返さないことがあるので、
+    // 結果を待たずに次の操作の待ち受けも張っておき、操作のたびに resume を試し直す（sound.md「BGM の実現方式」）。
+    const tryStart = () => {
+      ctx
+        .resume()
+        .then(() => {
+          if (canceled || ctx.state !== 'running') return;
+          removeGestureListeners();
+          start();
+        })
+        .catch(() => {});
     };
+    const onGesture = () => tryStart();
     const removeGestureListeners = () => {
       window.removeEventListener('pointerdown', onGesture);
       window.removeEventListener('keydown', onGesture);
     };
 
-    ctx
-      .resume()
-      .then(() => {
-        if (canceled) return;
-        if (ctx.state === 'running') start();
-        else addGestureListeners();
-      })
-      .catch(() => {
-        if (!canceled) addGestureListeners();
-      });
-
-    function addGestureListeners() {
+    if (ctx.state === 'running') {
+      start();
+    } else {
       window.addEventListener('pointerdown', onGesture);
       window.addEventListener('keydown', onGesture);
+      tryStart();
     }
 
     return () => {

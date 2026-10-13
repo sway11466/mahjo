@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import type { Progress, StudyMode, MissRecord } from '../types/index.ts';
 import { mulberry32, type Rng } from '../engine/rng.ts';
 import { getCharacter } from '../characters/index.ts';
@@ -7,6 +7,7 @@ import { getCharacter } from '../characters/index.ts';
 import { defaultProgress } from '../storage/index.ts';
 import { usePersistence } from './usePersistence.ts';
 import { useBgm } from './audio/useBgm.ts';
+import { BgmToggle } from './audio/BgmToggle.tsx';
 import { assetUrl } from './character/avatarAssets.ts';
 import { StartScreen } from './start/StartScreen.tsx';
 import { MainScreen } from './main/MainScreen.tsx';
@@ -41,11 +42,13 @@ export function App() {
   // キャラは選択中 id から引く（未知 id は既定へフォールバック）。選択 UI は feature-1。
   const character = getCharacter(appSettings.selectedCharacterId);
 
-  // BGM はアプリ全体で1本（画面遷移の外側で通し再生）。設定オン＋選択キャラの音源だけを見る。
-  // 開始は最初のユーザー操作（autoplay 制限）、キャラ切替でクロスフェード（sound.md「BGM の実現方式」）。
+  // BGM はアプリ全体で1本（画面遷移の外側で通し再生）。オンオフは保存しない UI 状態で、開くたびにオフ。
+  // 右上の音符ボタン（と設定トグル）を押したときに鳴り始める＝その操作が autoplay の解禁を兼ねる。
+  // キャラ切替でクロスフェード（sound.md「設定」「BGM の実現方式」）。
+  const [bgmOn, setBgmOn] = useState(false);
   const bgm = character.bgm;
   useBgm(
-    appSettings.bgm,
+    bgmOn,
     assetUrl(bgm?.src),
     bgm && { start: bgm.loopStart, end: bgm.loopEnd },
   );
@@ -65,8 +68,9 @@ export function App() {
 
   const goStart = () => setScreen('start');
 
+  let body: ReactNode;
   if (screen === 'main') {
-    return (
+    body = (
       <MainScreen
         mode={mode}
         character={character}
@@ -79,9 +83,8 @@ export function App() {
         onExit={goStart}
       />
     );
-  }
-  if (screen === 'character') {
-    return (
+  } else if (screen === 'character') {
+    body = (
       <CharacterScreen
         character={character}
         progress={progress}
@@ -91,9 +94,8 @@ export function App() {
         onBack={goStart}
       />
     );
-  }
-  if (screen === 'rule-settings') {
-    return (
+  } else if (screen === 'rule-settings') {
+    body = (
       <RuleSettingsScreen
         rules={rules}
         onChange={setRules}
@@ -101,28 +103,37 @@ export function App() {
         onBack={goStart}
       />
     );
-  }
-  if (screen === 'app-settings') {
-    return (
+  } else if (screen === 'app-settings') {
+    body = (
       <AppSettingsScreen
         appSettings={appSettings}
         onChange={setAppSettings}
+        bgmOn={bgmOn}
+        onBgmChange={setBgmOn}
         character={character}
         onBack={goStart}
       />
     );
+  } else {
+    body = (
+      <StartScreen
+        character={character}
+        onStart={(m) => {
+          setMode(m);
+          setScreen('main');
+        }}
+        onCharacter={() => setScreen('character')}
+        onRuleSettings={() => setScreen('rule-settings')}
+        onAppSettings={() => setScreen('app-settings')}
+      />
+    );
   }
 
+  // 右上の音符ボタン（BGM のオンオフ）は全画面に常駐（screens.md §1）。
   return (
-    <StartScreen
-      character={character}
-      onStart={(m) => {
-        setMode(m);
-        setScreen('main');
-      }}
-      onCharacter={() => setScreen('character')}
-      onRuleSettings={() => setScreen('rule-settings')}
-      onAppSettings={() => setScreen('app-settings')}
-    />
+    <>
+      {body}
+      <BgmToggle on={bgmOn} onToggle={() => setBgmOn((on) => !on)} />
+    </>
   );
 }

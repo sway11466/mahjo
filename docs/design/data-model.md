@@ -442,10 +442,11 @@ export interface AppSettings {
   selectedCharacterId: string; // 選択中サポートキャラ（characters レジストリの id）。既定 'mao'
   playerName: string;          // プレイヤーの呼び方（Persona のセリフに差し込む）。既定 ''＝呼びかけなし
   se: boolean;                 // 効果音の有無。既定 true
-  bgm: boolean;                // BGM（音楽）の有無。既定 false（学習中ずっと鳴るため）
   randomTileOrder: boolean;    // 牌のランダム並び表示（§1 の表示側シャッフル）。既定 false
 }
 ```
+
+BGM のオンオフは `AppSettings` に持たない（保存しない UI 状態。開くたびにオフ。右上の音符ボタンと設定トグルで切り替える＝[sound.md](./sound.md)「設定」）。旧データに残る `bgm` キーは防御的読込が未知フィールドとして無視する（storage.md §5）。
 
 ## 16. 進捗・成績 Progress（飽き対策・難易度の駆動要素）
 

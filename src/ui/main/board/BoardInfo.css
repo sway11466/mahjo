@@ -18,10 +18,12 @@
   justify-self: center;
 }
 
-/* 右側：ドラ・裏ドラの行 */
+/* 右側：ドラ・裏ドラの行。右上の音符ボタン（BgmToggle・画面固定）と重ならないよう、
+   ボタン1つ分の右余白を空ける（列でなくこの要素に付ける＝中央の局チップはずれない）。 */
 .board-info__right {
   grid-column: 3;
   justify-self: end;
+  margin-right: 3.2rem;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
