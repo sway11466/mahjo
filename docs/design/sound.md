@@ -1,6 +1,6 @@
 # 効果音・音楽（音まわり）
 
-SE（効果音）と BGM（音楽）の方針。設定の型は [data-model](./data-model.md) §15 `AppSettings`。**BGM は音源ファイル方式**（MuseScore で自作アレンジした AAC を再生＝下記「BGM の実現方式」「BGM の制作」・[ADR-0004](../adr/ADR-0004-bgm-audio-files.md)）。旧方式（コード生成＝[ADR-0003](../adr/ADR-0003-bgm-code-generation.md)・Superseded）の実装は撤去済みで、新方式の再生部は未実装（曲が無い間は無音。実装は [backlog](../backlog.md) feature-21）。**SE は未実装**（素材収集＝[backlog](../backlog.md) feature-9・再生配線＝parking lot「音の実装」）で、SE 無しでもアプリは成立する。
+SE（効果音）と BGM（音楽）の方針。設定の型は [data-model](./data-model.md) §15 `AppSettings`。**BGM は音源ファイル方式**（MuseScore で自作アレンジした AAC を再生＝下記「BGM の実現方式」「BGM の制作」・[ADR-0004](../adr/ADR-0004-bgm-audio-files.md)）。旧方式（コード生成＝[ADR-0003](../adr/ADR-0003-bgm-code-generation.md)・Superseded）の実装は撤去済みで、新方式の再生部は実装済み（曲の無いキャラは無音。残作業は [backlog](../backlog.md) feature-21）。**SE は未実装**（素材収集＝[backlog](../backlog.md) feature-9・再生配線＝parking lot「音の実装」）で、SE 無しでもアプリは成立する。
 
 ## 設定
 
@@ -11,7 +11,15 @@ SE（効果音）と BGM（音楽）の方針。設定の型は [data-model](./d
 
 - 「プレッシャーをかけない」（[product-concept](../product-concept.md)）を音にも適用する。
 - 不正解音は“罰”にせず、やわらかい気づき音に。
-- BGM は集中を妨げない環境音的ループに。
+- BGM は罰や焦りを感じさせない明るさに（曲調は下記「BGM の方向性」）。
+
+## BGM の方向性（全キャラ共通・2026-10-14）
+
+- 中華風だけど華やか。手本は ZUN（東方Project）の中華風曲の作風（例「上海紅茶館 ~ Chinese Tea」）。作風を参考にするだけで、既存曲の旋律は借りない。
+- どのキャラの曲にも華やかなところ（サビ）を必ず作る。曲全体の明暗・テンポ・拍の感じはキャラの個性に合わせてよいが、華やかな山は外さない。
+- 情報量は控えなくてよい。集中しているときは気にならず、問題の合間にノれるくらいがちょうどよい（環境音的に薄めることはしない）。
+- 作り方の要点（旧旋律が「童謡／和風の既定曲」っぽくなった反省から）：中華らしさは旋律（五音音階寄り＋装飾音）で出し、和声は西洋の機能和声（王道進行・短調→平行長調 等）で華やかさを作る。リズムは8分のオクターブベース＋3+3+2 の食い込み＋16分の駆け上がりで駆動させる（4分の均等な歩みにしない）。中華楽器は使わなくてよい（ダルシマー／ハープのアルペジオで足りる）。
+- 楽曲の密度はセクションで段階的に上げる（イントロ・Aメロは薄く、サビで全部乗せ）＝頭から華やかにしすぎると騒がしい。
 
 ## BGM の実現方式（音源ファイル・キャラ別1曲）
 
@@ -75,7 +83,7 @@ ffmpeg -i looped.wav -c:a aac -b:a 96k src/assets/characters/<id>/<id>-bgm.m4a
 
 この一連は `tools/bgm/make-bgm.ps1`（Senaris の `gen_bgm.ps1` 相当）が実行する：`.\tools\bgm\make-bgm.ps1 -In <wav> -Id <id> -Bars <小節数> -Tempo <♩>`（または `-LoopSeconds L`）。先頭無音の警告・ループ加工・AAC 変換・入力/加工後の LUFS とピークの表を出し、既定で `src/assets/characters/<id>/<id>-bgm.m4a` に書く。
 
-たたき台を置く場合は `docs/characters/<id>/original/`（旧方式の主旋律を楽譜化した MusicXML は 2026-10-13 に破棄＝旧旋律に引きずられるため、曲は心機一転で作る。各 `character-<id>-sound.md` の「曲の狙い」TBD を先に埋める）。
+たたき台を置く場合は `docs/characters/<id>/original/`（旧方式の主旋律を楽譜化した MusicXML は 2026-10-13 に破棄＝旧旋律に引きずられるため、曲は心機一転で作る。各 `character-<id>-sound.md` の「曲の狙い」を先に埋める）。AI 支援のたたき台は、旋律・和声・伴奏型をデータで書いた生成スクリプト→MIDI→MuseScore CLI で mp3 を試聴、を短いスケッチ（サビ8小節を複数案）から回すと方向が早く決まる（まおで実施。スクリプトも `original/` に残す）。
 
 ### 音量 — 統合ラウドネス -23 LUFS 目安
 

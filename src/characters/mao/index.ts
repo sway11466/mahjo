@@ -23,6 +23,8 @@ export const mao: Character = {
   // モチーフ（character-mao.md §3）：金の差し色＋法具＝御札・装飾＝月/星。描画は ui（selectionMark／decor）。
   accentColor: '#f5c451',
   motif: { ritual: 'ofuda', decor: 'moon' },
+  // BGM（character-mao-sound.md）。原本は docs/characters/mao/mao-bgm.mscz、再生は ui（src/ui/audio）。
+  bgm: 'characters/mao/mao-bgm.m4a',
   // まおが持つ表情（character-guide §2）。練習モードのリアクション6種を配置済み
   // （greeting:neutral / dealing:thinking / hinting:insight / explaining:smile / correct,finished:happy / wrong:troubled）。
   // 出番が増えたら variant 複数（b,c…）を先頭以外に足す。正は character-mao-script.md §1。
