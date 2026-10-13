@@ -43,7 +43,12 @@ export function App() {
 
   // BGM はアプリ全体で1本（画面遷移の外側で通し再生）。設定オン＋選択キャラの音源だけを見る。
   // 開始は最初のユーザー操作（autoplay 制限）、キャラ切替でクロスフェード（sound.md「BGM の実現方式」）。
-  useBgm(appSettings.bgm, assetUrl(character.bgm));
+  const bgm = character.bgm;
+  useBgm(
+    appSettings.bgm,
+    assetUrl(bgm?.src),
+    bgm && { start: bgm.loopStart, end: bgm.loopEnd },
+  );
 
   // 進捗の真実はキャラ別（ProgressByCharacter）。現在キャラのスライスを導出して使う
   // （無ければ既定）。キャラ切替で自動的にそのキャラの進捗へ追従する（同期不要）。

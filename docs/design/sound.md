@@ -25,10 +25,10 @@ SE（効果音）と BGM（音楽）の方針。設定の型は [data-model](./d
 
 BGM は **MuseScore で自作アレンジした音源ファイル**を鳴らす。音楽ライブラリ（Tone.js 等）は使わず、再生は素の Web Audio API。制作方式は Senaris（オーナーの別プロダクト）と同じで、Web 向けに形式と配布だけ変えている（判断の記録は [ADR-0004](../adr/ADR-0004-bgm-audio-files.md)）。
 
-- **曲の単位** … キャラ別に1曲。`Character.bgm` が音源のアセットパス（例 `characters/mao/mao-bgm.m4a`）を指す（型は [data-model](./data-model.md) §13）。未指定のキャラは無音（中立曲は持たない）。
+- **曲の単位** … キャラ別に1曲。`Character.bgm`（`BgmTrack`）が音源のアセットパス（例 `characters/mao/mao-bgm.m4a`）とループ範囲 `loopStart`／`loopEnd`（秒）を持つ（型は [data-model](./data-model.md) §13）。未指定のキャラは無音（中立曲は持たない）。
 - **形式** … AAC（`.m4a`）・96 kbps・44.1 kHz・ステレオ。全ブラウザ（Safari 含む）で再生でき、60〜90秒のループ1曲が 1 MB 前後。Ogg Vorbis は Safari で鳴らないため採らない。
 - **配布（precache に入れない）** … BGM は既定オフなので PWA のオフライン初回容量に乗せない。`vite-plugin-pwa` の `workbox.globIgnores` で `**/*.m4a` を precache から外し、`runtimeCaching`（CacheFirst）で「オンにして取得したら以後はオフラインでも鳴る」にする。
-- **再生** … `fetch → decodeAudioData → AudioBufferSourceNode`（`loop=true`）。継ぎ目なしでループし、下記の「ループ加工」をした音源がそのまま活きる。`loopEnd` には楽譜から求めたループ長 L（下記）を入れ、コーデックの末尾パディングに左右されないようにする（**TBD**：`Character.bgm` は現状パス文字列のみで L を持たない。再生部は `loopEnd` を受け取れる口を持つがデータが無いためバッファ末尾でループしている。最初の曲で継ぎ目を実聴し、必要なら `Character.bgm` を `{ src, loopEnd }` に拡張する）。autoplay 解禁は最初のユーザー操作（AudioContext を resume）、キャラ切替は旧→新のクロスフェード、トグルオフ／曲なしキャラで停止。アプリ全体で1本（App ルートのコントローラ）。
+- **再生** … `fetch → decodeAudioData → AudioBufferSourceNode`（`loop=true`）。継ぎ目なしでループし、下記の「ループ加工」をした音源がそのまま活きる。ループ範囲は楽譜から求めた秒を `loopStart`／`loopEnd` に入れる＝初回は先頭から鳴らし、`loopEnd` に達したら `loopStart` へ戻る。イントロ（初回だけ鳴らす部分）はこれで2周目以降を飛ばす（`loopStart`＝イントロ長、`loopEnd`＝イントロ長＋ループ長 L。イントロ無しは `loopStart: 0`）。秒で持つのでコーデックの末尾パディングにも左右されない（終端がデコード後の長さを超えたらバッファ長で頭打ち）。2026-10-14 にまおで導入（それまでは TBD＝パスのみでバッファ全体をループしていた）。autoplay 解禁は最初のユーザー操作（AudioContext を resume）、キャラ切替は旧→新のクロスフェード、トグルオフ／曲なしキャラで停止。アプリ全体で1本（App ルートのコントローラ）。
 - **層の分担** … [architecture.md](./architecture.md) §2 のまま。**characters 層はアセットパス（データ）だけ**、**取得・デコード・再生の IO は ui 層**（`src/ui/audio`）。engine（麻雀計算）には入れない。アセットパス→実 URL の解決は画像と同じ `assetUrl`（`import.meta.glob` の対象に `m4a` を加える）。
 
 キャラ別の制作ノート（曲の狙い・調・テンポ・小節数・ループ長・ラウドネス）は各 `character-<id>-sound.md`（[character-guide.md](../characters/character-guide.md) §5「ファイル構成」）。
@@ -66,7 +66,7 @@ MuseScore のバックアップ（`.mscbackup/`）はコミットしない。
 4. 原本化   … MuseScore CLI で MIDI → <id>-bgm.mscz（GUI 仕上げ＝Muse Sounds・ミックスはここ。任意）
 5. 書き出し … MuseScore CLI で .mscz → .wav（44.1 kHz / 16 bit / ステレオ。コミットしない）
 6. 加工     … make-bgm.ps1：ループ加工 → -23 LUFS へ音量合わせ → AAC
-7. 配線     … Character.bgm にパス、character-<id>-sound.md の制作ノートを埋め、アプリで継ぎ目を実聴
+7. 配線     … Character.bgm に { src, loopStart, loopEnd }、character-<id>-sound.md の制作ノートを埋め、アプリで継ぎ目を実聴
 ```
 
 - 1〜3 は短い往復で回す。最初からフルで作らず、サビの短いスケッチを並べて方向を決める（1案をフルで作って外すより早い）。試聴は MuseScore CLI の mp3 書き出しで、基本音源のままでよい（判断するのは旋律・和声・ノリ）。
@@ -74,9 +74,9 @@ MuseScore のバックアップ（`.mscbackup/`）はコミットしない。
 - MuseScore CLI は `MuseScore4.exe -o <出力> <入力>`。形式は拡張子で決まる（`.mid` → `.mscz`／`.mscz` → `.wav`・`.mp3`）。PowerShell からは `Start-Process -Wait -NoNewWindow` で呼ぶ（直接呼ぶと切り離されて完了を待てない）。
 - 4 の GUI 仕上げは後回しにしてよい。基本音源のまま配置して先に鳴らし、仕上げたら同名で `.mscz`／`.m4a` を上書きする（配線は変わらない）。
 
-ループ長は楽譜から求める：`L = 小節数 × 1小節の拍数 × 60 ÷ テンポ(♩)`（例：32小節・4/4・♩=96 → 80.000秒）。
+ループ長は楽譜から求める：`L = 小節数 × 1小節の拍数 × 60 ÷ テンポ(♩)`（例：32小節・4/4・♩=96 → 80.000秒）。イントロを付ける曲は、ループ部分の小節数で L を、イントロの小節数で I を求める（例 まお：イントロ4小節＝6.4秒、ループ32小節＝51.2秒 → `loopStart: 6.4`、`loopEnd: 57.6`）。
 
-MuseScore の書き出しは末尾に残響のしっぽが付く。ループ長ちょうどに切り（切らないと1周ごとに無音が入る）、切り落とした残響を先頭に足し込む（捨てると継ぎ目で不連続が聞こえる）。
+MuseScore の書き出しは末尾に残響のしっぽが付く。ループ終端（I＋L）ちょうどに切り（切らないと1周ごとに無音が入る）、切り落とした残響をループの戻り先（イントロ無しなら先頭、ありなら I 秒の位置）に足し込む（捨てると継ぎ目で不連続が聞こえる）。下の手書きコマンドはイントロ無しの形で、イントロありはスクリプトが `adelay` で尾を I 秒ずらす。
 
 ```
 ffmpeg -i in.wav -i in.wav -filter_complex \
@@ -89,7 +89,7 @@ ffmpeg -i looped.wav -c:a aac -b:a 96k src/assets/characters/<id>/<id>-bgm.m4a
 
 `normalize=0` は必須（省略すると音量が半分になる）。確認すること：先頭に無音があれば加工前に落とす／加工後のピークが元と変わっていない（加算でクリップしていない）／ブラウザで継ぎ目を実聴し、ズレがあれば再生側の `loopStart`／`loopEnd` で合わせる。適用条件は 残響長 < ループ長（残響が長い曲は MuseScore で2周に複製して書き出し `[L, 2L]` を切り出す）。副作用として曲の頭に「前周の残響」が小さく入る（Senaris で実聴し違和感なしを確認済み）。
 
-この一連は `tools/bgm/make-bgm.ps1`（Senaris の `gen_bgm.ps1` 相当）が実行する：`.\tools\bgm\make-bgm.ps1 -In <wav> -Id <id> -Bars <小節数> -Tempo <♩>`（または `-LoopSeconds L`）。先頭無音と入力ピークの警告・ループ加工・音量合わせ（下記「音量」）・AAC 変換・入力/加工後の LUFS とピークの表を出し、既定で `src/assets/characters/<id>/<id>-bgm.m4a` に書く。
+この一連は `tools/bgm/make-bgm.ps1`（Senaris の `gen_bgm.ps1` 相当）が実行する：`.\tools\bgm\make-bgm.ps1 -In <wav> -Id <id> -Bars <小節数> -Tempo <♩>`（または `-LoopSeconds L`。イントロありは `-IntroBars <小節数>` か `-IntroSeconds I` を足し、`-Bars` はループ部分だけ数える。最初に `Character.bgm` に入れる loopStart/loopEnd を表示する）。先頭無音と入力ピークの警告・ループ加工・音量合わせ（下記「音量」）・AAC 変換・入力/加工後の LUFS とピークの表を出し、既定で `src/assets/characters/<id>/<id>-bgm.m4a` に書く。
 
 たたき台は `docs/characters/<id>/original/` に置く（旧方式の主旋律を楽譜化した MusicXML は 2026-10-13 に破棄＝旧旋律に引きずられるため、曲は心機一転で作る）。
 

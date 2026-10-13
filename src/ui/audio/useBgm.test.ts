@@ -28,6 +28,7 @@ class FakeGain extends FakeNode {
 class FakeSource extends FakeNode {
   buffer: unknown = null;
   loop = false;
+  loopStart = 0;
   loopEnd = 0;
   start = vi.fn();
   stop = vi.fn();
@@ -108,6 +109,39 @@ describe('useBgm', () => {
     // クロスフェード用ゲインは 0 から 1 へ
     const out = ctx().gains[0]!;
     expect(out.gain.linearRampToValueAtTime).toHaveBeenCalledWith(1, expect.any(Number));
+  });
+
+  it('ループ範囲を渡すと loopStart/loopEnd に入る（イントロは初回だけ）', async () => {
+    renderHook(() => useBgm(true, '/mao-bgm.m4a', { start: 6.4, end: 57.6 }));
+    await flush();
+    const src = ctx().sources[0]!;
+    expect(src.loopStart).toBe(6.4);
+    expect(src.loopEnd).toBe(57.6);
+    // 再生は先頭（0 秒）から
+    expect(src.start).toHaveBeenCalledWith();
+  });
+
+  it('ループ終端がバッファより長ければバッファ長で頭打ち、範囲が不正なら全体ループ', async () => {
+    // 偽 decode の長さは 80 秒
+    const { unmount } = renderHook(() => useBgm(true, '/a.m4a', { start: 6.4, end: 80.02 }));
+    await flush();
+    expect(ctx().sources[0]!.loopStart).toBe(6.4);
+    expect(ctx().sources[0]!.loopEnd).toBe(80);
+    unmount();
+
+    FakeAudioContext.instances = [];
+    renderHook(() => useBgm(true, '/b.m4a', { start: 90, end: 100 }));
+    await flush();
+    expect(ctx().sources[0]!.loopStart).toBe(0);
+    expect(ctx().sources[0]!.loopEnd).toBe(0);
+  });
+
+  it('毎レンダーで新しい loop オブジェクトを渡しても鳴らし直さない', async () => {
+    const { rerender } = renderHook(() => useBgm(true, '/mao-bgm.m4a', { start: 6.4, end: 57.6 }));
+    await flush();
+    rerender();
+    await flush();
+    expect(ctx().sources).toHaveLength(1);
   });
 
   it('トグルオフでフェードアウトして止める', async () => {

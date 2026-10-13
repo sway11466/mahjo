@@ -18,6 +18,6 @@
 | たたき台の出所 | （AI 支援の `.musicxml`/`.mid` を `original/` に置く場合はその名前と出所） |
 | 調・テンポ | |
 | 拍子・小節数 | |
-| ループ長 L | 小節数 × 拍数 × 60 ÷ テンポ（`tools/bgm/make-bgm.ps1` の `-Bars`/`-Tempo`） |
+| ループ範囲 | ループ長 L＝小節数 × 拍数 × 60 ÷ テンポ。イントロを初回だけ鳴らすならその長さ I も（`tools/bgm/make-bgm.ps1` の `-IntroBars`/`-Bars`/`-Tempo`。`Character.bgm` は `loopStart: I`・`loopEnd: I＋L`） |
 | 統合ラウドネス | 目安 -23 LUFS（スクリプトの報告値） |
-| 配布 | `src/assets/characters/rin/rin-bgm.m4a`（`Character.bgm`） |
+| 配布 | `src/assets/characters/rin/rin-bgm.m4a`（`Character.bgm.src`） |

@@ -22,10 +22,10 @@
 | 構成 | イントロ4（F–C–Dm–C7）→ Aメロ8（Dm–B♭–C–F–Dm–B♭–Gm–A）→ Bメロ8（B♭–C–Am–Dm–Gm–Gm–C–C7）→ サビ8×2（B♭–C–Am–Dm–Gm–C–F–C7） |
 | 楽器 | フルート（旋律）・バイオリン（サビ2周目の重ね）・ピアノ（3+3+2 の刻み）・ダルシマー（アルペジオ）・ストリングス（和音）・ベース・ドラム |
 | 調・テンポ | ニ短調／F長調・♩=150 |
-| 拍子・小節数 | 4/4・36小節 |
-| ループ長 L | 36 × 4 × 60 ÷ 150 = 57.600 秒（`make-bgm.ps1 -Bars 36 -Tempo 150`） |
-| 統合ラウドネス | -23.1 LUFS（ピーク -10.0 dBFS）。書き出し WAV は -12.8 LUFS で、`make-bgm.ps1` が -10.20 dB 補正した |
-| 配布 | `src/assets/characters/mao/mao-bgm.m4a`（`Character.bgm`） |
+| 拍子・小節数 | 4/4・36小節（イントロ4＋ループ32） |
+| ループ範囲 | イントロ I＝4 × 4 × 60 ÷ 150 = 6.400 秒は初回だけ。ループ L＝32 × 4 × 60 ÷ 150 = 51.200 秒（Aメロ頭〜サビ末尾）。`Character.bgm` は `loopStart: 6.4`・`loopEnd: 57.6`。継ぎ目はサビ末尾の C7 → Aメロ頭の Dm |
+| 統合ラウドネス | -23.0 LUFS（ピーク -10.0 dBFS）。書き出し WAV は -12.8 LUFS で、`make-bgm.ps1` が -10.20 dB 補正した |
+| 配布 | `src/assets/characters/mao/mao-bgm.m4a`（`Character.bgm.src`） |
 
 ## 作成レシピ
 
@@ -63,7 +63,11 @@
 6. 加工：
 
    ```
-   .\tools\bgm\make-bgm.ps1 -In <scratch>\mao-bgm.wav -Id mao -Bars 36 -Tempo 150
+   .\tools\bgm\make-bgm.ps1 -In <scratch>\mao-bgm.wav -Id mao -IntroBars 4 -Bars 32 -Tempo 150
    ```
 
-7. 配線：`src/characters/mao/index.ts` の `bgm: 'characters/mao/mao-bgm.m4a'`。継ぎ目の実聴は未（サビ末尾の C7 からイントロ頭の F に戻る）。
+7. 配線：`src/characters/mao/index.ts` の `bgm: { src: 'characters/mao/mao-bgm.m4a', loopStart: 6.4, loopEnd: 57.6 }`。初版はイントロごとループしていたが、「ループのときは先頭部分が無い方が良い」との指摘でイントロを初回だけにした（2026-10-14）。継ぎ目の確認は、1周目＋2周目（6.4秒〜）を ffmpeg で連結した mp3 で行える：
+
+   ```
+   ffmpeg -i src\assets\characters\mao\mao-bgm.m4a -i src\assets\characters\mao\mao-bgm.m4a -filter_complex "[0]atrim=0:57.6,asetpts=PTS-STARTPTS[a];[1]atrim=6.4:57.6,asetpts=PTS-STARTPTS[b];[a][b]concat=n=2:v=0:a=1[o]" -map "[o]" <scratch>\mao-loop-preview.mp3
+   ```

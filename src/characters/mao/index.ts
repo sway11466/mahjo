@@ -24,7 +24,8 @@ export const mao: Character = {
   accentColor: '#f5c451',
   motif: { ritual: 'ofuda', decor: 'moon' },
   // BGM（character-mao-sound.md）。原本は docs/characters/mao/mao-bgm.mscz、再生は ui（src/ui/audio）。
-  bgm: 'characters/mao/mao-bgm.m4a',
+  // ♩=150・4/4：イントロ4小節＝6.4s を初回だけ鳴らし、Aメロ〜サビ32小節＝51.2s をループ（6.4〜57.6s）。
+  bgm: { src: 'characters/mao/mao-bgm.m4a', loopStart: 6.4, loopEnd: 57.6 },
   // まおが持つ表情（character-guide §2）。練習モードのリアクション6種を配置済み
   // （greeting:neutral / dealing:thinking / hinting:insight / explaining:smile / correct,finished:happy / wrong:troubled）。
   // 出番が増えたら variant 複数（b,c…）を先頭以外に足す。正は character-mao-script.md §1。
