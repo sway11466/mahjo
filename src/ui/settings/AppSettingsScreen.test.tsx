@@ -9,11 +9,14 @@ const mao = getCharacter('mao');
 function renderScreen(
   appSettings: AppSettings,
   onChange: (next: AppSettings) => void = () => {},
+  bgm: { on: boolean; onChange: (on: boolean) => void } = { on: false, onChange: () => {} },
 ) {
   render(
     <AppSettingsScreen
       appSettings={appSettings}
       onChange={onChange}
+      bgmOn={bgm.on}
+      onBgmChange={bgm.onChange}
       character={mao}
       onBack={() => {}}
     />,
@@ -21,14 +24,18 @@ function renderScreen(
 }
 
 describe('AppSettingsScreen', () => {
-  it('BGM トグルは編集可で、反転値で onChange する', () => {
-    let next: AppSettings | null = null;
-    renderScreen({ ...defaultAppSettings(), bgm: false }, (a) => (next = a));
+  it('BGM トグルは編集可で、保存する設定でなく BGM の状態を反転して返す', () => {
+    let changed: AppSettings | null = null;
+    let bgm: boolean | null = null;
+    renderScreen(defaultAppSettings(), (a) => (changed = a), {
+      on: false,
+      onChange: (on) => (bgm = on),
+    });
     const toggle = screen.getByRole('switch', { name: '音楽' });
     expect(toggle).not.toBeDisabled();
     fireEvent.click(toggle);
-    expect(next).not.toBeNull();
-    expect(next!.bgm).toBe(true);
+    expect(bgm).toBe(true);
+    expect(changed).toBeNull();
   });
 
   it('牌のランダム並びトグルは編集可で、反転値で onChange する', () => {

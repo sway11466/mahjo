@@ -212,6 +212,38 @@ describe('useBgm', () => {
     expect(ctx().sources[0]!.start).toHaveBeenCalled();
   });
 
+  it('操作前の resume が保留のまま返らないブラウザ（Chrome）でも、次の操作で鳴り始める', async () => {
+    vi.stubGlobal(
+      'AudioContext',
+      class extends FakeAudioContext {
+        constructor() {
+          super();
+          this.state = 'suspended';
+          // 操作前は promise を返したまま解決しない。操作後の resume は running にして解決する。
+          this.resume = vi.fn(() =>
+            gestureSeen
+              ? Promise.resolve().then(() => {
+                  this.state = 'running';
+                })
+              : new Promise<void>(() => {}),
+          );
+        }
+      },
+    );
+    let gestureSeen = false;
+    renderHook(() => useBgm(true, '/mao-bgm.m4a'));
+    await flush();
+    expect(fetch).not.toHaveBeenCalled();
+
+    gestureSeen = true;
+    await act(async () => {
+      window.dispatchEvent(new Event('pointerdown'));
+    });
+    await flush();
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(ctx().sources[0]!.start).toHaveBeenCalled();
+  });
+
   it('取得失敗（404）は無音のまま例外にしない', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     renderHook(() => useBgm(true, '/missing.m4a'));
