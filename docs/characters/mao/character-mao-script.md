@@ -6,9 +6,9 @@
 
 ## 1. 場面別セリフ
 
-場面ごとに表情（`Expression`）＋セリフ。複数からランダム表示（飽き対策）。場面の正準リスト・必須度は [session.md](../../spec/session.md) §4 場面（リアクション）の正準、セリフ側の規則は [character-guide.md](../character-guide.md) §2「セリフ」に従う。まおは neutral を持たず、あいさつ（greeting）も穏やかな笑み smile で迎える＝`reactions:{greeting:'smile'}` で上書き。他の場面は既定マップ通り。
+場面ごとに表情（`Expression`）＋セリフ。複数からランダム表示（飽き対策）。場面の正準リスト・必須度は [session.md](../../spec/session.md) §4 場面（リアクション）の正準、セリフ側の規則は [character-guide.md](../character-guide.md) §2「セリフ」に従う。まおは既定マップから上書きしない（`reactions: {}`。あいさつは neutral で迎える）。見出しの表情は既定マップの写し。
 
-### あいさつ（開始）（greeting → smile｜必須）
+### あいさつ（開始）（greeting → neutral｜必須）
 セッション開始の1回。
 - こんにちは、今日も一緒にやってみましょう。
 - よく来てくれましたね。さあ、はじめましょうか。

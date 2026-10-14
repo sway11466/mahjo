@@ -3,7 +3,7 @@
 しん（＋使い魔カラス）の画像生成プロンプトを集約（[character-shin.md](./character-shin.md) §3 から分離して肥大化を回避）。
 
 - **識別情報（外見コンセプト・衣装の模様・モチーフ・配色・使い魔設定）の正は [character-shin.md](./character-shin.md) §3**（世界・系譜の正は [world.md](../world.md) §5・§7）。本ファイルは「実際に使う生成プロンプト」だけを持つ。
-- 汎用の生成手順・嘘字対策・一貫性ワークフロー・**作る画像セットと順序**は [character-guide.md](../character-guide.md) §4。
+- 汎用の生成手順・嘘字対策・一貫性ワークフロー・**作る順序**は [character-guide.md](../character-guide.md) §4「制作フロー」。
 - **画風はまお・りん・ひすいと統一のハウススタイル＝くっきり線＋セル塗り・ツヤ控えめ**（`clean crisp anime lineart, sharp clean outlines, proper cel shading`）。
 - 命名は kebab＋id 接頭辞（[character-guide.md](../character-guide.md) §3・§5）：配布 `shin-portrait-<expr>-<variant>.webp`／`shin-full-stand-a.webp`／`shin-avatar.webp`／`shin-familiar.webp`、master PNG（original 限定）`shin-master-full.png`・`shin-master-bustup.png`。
 
@@ -15,7 +15,7 @@
 
 - **年齢帯**：中高生（around 15・約7〜7.5頭身）。大人（8頭身・長身）や幼児（童顔・低頭身）に倒さない＝まお/りんと同じ年齢帯。
 - **顔（master/portrait の土台）**：クールで端正な美形（refined cool bishounen idol）。穏やかな素のクール顔（涼しげ・閉じ口の落ち着き）。怖い・威圧・悪役には振らない。
-- **顔（動きのある立ち絵＝見せ場）**：あえて表情を変えて個性を強調＝**鋭い緋眼＋不敵な薄笑い**（参考の気配は「鋭いクールな少年像＋エレガントな魔術師プリンス」を*特徴に翻訳*して寄せる。版権キャラの直接模倣はしない＝[character-guide.md](../character-guide.md) §4・[character-shin.md](./character-shin.md) §3。住み分けの一般則は [character-guide.md](../character-guide.md) §4「作る画像セットと順序」）。
+- **顔（動きのある立ち絵＝見せ場）**：あえて表情を変えて個性を強調＝**鋭い緋眼＋不敵な薄笑い**（参考の気配は「鋭いクールな少年像＋エレガントな魔術師プリンス」を*特徴に翻訳*して寄せる。版権キャラの直接模倣はしない＝[character-guide.md](../character-guide.md) §4・[character-shin.md](./character-shin.md) §3。住み分けの一般則は [character-guide.md](../character-guide.md) §4「制作フロー」2）。
 - **肌**：暖色・血色のある健康的な肌（warm healthy lively skin）。青白い・生気のない肌は不可（怖さ・不健康さの主因だった）。
 - **髪**：逆立った黒のとがった毛束＋前髪に緋ストリーク一筋。前髪で目に影を落とさない（目はくっきり見せる）。
 - **衣装**：黒の道服／チャイナ（襟詰め）。緋は縁・裏地・一筋で点的に（黒が主役）。モチーフ＝焔／カラス羽根／卦の爻線（低密度・非対称・余白広め。雲・蝶は使わない）。
@@ -66,7 +66,7 @@ realistic, semi-realistic, 3d, busy background, scenery, colored background.
 
 ## 派生プロンプト（道具付き立ち絵／バストアップ）
 
-master 確定後に **同一セッション t2i** で派生（作る順序は [character-guide.md](../character-guide.md) §4「作る画像セットと順序」）。**派生では白キャンバスを添付しない**（純 t2i でセッションの視覚記憶に寄りかかり衣装の模様が揃う＝ガイド §4）。
+master 確定後に **同一セッション t2i** で派生（作る順序は [character-guide.md](../character-guide.md) §4「制作フロー」2）。**派生では白キャンバスを添付しない**（純 t2i でセッションの視覚記憶に寄りかかり衣装の模様が揃う＝ガイド §4）。
 
 > **試し出しの知見：** 同一セッションで穏やかな素体が視覚記憶に強く残ると、後からの「鋭く・動きを」が打ち消されやすい（in-session の慣性）。**表情・所作を文頭に置いて強く**書くか、別セッションで出すと乗りやすい（立ち絵は別セッションで及第点が出た）。
 
@@ -74,7 +74,7 @@ master 確定後に **同一セッション t2i** で派生（作る順序は [c
 
 スタート画面・キャラ選択の見せ場。狙い＝**エレガントな魔術師の所作（札をすっと掲げる見せ場）で動きを出す＋鋭い不敵なクール顔**。
 
-> **表情は neutral（master・portrait の土台）とあえて変える**。立ち絵は見せ場なので、しんの個性（鋭い・不敵なクール）を前に出す（一般則は [character-guide.md](../character-guide.md) §4「作る画像セットと順序」）。穏やかな素顔は portrait 側が担う＝住み分け。
+> **表情は neutral（master・portrait の土台）とあえて変える**。立ち絵は見せ場なので、しんの個性（鋭い・不敵なクール）を前に出す（一般則は [character-guide.md](../character-guide.md) §4「制作フロー」2）。穏やかな素顔は portrait 側が担う＝住み分け。
 
 ```
 IMPORTANT — this is a SHOWPIECE pose. Push the EXPRESSION and an ELEGANT sense of motion hard, even if it differs from the calm master.

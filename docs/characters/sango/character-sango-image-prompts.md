@@ -3,7 +3,7 @@
 さんご（＋使い魔 狐〔狐仙／九尾〕）の画像生成プロンプトを集約（[character-sango.md](./character-sango.md) §3 から分離して肥大化を回避）。
 
 - **識別情報（外見コンセプト・衣装の模様・モチーフ・配色・使い魔設定）の正は [character-sango.md](./character-sango.md) §3**（世界・系譜の正は [world.md](../world.md) §4・§5）。本ファイルは「実際に使う生成プロンプト」だけを持つ。
-- 汎用の生成手順・嘘字対策・一貫性ワークフロー・**作る画像セットと順序**は [character-guide.md](../character-guide.md) §4。
+- 汎用の生成手順・嘘字対策・一貫性ワークフロー・**作る順序**は [character-guide.md](../character-guide.md) §4「制作フロー」。
 - **画風はまお・りん・しん・ひすいと統一のハウススタイル＝くっきり線＋セル塗り・ツヤ控えめ**（`clean crisp anime lineart, sharp clean outlines, proper cel shading`）。
 - 命名は kebab＋id 接頭辞（[character-guide.md](../character-guide.md) §3・§5）：配布 `sango-portrait-<expr>-<variant>.webp`／`sango-full-stand-a.webp`／`sango-avatar.webp`／`sango-familiar.webp`、master PNG（original 限定）`sango-master-full.png`・`sango-master-bustup.png`。
 
@@ -67,13 +67,13 @@ realistic, semi-realistic, 3d, busy background, scenery, colored background.
 
 ## 派生プロンプト（道具付き立ち絵／バストアップ）
 
-master 確定後に **同一セッション t2i** で派生（作る順序は [character-guide.md](../character-guide.md) §4「作る画像セットと順序」）。**派生では白キャンバスを添付しない**（純 t2i でセッションの視覚記憶に寄りかかり衣装の模様が揃う＝ガイド §4）。
+master 確定後に **同一セッション t2i** で派生（作る順序は [character-guide.md](../character-guide.md) §4「制作フロー」2）。**派生では白キャンバスを添付しない**（純 t2i でセッションの視覚記憶に寄りかかり衣装の模様が揃う＝ガイド §4）。
 
 ### 道具付き立ち絵（紅の杯を掲げる動的ポーズ・ツンデレ・確定方向）→ `sango-full-stand-a.webp`
 
 スタート画面・キャラ選択の見せ場。狙い＝**杯をすっと掲げる優雅な所作で動きを出す＋ツンデレの強気な薄笑い**。
 
-> **表情は neutral（master・portrait の土台）とあえて変える**。立ち絵は見せ場なので、さんごの個性（ツンデレ・強気な色気）を前に出す（一般則は [character-guide.md](../character-guide.md) §4「作る画像セットと順序」）。穏やかな素顔は portrait 側が担う＝住み分け。狐（狐仙／九尾）は単体アセット（`sango-familiar.webp`）で別途出すため、立ち絵では枠外（AVOID）。
+> **表情は neutral（master・portrait の土台）とあえて変える**。立ち絵は見せ場なので、さんごの個性（ツンデレ・強気な色気）を前に出す（一般則は [character-guide.md](../character-guide.md) §4「制作フロー」2）。穏やかな素顔は portrait 側が担う＝住み分け。狐（狐仙／九尾）は単体アセット（`sango-familiar.webp`）で別途出すため、立ち絵では枠外（AVOID）。
 
 ```
 IMPORTANT — this is a SHOWPIECE pose. Push the EXPRESSION and an ELEGANT sense of motion hard, even if it differs from the soft calm master.
