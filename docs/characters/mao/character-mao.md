@@ -63,7 +63,7 @@
 
 - リアクション（パレット駆動・`Expression`）：neutral / happy / troubled / smile / thinking / insight（`reactions`：既定マップどおり・上書きなし）。
 - ストーリー（パス参照・別系統＝[character-guide.md](../character-guide.md) §3）：confused / determined / surprised / relieved / pained（第一話分＝[story/episode-01.md](../../story/episode-01.md)）。
-- いずれも `original/` に `mao-portrait-<token>-a.png` で保管。WebP化・配布・`expressions[]` 登録は別パス（未）。
+- いずれも `original/` に生成画像、親フォルダに透過済み PNG を `mao-portrait-<token>-a.png` で保管し、配布 WebP を `src/assets/characters/mao/` に配置済み。リアクション6種はキャラデータの `expressions[]` に登録済み（ストーリー用はパス参照なので登録しない）。
 
 ## 4. セリフ
 

@@ -3,20 +3,20 @@
 りん（＋使い魔 銀猫）の画像生成プロンプトを集約（[character-rin.md](./character-rin.md) §3 から分離して肥大化を回避）。
 
 - **識別情報（外見コンセプト・衣装の模様・モチーフ・配色・使い魔設定）の正は [character-rin.md](./character-rin.md) §3**。本ファイルは「実際に使う生成プロンプト」だけを持つ。
-- 汎用の生成手順・嘘字対策・一貫性ワークフロー・**作る画像セットと順序**は [character-guide.md](../character-guide.md) §4。
+- 汎用の生成手順・嘘字対策・一貫性ワークフロー・**作る順序**は [character-guide.md](../character-guide.md) §4「制作フロー」。
 - 確定プロンプト（採用画像を出したもの）は原文のまま保持する。
 
 > **現状（2026-06-15・master 採用確定）：** 全身 master・鈴を掲げた動きの立ち絵・neutral ウエストアップ master を採用済み。残課題は 640×768 正規化＋WebP 化・表情差分の展開。
 
 ## master 生成プロンプト（たたき台。固有作品名は使わずオリジナルに寄せる）
 
-汎用の生成手順・嘘字対策・一貫性ワークフローは [character-guide.md](../character-guide.md) §4「作り方」の「AI生成（共通）」。本項は「りん」固有のプロンプトのみ。
+汎用の生成手順・嘘字対策・一貫性ワークフローは [character-guide.md](../character-guide.md) §4「制作フロー」1。本項は「りん」固有のプロンプトのみ。
 
 顔の方針：**親しみやすい moe 系の小悪魔**。丸さは残し、**目は開き気味＋眉はゆるめ**（つり目・細め・つり眉にしすぎるとアップできつく出る。実制作で確認）、**視線は正面**・口は閉じ気味の含み笑い（小悪魔スマイル）を軸にする。**八重歯は出さない**（`fang` 系の語を入れない）。半眼（`half-lidded`）は妖艶＝大人びるので使わない。きつさが出たら**眉から緩める**のが一番効く。ベース顔は穏やかにし、**小悪魔感は表情差分（insight・smug 等）で出す**。
 
-master の方針（ガイド §4「素体で master を作る」「1体だけ出す」準拠）：このプロンプトは **master（ステップ1・t2i）専用**。**両腕を脇に下ろし・法具（銀鈴）を持たせず・衣装の全体が見える正面全身の素体**を出す（鈴を掲げる姿・ポーズ違いは master 確定後に同一セッション t2i で派生＝下記「派生プロンプト」）。設定シート化（複数アングル）を避けるため `single full-body illustration, one girl only, front view` を立て、negative に `character sheet / model sheet / turnaround / multiple views` 等を積む。
+master の方針（ガイド §4「制作フロー」1「素体で作る」「1体だけ出す」準拠）：このプロンプトは **master（制作フロー 1・t2i）専用**。**両腕を脇に下ろし・法具（銀鈴）を持たせず・衣装の全体が見える正面全身の素体**を出す（鈴を掲げる姿・ポーズ違いは master 確定後に同一セッション t2i で派生＝下記「派生プロンプト」）。設定シート化（複数アングル）を避けるため `single full-body illustration, one girl only, front view` を立て、negative に `character sheet / model sheet / turnaround / multiple views` 等を積む。
 
-縦長の白紙キャンバスを種にする（ガイド §4 ステップ1）。**3:4 縦長の真っ白 PNG を参照添付**して冒頭の canvas 指示文を添えると縦長・1体・くっきりが安定する。比率設定が効くツールなら白紙は不要（文言だけ残しても可＝実制作では未添付でも良い絵が出た）。
+縦長の白紙キャンバスを種にする（ガイド §4「制作フロー」1）。**3:4 縦長の真っ白 PNG を参照添付**して冒頭の canvas 指示文を添えると縦長・1体・くっきりが安定する。比率設定が効くツールなら白紙は不要（文言だけ残しても可＝実制作では未添付でも良い絵が出た）。
 
 ```
 Use the attached blank vertical image only as the canvas and aspect ratio;
@@ -80,7 +80,7 @@ mahjong tiles, kanji or text on clothing, watermark, logo
 
 ## 派生プロンプト（道具付き立ち絵／バストアップ）
 
-master 確定後に **同一セッション t2i** で派生させた**確定プロンプト**（実際に採用画像を出したもの）。作る順序・考え方は [character-guide.md](../character-guide.md) §4「作る画像セットと順序」。
+master 確定後に **同一セッション t2i** で派生させた**確定プロンプト**（実際に採用画像を出したもの）。作る順序・考え方は [character-guide.md](../character-guide.md) §4「制作フロー」2。
 
 **道具付き立ち絵（銀鈴を掲げる動的ポーズ）** — スタート画面・キャラ選択の見せ場。体を斜め・片手で銀鈴の房を脇に上げ・反対の手は脱力。鈴はドレスから離して持ち、刺繍（蝶・蔦）を隠さない。
 
@@ -166,7 +166,7 @@ holding bells, cluster of bells in hand, bells on a cord in hand, hands holding 
 
 ## バストアップ → portrait クロップ手順（りん確定枠）
 
-汎用の考え方・基準は [character-guide.md](../character-guide.md) §4「バストアップ → portrait（640×768）」。本項は**りんで確定した具体値（枠・コマンド）**。りんは **640 幅のネイティブ窓を等倍で切る**（拡大しない＝5:6 の最終寸 640×768 を直接クロップ）。
+汎用の考え方・基準は [character-guide.md](../character-guide.md) §4「制作フロー」3。本項は**りんで確定した具体値（枠・コマンド）**。りんは **640 幅のネイティブ窓を等倍で切る**（拡大しない＝5:6 の最終寸 640×768 を直接クロップ）。
 
 **確定枠（2026-06-24・neutral で検証）**
 
@@ -174,7 +174,7 @@ holding bells, cluster of bells in hand, bells on a cord in hand, hands holding 
 - クロップ枠：**`-crop 640x768+155+16 +repage`** を全表情で固定。
   - 幅640・X=155 ＝中身をほぼ水平中央に置き、外側のツインテールは枠で自然にカット（中身中央 ≈ x=480 に対し 155..795）。
   - 高さ768・Y=16 ＝頭頂の少し上から。**640×768＝5:6 の最終寸そのものなのでリサイズ不要**（等倍＝線がネイティブの鮮明さのまま）。ツインテールが広く張るので窓を詰めず 640 幅で等倍に切る。
-- **順序**：① クロップ（640×768・等倍）→ ② 透過（スキル anime-cutout-defringe＝[character-guide.md](../character-guide.md) §4「表情差分の透過フロー」）→ ③ そのまま WebP。リサイズが無いので白フチは出にくいが、透過は ① の後に行う。
+- **順序**：① クロップ（640×768・等倍）→ ② 透過（スキル anime-cutout-defringe＝[character-guide.md](../character-guide.md) §4「制作フロー」4）→ ③ そのまま WebP。リサイズが無いので白フチは出にくいが、透過は ① の後に行う。
 
 **手順**
 

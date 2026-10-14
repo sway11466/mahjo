@@ -98,7 +98,7 @@ export function avatarThumbUrl(
 /**
  * スタート画面・キャラクター画面で見せる立ち絵（全身）の URL。
  * 全身 <id>-full-stand-a.webp を優先し、無ければベース表情（あいさつ＝greeting の表情。まおは neutral）→
- * avatar の順にフォールバック。（全身は character-guide §2 で任意のため、未用意でも崩れないように）
+ * avatar の順にフォールバック。（全身は character-guide §3 で任意のため、未用意でも崩れないように）
  */
 export function standeeUrl(
   characterId: string,
