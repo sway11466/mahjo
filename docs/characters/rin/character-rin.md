@@ -77,4 +77,4 @@
 
 ## 5. 音楽（BGM）
 
-曲の制作ノートは [character-rin-sound.md](./character-rin-sound.md)。BGM は MuseScore で自作アレンジした音源ファイル（`rin-bgm.m4a`・キャラ別1曲）方式（[sound.md](../../design/sound.md)「BGM の制作」・[ADR-0004](../../adr/ADR-0004-bgm-audio-files.md)）。曲は作り直し中（旧方式の旋律は破棄・2026-10-13）。方向性は裏拍を取る感じ（裏打ち）を骨にし、まおの軽快さと対比する。曲の狙いは sound doc の **TBD** を埋めてから制作する。
+曲の制作ノートは [character-rin-sound.md](./character-rin-sound.md)。BGM は MuseScore で自作アレンジした音源ファイル（`rin-bgm.m4a`・キャラ別1曲）方式（[sound.md](../../design/sound.md)「BGM の制作」・[ADR-0004](../../adr/ADR-0004-bgm-audio-files.md)）。曲は 2026-10-15 に作った第1版（中華風×エレガントだけど小悪魔。裏拍をチェレスタの鈴で刻む。音色の仕上げは未）。
