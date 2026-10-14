@@ -24,6 +24,9 @@ export const rin: Character = {
   themeColor: '#7d2c5c', // 濃い赤紫（ワインマゼンタ）。character-rin.md §3（暫定・要微調整）
   accentColor: '#cfd2dc', // 銀（鈴・髪飾りに呼応）。装飾モチーフ（蝶）の色
   motif: { ritual: 'suzu', decor: 'butterfly' }, // 法具＝銀鈴・装飾＝蝶（resolver は順次・未登録の間は非表示）
+  // BGM（character-rin-sound.md）。原本は docs/characters/rin/rin-bgm.mscz、再生は ui（src/ui/audio）。
+  // ♩=132・4/4：イントロ4小節（16拍）を初回だけ鳴らし、Aメロ〜サビ32小節（128拍）をループ。
+  bgm: { src: 'characters/rin/rin-bgm.m4a', loopStart: (16 * 60) / 132, loopEnd: (144 * 60) / 132 },
   // りんが持つ表情（練習モードのリアクション全場面ぶん。すべて画像配置済み）。
   expressions: [
     { expression: 'neutral', srcs: PORTRAITS('neutral', 'a') }, // ベース顔・最終フォールバック先
