@@ -1,6 +1,6 @@
 # 効果音・音楽（音まわり）
 
-SE（効果音）と BGM（音楽）の方針。SE の設定の型は [data-model](./data-model.md) §15 `AppSettings`（BGM のオンオフは保存しない＝下記「設定」）。**BGM は音源ファイル方式**（MuseScore で自作アレンジした AAC を再生＝下記「BGM の実現方式」「BGM の制作」・[ADR-0004](../adr/ADR-0004-bgm-audio-files.md)）。旧方式（コード生成＝[ADR-0003](../adr/ADR-0003-bgm-code-generation.md)・Superseded）の実装は撤去済みで、新方式の再生部は実装済み（曲の無いキャラは無音。残作業は [backlog](../backlog.md) feature-21）。**SE は未実装**（素材収集＝[backlog](../backlog.md) feature-9・再生配線＝parking lot「音の実装」）で、SE 無しでもアプリは成立する。
+SE（効果音）と BGM（音楽）の方針。SE の設定の型は [data-model](./data-model.md) §15 `AppSettings`（BGM のオンオフは保存しない＝下記「設定」）。**BGM は音源ファイル方式**（MuseScore で自作アレンジした AAC を再生＝下記「BGM の実現方式」「BGM の制作」・[ADR-0004](../adr/ADR-0004-bgm-audio-files.md)）。旧方式（コード生成＝[ADR-0003](../adr/ADR-0003-bgm-code-generation.md)・Superseded）の実装は撤去済みで、新方式の再生部は実装済み（曲の無いキャラは無音。まお／りんは第1版を配置済み。音色・ミックスの仕上げは [backlog](../backlog.md) parking lot「音の実装」）。**SE は未実装**（素材収集＝[backlog](../backlog.md) feature-9・再生配線＝parking lot「音の実装」）で、SE 無しでもアプリは成立する。
 
 ## 設定
 
@@ -161,4 +161,4 @@ SE は**権利表記が不要なライセンスに統一**する。理由：本�
 
 ## 技術詳細（SE 実装時に詰める）
 
-- SE の autoplay 制限・precache・キャラ連動等は実装時に確定（BGM の autoplay 解禁・再生制御は `src/ui/audio` の現行コードを引き継ぐ。音源ファイル方式への置き換えは feature-21）。
+- SE の autoplay 制限・precache・キャラ連動等は実装時に確定（BGM の autoplay 解禁・再生制御は `src/ui/audio` の現行コードを引き継ぐ）。
