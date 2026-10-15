@@ -12,7 +12,7 @@
      白→差し色（まお金／りん銀）。テーマ色グロー（下の text-shadow）と合わせて個性を出す。 */
   background: linear-gradient(
     96deg,
-    #fff 18%,
+    var(--text-strong) 18%,
     var(--char-accent, var(--color-highlight))
   );
   -webkit-background-clip: text;
@@ -35,17 +35,17 @@
   padding: 0.85rem 1.2rem;
   font-size: clamp(1rem, 1.6vw, 1.2rem);
   font-weight: 700;
-  color: #f2f2f2;
-  background: rgba(60, 66, 82, 0.9);
-  border: 1px solid #5a6172;
+  color: var(--color-text);
+  background: var(--btn-bg);
+  border: 1px solid var(--btn-border);
   border-radius: 0.8rem;
   cursor: pointer;
   transition: background 0.12s ease, border-color 0.12s ease;
 }
 
 .start__item:hover {
-  background: rgba(74, 82, 102, 0.96);
-  border-color: #79808f;
+  background: var(--btn-bg-hover);
+  border-color: var(--btn-border-hover);
 }
 
 /* 縦積み（立ち絵の下にメニュー）ではメニューを panel(最大22rem)いっぱいに、タイトルは小さめに。 */

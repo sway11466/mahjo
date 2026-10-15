@@ -117,8 +117,8 @@
   padding: 0.1rem 0.5rem;
   font-size: clamp(0.65rem, 1.1vw, 0.85rem);
   font-weight: 700;
-  color: #1a1a1a;
-  background: #e2c44e;
+  color: var(--badge-text);
+  background: var(--badge-bg);
   border-radius: 999px;
 }
 

@@ -1,18 +1,24 @@
 /* リーチの千点棒（装飾は CSS／幾何は TSX：architecture.md §5）。
    コンテナ幅にフィットしてスケールする（高さは viewBox 比で決まる）。 */
 .riichi-stick {
+  /* 点棒の色（uxui §10.1 部品スコープ。牌と同じ生成りの地に赤い点） */
+  --stick-face: #f7f4ea;
+  --stick-edge: #d8d2c2;
+  --stick-dot: #d6263a;
+  --stick-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+
   display: block;
   width: 100%;
   height: auto;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(var(--stick-shadow));
 }
 
 .riichi-stick__body {
-  fill: #f7f4ea;
-  stroke: #d8d2c2;
+  fill: var(--stick-face);
+  stroke: var(--stick-edge);
   stroke-width: 1.5;
 }
 
 .riichi-stick__dot {
-  fill: #d6263a;
+  fill: var(--stick-dot);
 }

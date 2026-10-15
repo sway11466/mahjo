@@ -76,7 +76,7 @@
   letter-spacing: 0.04em;
   padding: 0.1rem 0.4rem;
   border-radius: 0.4rem;
-  color: #c8cdd8;
+  color: var(--text-soft);
   background: color-mix(in srgb, var(--color-text) 14%, transparent);
 }
 
@@ -84,7 +84,7 @@
   margin: 0.25rem 0 0;
   font-size: clamp(0.72rem, 1.2vw, 0.82rem);
   line-height: 1.45;
-  color: #9aa3b2;
+  color: var(--text-muted);
 }
 
 .setting-row__control {
@@ -94,7 +94,7 @@
 .setting-value {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #c8cdd8;
+  color: var(--text-soft);
 }
 
 /* 数値・列挙を選ぶネイティブセレクト（赤ドラ枚数 等） */
@@ -102,15 +102,15 @@
   font: inherit;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #c8cdd8;
+  color: var(--text-soft);
   background: color-mix(in srgb, var(--color-text) 8%, transparent);
-  border: 1px solid #5a6172;
+  border: 1px solid var(--btn-border);
   border-radius: 0.5rem;
   padding: 0.3rem 0.55rem;
   cursor: pointer;
 }
 .setting-select:hover {
-  border-color: #79808f;
+  border-color: var(--btn-border-hover);
 }
 .setting-select option {
   color: var(--color-text);
@@ -155,7 +155,7 @@
   width: 1.2rem;
   height: 1.2rem;
   border-radius: 50%;
-  background: #f2f2f2;
+  background: var(--color-text);
   transition: transform 0.15s ease;
 }
 
@@ -202,7 +202,7 @@
 
 .enabled-yaku__group-count {
   font-size: 0.72rem;
-  color: #9aa3b2;
+  color: var(--text-muted);
 }
 
 .enabled-yaku__list {
@@ -234,12 +234,18 @@
 .enabled-yaku__note {
   margin: 0;
   font-size: 0.72rem;
-  color: #9aa3b2;
+  color: var(--text-muted);
   line-height: 1.45;
 }
 
 /* ── キャラクター選択（screens.md §4。設定の2カラム土台＝SettingsLayout の右パネルに載る） ── */
 .char-select {
+  /* 好感度ハートの色（uxui §10.1 部品スコープ） */
+  --rating-label: #c9c3e0;
+  --heart-empty: rgba(255, 255, 255, 0.12);
+  --heart-stroke: var(--heart-stroke);
+  --heart-fill: var(--heart-fill);
+
   width: min(640px, 100%);
   margin: 0 auto;
   display: flex;
@@ -251,7 +257,7 @@
 .char-select__rating-label {
   margin: 0 0 0.5rem;
   font-size: clamp(0.8rem, 1.3vw, 0.95rem);
-  color: #c9c3e0;
+  color: var(--rating-label);
 }
 
 .char-select__hearts {
@@ -289,7 +295,7 @@
   border-radius: 50%;
   object-fit: cover;
   object-position: top center;
-  background: linear-gradient(160deg, #3a3550, #211f2e);
+  background: var(--card-bg);
   /* リングは box-shadow で丸に沿わせる。常時 0px の透明枠でレイアウトを揺らさない。 */
   box-shadow: 0 0 0 0 transparent;
   transition: box-shadow 0.15s ease;
@@ -314,7 +320,7 @@
   place-items: center;
   font-size: 1.6rem;
   font-weight: 800;
-  color: #b9b3d4;
+  color: var(--card-text);
 }
 
 .char-card__name {
@@ -339,11 +345,11 @@
 }
 
 .char-heart__base path {
-  fill: rgba(255, 255, 255, 0.12);
-  stroke: #6b7180;
+  fill: var(--heart-empty);
+  stroke: var(--heart-stroke);
   stroke-width: 1.4;
 }
 
 .char-heart__fill path {
-  fill: #e0607f; /* 好感度の温かいピンク */
+  fill: var(--heart-fill);
 }
