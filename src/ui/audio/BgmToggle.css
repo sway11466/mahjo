@@ -11,21 +11,21 @@
   width: 2.6rem;
   height: 2.6rem;
   padding: 0;
-  color: #9aa0ae;
-  background: rgba(18, 20, 28, 0.6);
-  border: 1px solid #3b3f4d;
+  color: var(--text-muted);
+  background: rgb(var(--panel-rgb) / 0.6);
+  border: 1px solid var(--panel-border);
   border-radius: 0.7rem;
   cursor: pointer;
 }
 
 .bgm-toggle:hover {
-  border-color: var(--char-glow, #6a4fb0);
+  border-color: var(--char-glow);
 }
 
 /* オン：音符を明るく（キャラ色の発光は控えめに） */
 .bgm-toggle--on {
   color: var(--color-text);
-  border-color: var(--char-glow, #6a4fb0);
+  border-color: var(--char-glow);
 }
 
 .bgm-toggle__icon {

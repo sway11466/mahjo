@@ -1,6 +1,12 @@
 /* 回答の4択バー（装飾は CSS／構造は TSX：architecture.md §5）。
    広い画面は横1列、狭い画面（40rem以下）は2×2に折り返す。 */
 .choices {
+  /* 4択ボタン専用の面（uxui §6.1・§10.1 部品スコープ）。通常→ホバー→押下・選択で一段ずつ明るく */
+  --choice-bg: rgba(30, 34, 44, 0.92);
+  --choice-bg-hover: rgba(44, 50, 64, 0.96);
+  --choice-bg-active: rgba(54, 60, 76, 0.98);
+  --choice-border-selected: #8a8fa0;
+
   flex: none;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -19,9 +25,9 @@
   padding: 0.9rem 1rem;
   font-size: clamp(0.95rem, 1.6vw, 1.2rem);
   font-weight: 700;
-  color: #f2f2f2;
-  background: rgba(30, 34, 44, 0.92);
-  border: 1px solid #3b3f4d;
+  color: var(--color-text);
+  background: var(--choice-bg);
+  border: 1px solid var(--panel-border);
   border-radius: 0.7rem;
   cursor: pointer;
   transition: background 0.12s ease, border-color 0.12s ease;
@@ -81,18 +87,18 @@
 /* ホバー/アクティブは回答前（未 disabled）のみ。回答表示中は色を変えない
    （disabled なボタンに hover が当たって正解/誤答の色が消えるのを防ぐ）。 */
 .choices__btn:not(:disabled):hover {
-  background: rgba(44, 50, 64, 0.96);
-  border-color: #5a6172;
+  background: var(--choice-bg-hover);
+  border-color: var(--btn-border);
 }
 
 .choices__btn:not(:disabled):active {
-  background: rgba(54, 60, 76, 0.98);
+  background: var(--choice-bg-active);
 }
 
 /* 選択直後（答え合わせ前）の「選んだ」表示。正誤の色（--correct/--wrong）が出るまでの間だけ。 */
 .choices__btn[aria-pressed='true']:not(.choices__btn--correct):not(.choices__btn--wrong) {
-  border-color: #8a8fa0;
-  background: rgba(54, 60, 76, 0.98);
+  border-color: var(--choice-border-selected);
+  background: var(--choice-bg-active);
 }
 
 .choices__btn:disabled {
@@ -101,13 +107,13 @@
 
 /* 回答後：正解は緑、選んだ誤答は赤 */
 .choices__btn--correct {
-  background: rgba(46, 125, 50, 0.85);
-  border-color: #2e7d32;
-  color: #fff;
+  background: color-mix(in srgb, var(--color-correct) 85%, transparent);
+  border-color: var(--color-correct);
+  color: var(--text-strong);
 }
 
 .choices__btn--wrong {
-  background: rgba(198, 40, 40, 0.8);
-  border-color: #c62828;
-  color: #fff;
+  background: color-mix(in srgb, var(--color-wrong) 80%, transparent);
+  border-color: var(--color-wrong);
+  color: var(--text-strong);
 }

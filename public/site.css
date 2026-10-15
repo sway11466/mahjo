@@ -1,6 +1,6 @@
 /* 公開サイト（LP・キャラ紹介）共有スタイル。
    public/ の素 HTML はバンドラを通らないため src/ui/index.css のトークンを import できない。
-   ここはサイトに必要な値だけを持つ独立トークン（アプリ配色＝docs/design/uxui.md §4 に準拠）。
+   ここはサイトに必要な値だけを持つ独立トークン（アプリ配色＝docs/design/uxui.md §3 に準拠）。
    正＝docs/design/screens.md §6 / 配色＝docs/design/uxui.md。 */
 
 :root {
@@ -40,7 +40,7 @@ body {
   margin: 0;
   color: var(--text);
   /* 奥行き：対角グラデ＋まお（左上・紫）／りん（右下・ワイン）の淡いラジアルグロー。
-     状況で変えない一定の雰囲気（uxui §4）。 */
+     状況で変えない一定の雰囲気（uxui §2）。 */
   background:
     radial-gradient(
       48% 38% at 12% 16%,

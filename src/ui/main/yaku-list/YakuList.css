@@ -19,14 +19,14 @@
   font: inherit;
   font-size: clamp(0.8rem, 1.4vw, 0.95rem);
   color: var(--color-text);
-  background: rgba(18, 20, 28, 0.6);
-  border: 1px solid #3b3f4d;
+  background: rgb(var(--panel-rgb) / 0.6);
+  border: 1px solid var(--panel-border);
   border-radius: 999px;
   cursor: pointer;
 }
 
 .yaku-list__filter--active {
-  color: #15121f;
+  color: var(--color-bg);
   background: var(--char-glow);
   border-color: var(--char-glow);
   font-weight: 700;
@@ -48,8 +48,8 @@
 
 .yaku-list__row {
   padding: 0.7rem 0.9rem;
-  background: rgba(18, 20, 28, 0.5);
-  border: 1px solid #3b3f4d;
+  background: rgb(var(--panel-rgb) / 0.5);
+  border: 1px solid var(--panel-border);
   border-radius: 0.7rem;
 }
 
@@ -76,7 +76,7 @@
   margin: 0.35rem 0 0;
   font-size: clamp(0.85rem, 1.5vw, 1rem);
   line-height: 1.5;
-  color: #c8ccd6;
+  color: var(--text-soft);
 }
 
 /* 参考手牌：小さな牌を横並び（入りきらなければ折り返す） */
@@ -111,7 +111,7 @@
   padding: 0.1rem 0.5rem;
   font-size: clamp(0.65rem, 1.1vw, 0.85rem);
   font-weight: 700;
-  color: #1a1a1a;
-  background: #e2c44e;
+  color: var(--badge-text);
+  background: var(--badge-bg);
   border-radius: 999px;
 }

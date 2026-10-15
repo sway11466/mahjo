@@ -4,7 +4,7 @@
 /* 画面シェル：縦に 100dvh をフルに使う。上＝盤面（伸縮）、下＝ステージ（常設）。
    寸法は相対単位（vh/%/clamp）。絶対 px は牌の最小幅のみ（architecture.md §5）。
    背景：全体の淡い対角グラデ＋キャラ色のラジアルグロー（左下＝ステージ背後、右上＝弱アンビエント）。
-   いずれも低アルファで盤面の白牌の可読性を守る。方針は uxui.md §4。 */
+   いずれも低アルファで盤面の白牌の可読性を守る。方針は uxui.md §2・§8。 */
 .screen {
   position: relative; /* 左上ハンバーガーメニュー（.main-menu）の絶対配置の基準 */
   height: 100dvh;
@@ -117,8 +117,8 @@
   padding: 0.1rem 0.5rem;
   font-size: clamp(0.65rem, 1.1vw, 0.85rem);
   font-weight: 700;
-  color: #1a1a1a;
-  background: #e2c44e;
+  color: var(--badge-text);
+  background: var(--badge-bg);
   border-radius: 999px;
 }
 

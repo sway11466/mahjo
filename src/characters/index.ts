@@ -6,7 +6,7 @@ import { rin } from './rin/index.ts';
 // フォールバック）はデータ参照としてここが持つ。解決ロジックは持たない
 // （場面→表情＝src/session/reaction.ts、テーマ色の既定＝src/ui/character/themeColor.ts）。
 
-/** キャラのレジストリ（character-guide §4）。追加はここに足すだけ。 */
+/** キャラのレジストリ（character-guide §5）。追加はここに足すだけ。 */
 export const characters: Character[] = [mao, rin /*, …順次追加 */];
 export const defaultCharacterId = 'mao';
 

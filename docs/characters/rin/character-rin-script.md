@@ -6,7 +6,7 @@
 
 ## 1. 場面別セリフ
 
-場面ごとに表情（`Expression`）＋セリフ。複数からランダム表示（飽き対策）。場面の正準リスト・必須度は [session.md](../../spec/session.md) §4 場面（リアクション）の正準、セリフ側の規則は [character-guide.md](../character-guide.md) §2「セリフ」に従う。りんは小悪魔なので一部の表情を既定マップから上書きする（`reactions: { correct: 'mischievous', greeting: 'smug' }`）。それ以外の場面（dealing→neutral／wrong→troubled／finished→happy）は既定どおりなので表情は併記しない。
+場面ごとに表情（`Expression`）＋セリフ。複数からランダム表示（飽き対策）。場面の正準リスト・必須度は [session.md](../../spec/session.md) §4 場面（リアクション）の正準、セリフ側の規則は [character-guide.md](../character-guide.md) §2「セリフ」に従う。りんは小悪魔なので一部の表情を既定マップから上書きする（`reactions: { correct: 'mischievous', greeting: 'smug' }`）。それ以外の場面（dealing→thinking／wrong→troubled／finished→happy）は既定どおり（見出しの表情は既定マップの写し）。
 
 ### あいさつ（開始）（greeting → smug｜必須）
 セッション開始の1回。まおへの一方的な対抗心を軽く滲ませてよい（相手はまお／プレイヤーは煽らない）。
@@ -14,7 +14,7 @@
 - まおより楽しませてあげる。覚悟しておいてね？
 - お待ちかね。さ、鈴を鳴らそうか。
 
-### 出題（各問）（dealing → neutral｜必須）
+### 出題（各問）（dealing → thinking｜必須）
 毎問の出題中（回答前）。答えは言わない。
 - この手……さて、キミには何が見える？
 - 落ち着いて。あたしが見てるから大丈夫。
