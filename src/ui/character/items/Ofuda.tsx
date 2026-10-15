@@ -2,7 +2,7 @@ import './Ofuda.css';
 
 /**
  * まおのキャラ固有アイテム＝御札（お札）。inline SVG（幾何は TSX／色は Ofuda.css）。
- * 嘘字対策（character-guide §3）：本物の漢字は描かず、朱の帯・封の丸・抽象的な墨の曲線のみ。
+ * 嘘字対策（character-guide §4）：本物の漢字は描かず、朱の帯・封の丸・抽象的な墨の曲線のみ。
  * 中立データには無関係の「皮」。当面は4択の自分の選択に貼るが、将来は符ハイライト等にも流用可。
  */
 export function Ofuda() {

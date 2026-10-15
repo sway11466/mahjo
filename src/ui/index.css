@@ -9,7 +9,47 @@
   --color-bg-top: #221c3a; /* 背景グラデ上端（やや明るい紫） */
   --color-text: #f2f2f2;
   --char-glow: #6a4fb0; /* キャラのテーマ色。既定値、App が選択キャラの色で上書き */
-  --color-highlight: #f5c451; /* 解説・ヒントのハイライト（やわらかい金。uxui §3） */
+  --color-highlight: #f5c451; /* 解説・ヒントのハイライト（やわらかい金。uxui §7.3） */
+
+  /* 面（パネル）：色は1つ、濃さは使う側で rgb(var(--panel-rgb) / α)（uxui §5.3） */
+  --panel-rgb: 18 20 28;
+  --panel-border: #3b3f4d;
+
+  /* 文字の段（本文 --color-text より控えめな順。uxui §3.1） */
+  --text-strong: #fff; /* 純白。色の付いた面の上の文字・タイトルの光 */
+  --text-soft: #c8ccd6; /* 値・補足 */
+  --text-muted: #9aa3b2; /* ラベル・注記 */
+  --text-faint: #8a93a3; /* 単位・脚注 */
+  --text-disabled: #555b68; /* 成立しない・無効 */
+
+  /* 通常ボタン（uxui §6.1） */
+  --btn-bg: rgba(60, 66, 82, 0.9);
+  --btn-bg-hover: rgba(74, 82, 102, 0.96);
+  --btn-border: #5a6172;
+  --btn-border-hover: #79808f;
+
+  /* 進む操作（会話枠の次へ・名札。uxui §6.1） */
+  --action-bg: #c7506a;
+  --action-bg-hover: #d0688a;
+  --action-border: #d0688a;
+
+  /* 紫のカード（キャラカード・立ち絵の代わり。uxui §6.5） */
+  --card-bg: linear-gradient(160deg, #3a3550, #211f2e);
+  --card-border: #4a4663;
+  --card-text: #b9b3d4;
+
+  /* 状況バッジ（第一打・一発。uxui §6.4） */
+  --badge-bg: #e2c44e;
+  --badge-text: #1a1a1a;
+
+  /* 4択の正誤（uxui §3.2。牌の緑・赤とは別の意味なので束ねない） */
+  --color-correct: #2e7d32;
+  --color-wrong: #c62828;
+
+  /* 影（uxui §5.4） */
+  --shadow-float: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.45); /* 会話枠・ドロップダウン */
+  --shadow-modal: 0 1rem 3rem rgba(0, 0, 0, 0.5); /* オーバーレイ */
+  --backdrop: rgba(0, 0, 0, 0.55); /* オーバーレイの暗幕 */
 
   /* 立ち絵の幅。メニュー（スタート）画面と設定画面が共有する（両画面で同サイズ）。
      幅は clamp(--standee-min, 55vw, --standee-max) で 480〜640px の間を伸び縮みさせる:

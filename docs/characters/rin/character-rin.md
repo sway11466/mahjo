@@ -64,7 +64,7 @@
 
 - リアクション（パレット駆動・`Expression`）：neutral / smug / mischievous / thinking / insight / smile / troubled / happy（`reactions`：あいさつ＝smug・正解＝mischievous に上書き、他は既定）。
 - ストーリー（パス参照・別系統＝[character-guide.md](../character-guide.md) §3）：confused / determined / surprised / relieved / bashful / pained（第一話分＝[story/episode-01.md](../../story/episode-01.md)）。
-- いずれも `original/` に `rin-portrait-<token>-a.png` で保管。WebP化・配布・`expressions[]` 登録は別パス（未）。
+- いずれも `original/` に生成画像、親フォルダに透過済み PNG を `rin-portrait-<token>-a.png` で保管し、配布 WebP を `src/assets/characters/rin/` に配置済み。リアクション8種はキャラデータの `expressions[]` に登録済み（ストーリー用はパス参照なので登録しない）。
 
 ## 4. セリフ
 

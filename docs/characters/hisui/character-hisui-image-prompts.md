@@ -3,7 +3,7 @@
 ひすい（＋使い魔 白蛇）の画像生成プロンプトを集約（[character-hisui.md](./character-hisui.md) §3 から分離して肥大化を回避）。
 
 - **識別情報（外見コンセプト・衣装の模様・モチーフ・配色・使い魔設定）の正は [character-hisui.md](./character-hisui.md) §3**（世界・系譜の正は [world.md](../world.md) §5）。本ファイルは「実際に使う生成プロンプト」＋確定した見た目メモを持つ。
-- 汎用の生成手順・嘘字対策・一貫性ワークフロー・**作る画像セットと順序**は [character-guide.md](../character-guide.md) §4。
+- 汎用の生成手順・嘘字対策・一貫性ワークフロー・**作る順序**は [character-guide.md](../character-guide.md) §4「制作フロー」。
 - **画風はまお・りんと統一のハウススタイル＝くっきり線＋セル塗り・ツヤ控えめ**（`clean crisp anime lineart, sharp clean outlines, proper cel shading`）。
 - 確定プロンプト（採用画像を出したもの）は構図・ポーズ・モチーフを保持する。
 
@@ -26,13 +26,13 @@
 
 ## master 生成プロンプト（たたき台。固有作品名は使わずオリジナルに寄せる）
 
-汎用の生成手順・嘘字対策・一貫性ワークフローは [character-guide.md](../character-guide.md) §4「作り方」の「AI生成（共通）」。本項は「ひすい」固有のプロンプトのみ。
+汎用の生成手順・嘘字対策・一貫性ワークフローは [character-guide.md](../character-guide.md) §4「制作フロー」1。本項は「ひすい」固有のプロンプトのみ。
 
 顔の方針：**聡明で穏やかな少し年上の女性**。落ち着いた閉じ口の自信ある微笑を軸に、知的さ・余裕で魅せる（小悪魔のきつさ・色気を前面に出す方向には振らない＝シックで聡明）。顔を毎回ブレさせないため、顔の構造語を positive の先頭側に置く。
 
-master の方針（ガイド §4「素体で master を作る」「1体だけ出す」準拠）：このプロンプトは **master（ステップ1・t2i）専用**。**両腕を脇に下ろし・法具（勾玉）を持たせず・衣装の全体が見える正面全身の素体**を出す（勾玉を掲げる姿・ポーズ違いは master 確定後に同一セッション t2i で派生＝下記「派生プロンプト」）。設定シート化（複数アングル）を避けるため `single full-body illustration, one girl only, single front view` を立て、negative に `character sheet / model sheet / turnaround / multiple views` 等を積む。
+master の方針（ガイド §4「制作フロー」1「素体で作る」「1体だけ出す」準拠）：このプロンプトは **master（制作フロー 1・t2i）専用**。**両腕を脇に下ろし・法具（勾玉）を持たせず・衣装の全体が見える正面全身の素体**を出す（勾玉を掲げる姿・ポーズ違いは master 確定後に同一セッション t2i で派生＝下記「派生プロンプト」）。設定シート化（複数アングル）を避けるため `single full-body illustration, one girl only, single front view` を立て、negative に `character sheet / model sheet / turnaround / multiple views` 等を積む。
 
-縦長の白紙キャンバスを種にする（ガイド §4 ステップ1）。**3:4 縦長の真っ白 PNG を参照添付**して冒頭の canvas 指示文を添える。positive/negative が分かれるツールは `[AVOID]` 以降を negative 欄へ。
+縦長の白紙キャンバスを種にする（ガイド §4「制作フロー」1）。**3:4 縦長の真っ白 PNG を参照添付**して冒頭の canvas 指示文を添える。positive/negative が分かれるツールは `[AVOID]` 以降を negative 欄へ。
 
 ```
 Use the attached blank vertical (3:4) image only as canvas/aspect; plain white background; draw ONE single full-body character head-to-toe, fresh crisp illustration.
@@ -67,7 +67,7 @@ solo, front-facing, plain white background.
 
 ## 派生プロンプト（道具付き立ち絵／バストアップ）
 
-master 確定後に **同一セッション t2i** で派生させた**確定プロンプト**（実際に採用画像を出したもの）。作る順序・考え方は [character-guide.md](../character-guide.md) §4「作る画像セットと順序」。**派生では白紙キャンバスを添付しない**（添付すると柄がドリフトする＝ガイド §4 の知見）。
+master 確定後に **同一セッション t2i** で派生させた**確定プロンプト**（実際に採用画像を出したもの）。作る順序・考え方は [character-guide.md](../character-guide.md) §4「制作フロー」2。**派生では白紙キャンバスを添付しない**（添付すると柄がドリフトする＝ガイド §4 の知見）。
 
 **道具付き立ち絵（勾玉を占いの振り子のように掲げる動的ポーズ）** — スタート画面・キャラ選択の見せ場。体を斜め・片手で勾玉を細い紐で振り子のように下げ・反対の手は脱力。披帛と髪が動きで片側へ流れる。
 

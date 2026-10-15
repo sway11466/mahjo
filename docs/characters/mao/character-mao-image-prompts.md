@@ -3,19 +3,19 @@
 まお（＋使い魔ココ）の画像生成プロンプトを集約（[character-mao.md](./character-mao.md) §3 から分離して肥大化を回避）。
 
 - **識別情報（外見コンセプト・衣装の模様・モチーフ・配色・使い魔設定）の正は [character-mao.md](./character-mao.md) §3**。本ファイルは「実際に使う生成プロンプト」だけを持つ。
-- 汎用の生成手順・嘘字対策・一貫性ワークフロー・**作る画像セットと順序**は [character-guide.md](../character-guide.md) §4。
+- 汎用の生成手順・嘘字対策・一貫性ワークフロー・**作る順序**は [character-guide.md](../character-guide.md) §4「制作フロー」。
 - **画風はりんと統一のハウススタイル＝くっきり線＋フラットなセル塗り・ツヤ控えめ**（`clean crisp anime lineart, sharp clean outlines, smooth cel shading`）。旧ソフト画風（ツヤ/グラデ）版のプロンプトは git 履歴に残る。まお刷新＝backlog feature-11。
 - 確定プロンプト（採用画像を出したもの）は構図・ポーズ・モチーフを保持し、レンダリング語のみハウススタイルへ差し替える。
 
 ## master 生成プロンプト（たたき台。固有作品名は使わずオリジナルに寄せる）
 
-汎用の生成手順・嘘字対策・一貫性ワークフローは [character-guide.md](../character-guide.md) §4「作り方」の「AI生成（共通）」。本項は「まお」固有のプロンプトのみ。
+汎用の生成手順・嘘字対策・一貫性ワークフローは [character-guide.md](../character-guide.md) §4「制作フロー」1。本項は「まお」固有のプロンプトのみ。
 
 顔の方針：**親しみやすい moe 系**（丸顔・大きくまん丸の瞳）を軸に、目元だけ少し引き締めて品を足す。クール・吊り目・大人美人寄りには振らない（汎用受け・「教わって安心する相手」を優先）。顔を毎回ブレさせないため、顔の構造語を positive の先頭側に置く。
 
-master の方針（ガイド §4「素体で master を作る」「1体だけ出す」準拠）：このプロンプトは **master（ステップ1・t2i）専用**。**両腕を脇に下ろし・法具（御札の束）を持たせず・衣装の全体が見える正面全身の素体**を出す（御札を扇状に持つ姿・ポーズ違いは master 確定後に i2i で派生＝§4 ステップ3）。腕や法具で衣装が隠れると表情差分・ポーズ違いの参照として使いづらいため。あわせて設定シート化（複数アングル）を避けるため `consistent character design` は positive に置かず、`single full-body illustration, one girl only, single front view` を立て、negative に `character sheet / model sheet / turnaround / multiple views` 等を積む。
+master の方針（ガイド §4「制作フロー」1「素体で作る」「1体だけ出す」準拠）：このプロンプトは **master（制作フロー 1・t2i）専用**。**両腕を脇に下ろし・法具（御札の束）を持たせず・衣装の全体が見える正面全身の素体**を出す（御札を扇状に持つ姿・ポーズ違いは master 確定後に i2i で派生＝§4 ステップ3）。腕や法具で衣装が隠れると表情差分・ポーズ違いの参照として使いづらいため。あわせて設定シート化（複数アングル）を避けるため `consistent character design` は positive に置かず、`single full-body illustration, one girl only, single front view` を立て、negative に `character sheet / model sheet / turnaround / multiple views` 等を積む。
 
-縦長の白紙キャンバスを種にする（ガイド §4 ステップ1）。**3:4 縦長の真っ白 PNG を1枚用意して参照添付**し、冒頭の canvas 指示文（白を背景として 1体を枠いっぱいに描く）を必ず添える。白紙の上の新規生成なので線がくっきりのまま縦長・1体が安定する。positive/negative が分かれているツールは `── AVOID ──` 以降を negative 欄へ。
+縦長の白紙キャンバスを種にする（ガイド §4「制作フロー」1）。**3:4 縦長の真っ白 PNG を1枚用意して参照添付**し、冒頭の canvas 指示文（白を背景として 1体を枠いっぱいに描く）を必ず添える。白紙の上の新規生成なので線がくっきりのまま縦長・1体が安定する。positive/negative が分かれているツールは `── AVOID ──` 以降を negative 欄へ。
 
 ```
 Use the attached blank vertical (3:4) image only as canvas/aspect; plain white background; draw ONE single full-body character head-to-toe, fresh crisp illustration.
@@ -54,7 +54,7 @@ solo, front-facing, plain white background.
 
 ## 派生プロンプト（道具付き立ち絵／バストアップ）
 
-master 確定後に **同一セッション t2i** で派生させた**確定プロンプト**（実際に採用画像を出したもの）。作る順序・考え方は [character-guide.md](../character-guide.md) §4「作る画像セットと順序」。
+master 確定後に **同一セッション t2i** で派生させた**確定プロンプト**（実際に採用画像を出したもの）。作る順序・考え方は [character-guide.md](../character-guide.md) §4「制作フロー」2。
 
 **道具付き立ち絵（御札を持つ動的ポーズ）** — スタート画面・キャラ選択の見せ場。体を斜め・脚を開く（クロスなし）・片手で御札の束を上げ・反対の手は前。
 
@@ -115,7 +115,7 @@ extra unspecified motifs, invented pattern elements, standalone star motifs, spa
 
 ## バストアップ → portrait クロップ手順（まお確定枠）
 
-汎用の考え方・基準は [character-guide.md](../character-guide.md) §4「バストアップ → portrait（640×768）」。本項は**まおで確定した具体値（枠・コマンド）**で、表情を増やすたびこれに従えば neutral と顔位置・スケールが揃う。
+汎用の考え方・基準は [character-guide.md](../character-guide.md) §4「制作フロー」3。本項は**まおで確定した具体値（枠・コマンド）**で、表情を増やすたびこれに従えば neutral と顔位置・スケールが揃う。
 
 **確定枠（2026-06-24・happy で検証し neutral と一致）**
 
@@ -123,7 +123,7 @@ extra unspecified motifs, invented pattern elements, standalone star motifs, spa
 - クロップ枠：**`-crop 609x731+168+0 +repage`** を**全表情で固定**（中身ぴったりに合わせず neutral と同じ枠＝差し替えてもズレない）。
   - 幅609・X=168 ＝ neutral master bustup の中身横幅・左端（`original/mao-master-bustup.png` の trim `609x1122+168+14` 由来）。
   - 高さ731・Y=0 ＝ 5:6 になる高さ（609 × 6/5 ≈ 731）を上端 y=0 から採る（頭を切らない）。
-- **順序が肝**：① クロップ → ② 透過（スキル anime-cutout-defringe＝[character-guide.md](../character-guide.md) §4「表情差分の透過フロー」）→ ③ リサイズ 640×768 → ④ WebP。⚠️ 白背景のままリサイズすると白フチ（フリンジ）が出るので**必ず透過してからリサイズ**。
+- **順序が肝**：① クロップ → ② 透過（スキル anime-cutout-defringe＝[character-guide.md](../character-guide.md) §4「制作フロー」4）→ ③ リサイズ 640×768 → ④ WebP。⚠️ 白背景のままリサイズすると白フチ（フリンジ）が出るので**必ず透過してからリサイズ**。
 
 **手順**
 

@@ -34,8 +34,8 @@
 
 .fu-counting__row {
   padding: 0.6rem 0.8rem;
-  background: rgba(18, 20, 28, 0.5);
-  border: 1px solid #3b3f4d;
+  background: rgb(var(--panel-rgb) / 0.5);
+  border: 1px solid var(--panel-border);
   border-radius: 0.7rem;
 }
 
@@ -63,7 +63,7 @@
   margin: 0.3rem 0 0;
   font-size: clamp(0.85rem, 1.5vw, 1rem);
   line-height: 1.5;
-  color: #c8ccd6;
+  color: var(--text-soft);
 }
 
 /* 面子の符：行列表（狭い画面では横スクロール） */
@@ -80,19 +80,19 @@
 .fu-counting__table th,
 .fu-counting__table td {
   padding: 0.5rem 0.6rem;
-  border: 1px solid #3b3f4d;
+  border: 1px solid var(--panel-border);
   text-align: center;
   white-space: nowrap;
 }
 
 .fu-counting__table thead th {
-  background: rgba(18, 20, 28, 0.6);
+  background: rgb(var(--panel-rgb) / 0.6);
   font-weight: 700;
-  color: #8a93a3;
+  color: var(--text-faint);
 }
 
 .fu-counting__table tbody th {
-  background: rgba(18, 20, 28, 0.6);
+  background: rgb(var(--panel-rgb) / 0.6);
   font-weight: 700;
   text-align: left;
 }
@@ -110,5 +110,5 @@
   gap: 0.3rem;
   font-size: clamp(0.8rem, 1.4vw, 0.95rem);
   line-height: 1.5;
-  color: #8a93a3;
+  color: var(--text-faint);
 }
