@@ -9,7 +9,7 @@
   --color-bg-top: #221c3a; /* 背景グラデ上端（やや明るい紫） */
   --color-text: #f2f2f2;
   --char-glow: #6a4fb0; /* キャラのテーマ色。既定値、App が選択キャラの色で上書き */
-  --color-highlight: #f5c451; /* 解説・ヒントのハイライト（やわらかい金。uxui §3） */
+  --color-highlight: #f5c451; /* 解説・ヒントのハイライト（やわらかい金。uxui §7.3） */
 
   /* 立ち絵の幅。メニュー（スタート）画面と設定画面が共有する（両画面で同サイズ）。
      幅は clamp(--standee-min, 55vw, --standee-max) で 480〜640px の間を伸び縮みさせる:

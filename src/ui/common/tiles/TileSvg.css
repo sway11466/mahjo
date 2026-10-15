@@ -127,7 +127,7 @@
   --ink: #e53935; /* 赤ドラ */
 }
 
-/* 解説・ヒントのハイライト：やわらかく光らせる（uxui §3）。色は中立トークン */
+/* 解説・ヒントのハイライト：やわらかく光らせる（uxui §7.3）。色は中立トークン */
 .tile--lit {
   filter: drop-shadow(0 0 0.3rem var(--color-highlight)) drop-shadow(0 0 0.12rem var(--color-highlight));
 }

@@ -19,7 +19,7 @@ function inkClass(tile: Tile): string {
 }
 
 /**
- * 牌1枚の SVG。手牌・副露・上がり牌・ドラ表示で再利用する（uxui §1）。
+ * 牌1枚の SVG。手牌・副露・上がり牌・ドラ表示で再利用する（uxui §7.1）。
  * サイズは持たず、置かれたコンテナの幅にフィットしてスケールする（高さは viewBox の比で決まる）。
  * 幾何（viewBox・座標・要素構成）は TSX、色・フォントは CSS（TileSvg.css）。
  */
