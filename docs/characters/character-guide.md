@@ -57,7 +57,7 @@
 
 キャラの identity を表す中立な1色（`Character.themeColor`。型は data-model §13）。各キャラの定義 doc に固有値を1つ持たせる（キャラのビジュアル配色から代表色を選ぶ）。
 
-- 用途：ui の装飾。立ち絵の背後の淡いグローを主用途に、「いま誰と学んでいるか」の空気を映す（背骨：キャラ駆動）。ui は `--char-glow` で流し、選択中バッジ・枠線・ボタンの強調色にも同じ変数を使う。採点には無関係。見た目の指針は uxui §4。
+- 用途：ui の装飾。立ち絵の背後の淡いグローを主用途に、「いま誰と学んでいるか」の空気を映す（背骨：キャラ駆動）。ui は `--char-glow` で流し、選択中バッジ・枠線・ボタンの強調色にも同じ変数を使う。採点には無関係。見た目の指針は uxui §3.4。
 - フォールバック：未指定キャラは既定色（`defaultThemeColor`。resolver は `ui/character/themeColor.ts`）になる。必須ではない（無指定でも動く）。
 - 状況では変えない：テーマ色は常に一定。正誤など状況で背景色を変える（誤答で赤くする等）はしない＝プレッシャーをかけない（product-concept §3）。
 
@@ -367,7 +367,7 @@ export function getCharacter(id: string): Character { /* … */ }
 - [session](../spec/session.md) … セッション提示（§4 場面〔リアクション〕の正準・既定マップ）
 - [screens](../design/screens.md) … 画面・解説の流れ（§3）
 - [scoring-rules](../spec/scoring-rules.md) … 役テーブル（§1 読み 等）
-- [uxui](../design/uxui.md) … 見た目の指針（§4）
+- [uxui](../design/uxui.md) … 見た目の指針（トンマナ〜実装。キャラ色の受け方は §3.4）
 - [sound](../design/sound.md) … BGM の方式・制作（「BGM の実現方式」「BGM の制作」）
 
 雛形のまお（`docs/characters/mao/`）と各ファイルのパスは §5「ファイル構成」を参照。

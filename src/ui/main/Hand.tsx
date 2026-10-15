@@ -37,7 +37,7 @@ function callLabel(meld: Meld): string {
 
 /**
  * 手牌を横一列に並べる。門前は正準順（id 昇順。shuffleWith 指定時はランダム順）、あがり牌は1枚分あけて分離、
- * 副露面子はさらに離して別グループで示す（uxui §1。横向き表現は今後の改良）。
+ * 副露面子はさらに離して別グループで示す（uxui §7.1。横向き表現は今後の改良）。
  */
 export function Hand({ hand, win, highlights = [], shuffleWith }: HandProps) {
   const concealed = useMemo(

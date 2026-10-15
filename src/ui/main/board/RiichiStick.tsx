@@ -1,7 +1,7 @@
 import './RiichiStick.css';
 
 /**
- * リーチの千点棒（白地に赤い点1つ）。手牌の前（上側）に横向きで置く（uxui §2）。
+ * リーチの千点棒（白地に赤い点1つ）。手牌の前（上側）に横向きで置く（uxui §7.2）。
  * 牌と同じく SVG で描画。Unicode は使わない。
  */
 export function RiichiStick() {
