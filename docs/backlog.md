@@ -58,14 +58,7 @@
 
 メイン画面（役モード）実装後のレビューで挙がった改善項目。採番は本書冒頭「index」。各エントリは 背景／対応／該当 で記す（優先度順）。
 
-### refactoring-11
-
-**CSS の共通化（デザイントークン集約・繰り返しパターンの共有）**（優先度：中）
-
-- 背景：[architecture](./design/architecture.md) §5 は「色など装飾値は直値でなく CSS カスタムプロパティ（デザイントークン）に集約し意味のある名前で参照する」と定めるが、`src/ui/index.css` の `:root` トークンは少数（`--color-bg`・`--color-text`・`--char-glow`・`--color-highlight` 等）で、多くの装飾値が各コンポーネント CSS に直値でハードコードされ重複している。例：パネル枠 `#3b3f4d`（ScoreTable/YakuList/FuCounting/ReferenceOverlay/ChoicePanel 等で多数）・くすみ文字 `#9aa3b2`／`#8a93a3`／`#c8ccd6`・本文色 `#f2f2f2`・カード背景 `linear-gradient(160deg, #3a3550, #211f2e)`（StartScreen/settings/CharacterStage で同一）・バッジ `#1a1a1a`＋`#e2c44e`（YakuList/MainScreen）・ボタン枠 `#5a6172`→`#79808f`（BackButton/StartScreen/ChoicePanel）。値が散っているため一括テーマ変更・ダーク/キャラ別テーマ拡張（§5 が掲げる狙い）ができず、配色の意図も読み取りにくい。
-- 対応：(1) 繰り返し使われる装飾値を `index.css` の `:root` にセマンティックなトークンとして集約（例 `--panel-border`・`--text-muted`・`--card-bg`・`--badge-bg`/`--badge-text`・`--btn-border`/`--btn-border-hover`）し、各 CSS は直値をやめてトークン参照に置換する。(2) 同型の繰り返しパターン（カード／パネル枠・サブ画面のメニューボタン・くすみ見出し等）が複数画面で重複しているものは、`.subscreen` と同じ発想で共有クラス化できるか検討（ただし「無駄を消すだけのために公開クラス/抽象を増やして意図がぼやけるなら不採用」＝[architecture](./design/architecture.md) 冒頭の指針に従う。トークン集約を主、クラス共有は意図が明確になる範囲に留める）。スート色（`--color-man` 等の意味づけ＝§5）は壊さない。見た目は不変（リファクタなので回帰なし＝目視確認）。
-  - **キャラクター固有のスタイル定義は、アプリ共通トークンに混ぜず、キャラクターごとに持つ**（キャラ追加＝データ＋そのキャラのアセット／スタイルで完結し、共通 `:root` の編集を要しない＝[character-guide](./characters/character-guide.md)「キャラを足してもロジック不変」の精神）。キャラの世界観に属する装飾値（御札の朱 `#c0392b`・墨 `#2a2320`＝`character/items/Ofuda.css`、月・装飾モチーフ＝`character/decor/`、法具ホバー＝`character/RitualHoverMark.css`、立ち絵ステージ＝`character/CharacterStage.css` のキャラ寄り装飾）は、共通トークンへ吸い上げず各キャラのスコープ（当面は当該 `ui/character/**` CSS、将来はキャラ別テーマ）に閉じる。テーマ色・差し色は既存どおり `--char-glow`/`--char-accent` 等の CSS 変数で App がキャラ値を流す（[architecture](./design/architecture.md) §5・[character-guide](./characters/character-guide.md) §2「テーマ色／差し色」）＝共通トークンは「中立な器」、具体色は「キャラが注ぐ」分担を保つ。
-- 該当：`src/ui/index.css`（中立トークン追加）・`src/ui/**/*.css` 全般（直値→トークン置換。とくに `main/score-table`・`main/yaku-list`・`main/fu-counting`・`common/ReferenceOverlay`・`common/BackButton`・`start`・`settings`・`main/quiz/ChoicePanel`）。キャラ固有スタイルは `src/ui/character/**`（`items/Ofuda.css`・`decor/`・`RitualHoverMark.css`・`CharacterStage.css`）にキャラ単位で保持（共通トークンへ移さない）。指針は [architecture](./design/architecture.md) §5・[character-guide](./characters/character-guide.md)。
+（現在、リファクタリング項目はなし）
 
 ## parking lot
 

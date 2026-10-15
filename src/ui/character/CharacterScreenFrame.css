@@ -76,10 +76,10 @@
   height: 70vh;
   display: grid;
   place-items: center;
-  background: linear-gradient(160deg, #3a3550, #211f2e);
-  border: 1px solid #4a4663;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
   border-radius: 0.8rem;
-  color: #b9b3d4;
+  color: var(--card-text);
   letter-spacing: 0.1em;
 }
 

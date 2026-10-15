@@ -21,14 +21,14 @@
   font-size: clamp(0.85rem, 1.5vw, 1rem);
   font-weight: 700;
   color: var(--color-text);
-  background: rgba(18, 20, 28, 0.6);
-  border: 1px solid #3b3f4d;
+  background: rgb(var(--panel-rgb) / 0.6);
+  border: 1px solid var(--panel-border);
   border-radius: 999px;
   cursor: pointer;
 }
 
 .score-table__tab--active {
-  color: #15121f;
+  color: var(--color-bg);
   background: var(--char-glow);
   border-color: var(--char-glow);
 }
@@ -38,7 +38,7 @@
   margin: 0;
   font-size: clamp(0.78rem, 1.35vw, 0.92rem);
   line-height: 1.5;
-  color: #8a93a3;
+  color: var(--text-faint);
 }
 
 /* 横に広いので必要なら横スクロール。
@@ -72,18 +72,18 @@
 .score-table__grid th,
 .score-table__grid td {
   padding: 0.3rem 0.35rem;
-  border: 1px solid #3b3f4d;
+  border: 1px solid var(--panel-border);
   text-align: center;
   white-space: nowrap;
 }
 
 .score-table__grid thead th {
-  background: rgba(18, 20, 28, 0.6);
+  background: rgb(var(--panel-rgb) / 0.6);
   font-weight: 700;
 }
 
 .score-table__grid tbody th {
-  background: rgba(18, 20, 28, 0.6);
+  background: rgb(var(--panel-rgb) / 0.6);
   font-weight: 700;
 }
 
@@ -111,7 +111,7 @@
 /* 成立しない欄（セル全体／セル内のロン「—」とも同じ淡色にそろえる） */
 .score-table__none,
 .score-table__v--none {
-  color: #555b68;
+  color: var(--text-disabled);
 }
 
 .score-table__section {
@@ -148,5 +148,5 @@
   padding-left: 1.3rem; /* 手順リストの本文に揃えてインデント */
   font-size: clamp(0.8rem, 1.4vw, 0.95rem);
   line-height: 1.5;
-  color: #8a93a3;
+  color: var(--text-faint);
 }
